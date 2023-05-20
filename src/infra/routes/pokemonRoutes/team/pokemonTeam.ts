@@ -1,14 +1,13 @@
-import { PrismaClient } from "@prisma/client"
-import { container } from "tsyringe"
-import { IResponse } from "../../../../server/models/IResponse"
-import { iGenPokemonTeam } from "../../../../server/modules/imageGen/iGenPokemonTeam"
-import { TRouteParams } from "../../router"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { IResponse } from '../../../../server/models/IResponse'
+import { iGenPokemonTeam } from '../../../../server/modules/imageGen/iGenPokemonTeam'
+import { TRouteParams } from '../../router'
 
 export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
-  const [command, route, subRoute, id1, id2, id3, id4, id5, id6] =
-    data.routeParams
+  const [, , , id1, id2, id3, id4, id5, id6] = data.routeParams
 
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const player = await prismaClient.player.findFirst({
     where: {
       phone: data.playerPhone,
@@ -55,7 +54,7 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
 
   if (!player)
     return {
-      message: "ERROR: NO PLAYER FOUND WITH " + data.playerPhone,
+      message: 'ERROR: NO PLAYER FOUND WITH ' + data.playerPhone,
       status: 400,
       data: null,
     }
@@ -73,19 +72,12 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
     }
   }
 
-  const ids = [
-    Number(id1),
-    Number(id2 || 0),
-    Number(id3 || 0),
-    Number(id4 || 0),
-    Number(id5 || 0),
-    Number(id6 || 0),
-  ]
+  const ids = [Number(id1), Number(id2 || 0), Number(id3 || 0), Number(id4 || 0), Number(id5 || 0), Number(id6 || 0)]
 
   for (const id of ids) {
-    if (typeof id !== "number")
+    if (typeof id !== 'number')
       return {
-        message: "ERROR: problem parsing id: " + id,
+        message: 'ERROR: problem parsing id: ' + id,
         status: 400,
         data: null,
       }
@@ -176,7 +168,7 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
   }
 
   return {
-    message: "DUMMY: poketeam updated",
+    message: 'DUMMY: poketeam updated',
     status: 200,
     data: null,
   }

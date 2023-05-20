@@ -1,1 +1,1 @@
-export const reactions = [["👍"], ["❤"], ["😂"], ["😮"]]
+export const reactions = [['👍'], ['❤'], ['😂'], ['😮']]

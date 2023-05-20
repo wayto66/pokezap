@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client"
-import { generateGeneralStats } from "server/modules/pokemon/generateGeneralStats"
-import { generateHpStat } from "server/modules/pokemon/generateHpStat"
-import { container } from "tsyringe"
-import { Client, MessageMedia } from "whatsapp-web.js"
-import { iGenWildPokemon } from "../../../server/modules/imageGen/iGenWildPokemon"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { Client, MessageMedia } from 'whatsapp-web.js'
+import { iGenWildPokemon } from '../../../server/modules/imageGen/iGenWildPokemon'
+import { generateHpStat } from '../../modules/pokemon/generateHpStat'
+import { generateGeneralStats } from '../../modules/pokemon/generateGeneralStats'
 
 type TParams = {
   prismaClient: PrismaClient
@@ -11,7 +11,7 @@ type TParams = {
 }
 
 export const CronActions = async (data: TParams) => {
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const gameRooms = await prismaClient.gameRoom.findMany({
     where: {
       statusTrashed: false,
@@ -23,7 +23,7 @@ export const CronActions = async (data: TParams) => {
 
   for (const gameRoom of gameRooms) {
     if (!gameRoom.phone) {
-      console.error("No phone available for gameRoom: " + gameRoom.id)
+      console.error('No phone available for gameRoom: ' + gameRoom.id)
       continue
     }
     const baseExperienceTreshold = Math.floor(64 + (gameRoom.level / 100) * 276)
@@ -36,8 +36,7 @@ export const CronActions = async (data: TParams) => {
       },
     })
 
-    const baseData =
-      basePokemons[Math.floor(Math.random() * basePokemons.length)]
+    const baseData = basePokemons[Math.floor(Math.random() * basePokemons.length)]
 
     const level = Math.floor(Math.min(1 + Math.random() * gameRoom.level, 100))
 
@@ -94,16 +93,13 @@ Ações:
 
 `,
       })
-      .then(async (result) => {
+      .then(async result => {
         const newMessage = await prismaClient.message.create({
           data: {
             msgId: result.id.id,
-            type: "?",
-            body: "",
-            actions: [
-              `pokezap. catch pokeball ${newWildPokemon.id}`,
-              `pokezap. catch greatball ${newWildPokemon.id}`,
-            ],
+            type: '?',
+            body: '',
+            actions: [`pokezap. catch pokeball ${newWildPokemon.id}`, `pokezap. catch greatball ${newWildPokemon.id}`],
           },
         })
       })

@@ -1,11 +1,10 @@
-import { PrismaClient } from "@prisma/client"
-import { TRouteParams } from "infra/routes/router"
-import { IResponse } from "server/models/IResponse"
-import { container } from "tsyringe"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { TRouteParams } from '../../../../infra/routes/router'
+import { IResponse } from '../../../../server/models/IResponse'
 
 export const routeEnter = async (data: TRouteParams): Promise<IResponse> => {
-  const [initializer, routeName, subRoute, routeId] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const player = await prismaClient.player.findFirst({
     where: {
@@ -22,12 +21,6 @@ export const routeEnter = async (data: TRouteParams): Promise<IResponse> => {
       data: null,
     }
   }
-
-  const route = await prismaClient.gameRoom.findFirst({
-    where: {
-      phone: data.groupCode,
-    },
-  })
 
   const updatedRoute = await prismaClient.gameRoom.update({
     where: {

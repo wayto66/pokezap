@@ -1,12 +1,12 @@
-import { PrismaClient } from "@prisma/client"
-import { TRouteParams } from "infra/routes/router"
-import { container } from "tsyringe"
-import { IResponse } from "../../../../server/models/IResponse"
-import { newUser2 } from "./newUser2"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { TRouteParams } from '../../../../infra/routes/router'
+import { IResponse } from '../../../../server/models/IResponse'
+import { newUser2 } from './newUser2'
 
 export const newUser1 = async (data: TRouteParams): Promise<IResponse> => {
-  const [command, route, gender, spriteNumber] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const [, , gender] = data.routeParams
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const player = await prismaClient.player.findFirst({
     where: {
@@ -33,7 +33,7 @@ export const newUser1 = async (data: TRouteParams): Promise<IResponse> => {
 ❤ - menina
     `,
     status: 200,
-    actions: ["pokezap. iniciar menino", "pokezap. iniciar menina"],
+    actions: ['pokezap. iniciar menino', 'pokezap. iniciar menina'],
     data: null,
   }
 }

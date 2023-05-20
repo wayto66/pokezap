@@ -1,8 +1,8 @@
-import { createCanvas, loadImage, registerFont } from "canvas"
-import fs from "fs"
-import path from "path"
-import { talentIdMap } from "../../../server/constants/talentIdMap"
-import { IPokemon } from "../../../server/models/IPokemon"
+import { createCanvas, loadImage, registerFont } from 'canvas'
+import fs from 'fs'
+import path from 'path'
+import { talentIdMap } from '../../../server/constants/talentIdMap'
+import { IPokemon } from '../../../server/models/IPokemon'
 
 type TParams = {
   pokemonData: IPokemon
@@ -11,17 +11,17 @@ type TParams = {
 export const iGenPokemonAnalysis = async (data: TParams) => {
   const canvasWidth = 500
   const canvasHeight = 500
-  const backgroundUrl = "./src/assets/sprites/UI/hud/pokemon_analysis.png"
+  const backgroundUrl = './src/assets/sprites/UI/hud/pokemon_analysis.png'
 
   // Load the font file and register it with the canvas
   registerFont(
-    "C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/JosefinSans-Bold.ttf",
-    { family: "Pokemon" }
+    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/JosefinSans-Bold.ttf',
+    { family: 'Pokemon' }
   )
 
   registerFont(
-    "C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf",
-    { family: "Righteous" }
+    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf',
+    { family: 'Righteous' }
   )
 
   // Load the background image
@@ -32,7 +32,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
-  const ctx = canvas.getContext("2d")
+  const ctx = canvas.getContext('2d')
   ctx.imageSmoothingEnabled = false
 
   // Draw the background on the canvas
@@ -47,9 +47,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
   // Draw the sprite on the canvas
   ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight)
 
-  const bar = await loadImage(
-    "./src/assets/sprites/UI/hud/pokemon_wild_encounter.png"
-  )
+  const bar = await loadImage('./src/assets/sprites/UI/hud/pokemon_wild_encounter.png')
   // Calculate the position of the sprite in the middle of the canvas
   const barWidth = 500 // replace with the actual width of the bar
   const barHeight = 500 // replace with the actual height of the bar
@@ -61,11 +59,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
 
   ctx.globalAlpha = 1
 
-  const typeLabel1 = await loadImage(
-    "./src/assets/sprites/UI/types/" +
-      data.pokemonData.baseData.type1Name +
-      ".png"
-  )
+  const typeLabel1 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemonData.baseData.type1Name + '.png')
   // Calculate the position of the sprite in the middle of the canvas
   const typeLabel1Width = 100 // replace with the actual width of the typeLabel1
   const typeLabel1Height = 31 // replace with the actual height of the typeLabel1
@@ -73,20 +67,10 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
   const typeLabel1Y = 105
   // Draw the typeLabel1 on the canvas
   ctx.globalAlpha = 0.8
-  ctx.drawImage(
-    typeLabel1,
-    typeLabel1X,
-    typeLabel1Y,
-    typeLabel1Width,
-    typeLabel1Height
-  )
+  ctx.drawImage(typeLabel1, typeLabel1X, typeLabel1Y, typeLabel1Width, typeLabel1Height)
 
   if (data.pokemonData.baseData.type2Name) {
-    const typeLabel2 = await loadImage(
-      "./src/assets/sprites/UI/types/" +
-        data.pokemonData.baseData.type2Name +
-        ".png"
-    )
+    const typeLabel2 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemonData.baseData.type2Name + '.png')
     // Calculate the position of the sprite in the middle of the canvas
     const typeLabel2Width = 100 // replace with the actual width of the typeLabel2
     const typeLabel2Height = 31 // replace with the actual height of the typeLabel2
@@ -94,20 +78,14 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     const typeLabel2Y = 140
     // Draw the typeLabel2 on the canvas
     ctx.globalAlpha = 1
-    ctx.drawImage(
-      typeLabel2,
-      typeLabel2X,
-      typeLabel2Y,
-      typeLabel2Width,
-      typeLabel2Height
-    )
+    ctx.drawImage(typeLabel2, typeLabel2X, typeLabel2Y, typeLabel2Width, typeLabel2Height)
   }
 
   // write pokemon name
 
-  ctx.font = "35px Righteous"
-  ctx.fillStyle = "white"
-  ctx.textAlign = "start"
+  ctx.font = '35px Righteous'
+  ctx.fillStyle = 'white'
+  ctx.textAlign = 'start'
 
   ctx.fillText(
     `${data.pokemonData.baseData.name.toUpperCase()}
@@ -115,7 +93,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     10,
     70
   )
-  ctx.strokeStyle = "rgba(0,0,0,0.5) 10px solid"
+  ctx.strokeStyle = 'rgba(0,0,0,0.5) 10px solid'
   ctx.lineWidth = 2
   ctx.strokeText(
     `${data.pokemonData.baseData.name.toUpperCase()}
@@ -126,16 +104,16 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
 
   // write pokemon level
 
-  ctx.font = " 50px Pokemon"
-  ctx.fillStyle = "white"
-  ctx.textAlign = "center"
+  ctx.font = ' 50px Pokemon'
+  ctx.fillStyle = 'white'
+  ctx.textAlign = 'center'
   ctx.fillText(
     `${data.pokemonData.level}
  `,
     450,
     70
   )
-  ctx.strokeStyle = "black 0px solid"
+  ctx.strokeStyle = 'black 0px solid'
   ctx.lineWidth = 2
   ctx.strokeText(
     `${data.pokemonData.level}
@@ -144,16 +122,16 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     70
   )
 
-  ctx.font = " 25px Pokemon"
-  ctx.fillStyle = "white"
-  ctx.textAlign = "center"
+  ctx.font = ' 25px Pokemon'
+  ctx.fillStyle = 'white'
+  ctx.textAlign = 'center'
   ctx.fillText(
     `level
  `,
     450,
     90
   )
-  ctx.strokeStyle = "black 10px solid"
+  ctx.strokeStyle = 'black 10px solid'
   ctx.lineWidth = 1
   ctx.strokeText(
     `level
@@ -164,25 +142,16 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
 
   // set up the table data
   const tableData = [
-    [
-      data.pokemonData.hp.toString(),
-      data.pokemonData.atk.toString(),
-      data.pokemonData.def.toString(),
-    ],
+    [data.pokemonData.hp.toString(), data.pokemonData.atk.toString(), data.pokemonData.def.toString()],
 
-    [
-      data.pokemonData.speed.toString(),
-      data.pokemonData.spAtk.toString(),
-
-      data.pokemonData.spDef.toString(),
-    ],
+    [data.pokemonData.speed.toString(), data.pokemonData.spAtk.toString(), data.pokemonData.spDef.toString()],
   ]
 
   // set up the table style
   const cellWidth = 80
   const cellHeight = 55
-  const cellColor = "#212427"
-  const cellFont = "15px Pokemon"
+  const cellColor = '#212427'
+  const cellFont = '15px Pokemon'
 
   // move the entire table to a new position
   const tableX = 290
@@ -204,9 +173,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
   // draw talents
 
   const getTalent = async (name: string) => {
-    return await loadImage(
-      "./src/assets/sprites/UI/types/circle/" + name + ".png"
-    )
+    return await loadImage('./src/assets/sprites/UI/types/circle/' + name + '.png')
   }
 
   const talents = [
@@ -230,7 +197,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
 
       // set up the circle style
       const circleRadius = 14
-      const circleColor = "rgba(0,0,0,0.5)"
+      const circleColor = 'rgba(0,0,0,0.5)'
 
       // draw the circle path
       ctx.beginPath()
@@ -241,7 +208,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
       ctx.fill()
       const talent = talents[i * 3 + j]
       if (!talent) {
-        console.error("invalid talents: " + [i * 3 + j])
+        console.error('invalid talents: ' + [i * 3 + j])
         return
       }
       ctx.drawImage(await getTalent(talent), x, y, 30, 30)
@@ -255,19 +222,19 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     const out = fs.createWriteStream(filepath)
     const stream = canvas.createPNGStream()
     stream.pipe(out)
-    out.on("finish", () => {
-      console.log("The PNG file was created.")
+    out.on('finish', () => {
+      console.log('The PNG file was created.')
       resolve(filepath)
     })
   })
 
   // Delete the file after 5 seconds
   setTimeout(() => {
-    fs.unlink(filepath, (error) => {
+    fs.unlink(filepath, error => {
       if (error) {
         console.error(`Failed to delete file: ${error}`)
       } else {
-        console.log("File deleted successfully.")
+        console.log('File deleted successfully.')
       }
     })
   }, 5000)

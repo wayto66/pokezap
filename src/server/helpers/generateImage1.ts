@@ -1,7 +1,7 @@
-import { createCanvas, loadImage, registerFont } from "canvas"
-import fs from "fs"
-import path from "path"
-import { IPokemon } from "server/models/IPokemon"
+import { createCanvas, loadImage, registerFont } from 'canvas'
+import fs from 'fs'
+import path from 'path'
+import { IPokemon } from '../../server/models/IPokemon'
 
 type TParams = {
   spriteUrl: string
@@ -9,10 +9,10 @@ type TParams = {
 }
 
 export const generateImage1 = async (data: TParams) => {
-  const bg1 = "./src/assets/backgrounds/city.png"
-  const bg2 = "./src/assets/backgrounds/forest.png"
-  const bg3 = "./src/assets/backgrounds/savannah.png"
-  const bg4 = "./src/assets/backgrounds/underwater.png"
+  const bg1 = './src/assets/backgrounds/city.png'
+  const bg2 = './src/assets/backgrounds/forest.png'
+  const bg3 = './src/assets/backgrounds/savannah.png'
+  const bg4 = './src/assets/backgrounds/underwater.png'
 
   const bgs = [bg1, bg2, bg3, bg4]
   // Define the dimensions of the canvas and the background
@@ -22,8 +22,8 @@ export const generateImage1 = async (data: TParams) => {
 
   // Load the font file and register it with the canvas
   registerFont(
-    "C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap/src/assets/font/pokemon.ttf",
-    { family: "Pokemon" }
+    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap/src/assets/font/pokemon.ttf',
+    { family: 'Pokemon' }
   )
 
   // Load the background image
@@ -34,7 +34,7 @@ export const generateImage1 = async (data: TParams) => {
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
-  const ctx = canvas.getContext("2d")
+  const ctx = canvas.getContext('2d')
 
   // Draw the background on the canvas
   ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
@@ -48,7 +48,7 @@ export const generateImage1 = async (data: TParams) => {
   // Draw the sprite on the canvas
   ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight)
 
-  const bar = await loadImage("./src/assets/sprites/UI/gui/box1.png")
+  const bar = await loadImage('./src/assets/sprites/UI/gui/box1.png')
   // Calculate the position of the sprite in the middle of the canvas
   const barWidth = 425 // replace with the actual width of the bar
   const barHeight = 150 // replace with the actual height of the bar
@@ -58,7 +58,7 @@ export const generateImage1 = async (data: TParams) => {
   ctx.globalAlpha = 0.8
   ctx.drawImage(bar, barX, barY, barWidth, barHeight)
 
-  const barUp = await loadImage("./src/assets/sprites/UI/gui/box1.png")
+  const barUp = await loadImage('./src/assets/sprites/UI/gui/box1.png')
   // Calculate the position of the sprite in the middle of the canvas
   const barUpWidth = 600 // replace with the actual width of the barUp
   const barUpHeight = 75 // replace with the actual height of the barUp
@@ -68,7 +68,7 @@ export const generateImage1 = async (data: TParams) => {
   ctx.globalAlpha = 0.8
   ctx.drawImage(barUp, barUpX, barUpY, barUpWidth, barUpHeight)
 
-  const barLeft = await loadImage("./src/assets/sprites/UI/gui/box1.png")
+  const barLeft = await loadImage('./src/assets/sprites/UI/gui/box1.png')
   // Calculate the position of the sprite in the middle of the canvas
   const barLeftWidth = 175 // replace with the actual width of the barLeft
   const barLeftHeight = 250 // replace with the actual height of the barLeft
@@ -78,7 +78,7 @@ export const generateImage1 = async (data: TParams) => {
   ctx.globalAlpha = 0.8
   ctx.drawImage(barLeft, barLeftX, barLeftY, barLeftWidth, barLeftHeight)
 
-  const barRight = await loadImage("./src/assets/sprites/UI/gui/box1.png")
+  const barRight = await loadImage('./src/assets/sprites/UI/gui/box1.png')
   // Calculate the position of the sprite in the middle of the canvas
   const barRightWidth = 150 // replace with the actual width of the barRight
   const barRightHeight = 150 // replace with the actual height of the barRight
@@ -90,9 +90,7 @@ export const generateImage1 = async (data: TParams) => {
 
   ctx.globalAlpha = 1
 
-  const typeLabel1 = await loadImage(
-    "./src/assets/sprites/UI/types/" + data.pokemonData.type1 + ".png"
-  )
+  const typeLabel1 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemonData.type1 + '.png')
   // Calculate the position of the sprite in the middle of the canvas
   const typeLabel1Width = 180 // replace with the actual width of the typeLabel1
   const typeLabel1Height = 54 // replace with the actual height of the typeLabel1
@@ -100,18 +98,10 @@ export const generateImage1 = async (data: TParams) => {
   const typeLabel1Y = canvas.height * 0.25
   // Draw the typeLabel1 on the canvas
   ctx.globalAlpha = 0.8
-  ctx.drawImage(
-    typeLabel1,
-    typeLabel1X,
-    typeLabel1Y,
-    typeLabel1Width,
-    typeLabel1Height
-  )
+  ctx.drawImage(typeLabel1, typeLabel1X, typeLabel1Y, typeLabel1Width, typeLabel1Height)
 
   if (data.pokemonData.type2) {
-    const typeLabel2 = await loadImage(
-      "./src/assets/sprites/UI/types/" + data.pokemonData.type2 + ".png"
-    )
+    const typeLabel2 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemonData.type2 + '.png')
     // Calculate the position of the sprite in the middle of the canvas
     const typeLabel2Width = 180 // replace with the actual width of the typeLabel2
     const typeLabel2Height = 54 // replace with the actual height of the typeLabel2
@@ -119,20 +109,14 @@ export const generateImage1 = async (data: TParams) => {
     const typeLabel2Y = canvas.height * 0.25 + 100
     // Draw the typeLabel2 on the canvas
     ctx.globalAlpha = 0.8
-    ctx.drawImage(
-      typeLabel2,
-      typeLabel2X,
-      typeLabel2Y,
-      typeLabel2Width,
-      typeLabel2Height
-    )
+    ctx.drawImage(typeLabel2, typeLabel2X, typeLabel2Y, typeLabel2Width, typeLabel2Height)
   }
 
   // write pokemon name
 
-  ctx.font = " 40px Pokemon"
-  ctx.fillStyle = "#212427"
-  ctx.textAlign = "center"
+  ctx.font = ' 40px Pokemon'
+  ctx.fillStyle = '#212427'
+  ctx.textAlign = 'center'
   ctx.fillText(
     `${data.pokemonData.name}
  `,
@@ -142,9 +126,9 @@ export const generateImage1 = async (data: TParams) => {
 
   // write pokemon level
 
-  ctx.font = " 50px Pokemon"
-  ctx.fillStyle = "#212427"
-  ctx.textAlign = "center"
+  ctx.font = ' 50px Pokemon'
+  ctx.fillStyle = '#212427'
+  ctx.textAlign = 'center'
   ctx.fillText(
     `${data.pokemonData.level}
  `,
@@ -152,9 +136,9 @@ export const generateImage1 = async (data: TParams) => {
     canvas.height - 80
   )
 
-  ctx.font = " 20px Pokemon"
-  ctx.fillStyle = "#212427"
-  ctx.textAlign = "center"
+  ctx.font = ' 20px Pokemon'
+  ctx.fillStyle = '#212427'
+  ctx.textAlign = 'center'
   ctx.fillText(
     `level
  `,
@@ -164,31 +148,16 @@ export const generateImage1 = async (data: TParams) => {
 
   // set up the table data
   const tableData = [
-    [
-      "hp:",
-      data.pokemonData.hp.toString(),
-      "spAtk:",
-      data.pokemonData.spAtk.toString(),
-    ],
-    [
-      "atk:",
-      data.pokemonData.atk.toString(),
-      "spDef:",
-      data.pokemonData.spDef.toString(),
-    ],
-    [
-      "def:",
-      data.pokemonData.def.toString(),
-      "speed:",
-      data.pokemonData.speed.toString(),
-    ],
+    ['hp:', data.pokemonData.hp.toString(), 'spAtk:', data.pokemonData.spAtk.toString()],
+    ['atk:', data.pokemonData.atk.toString(), 'spDef:', data.pokemonData.spDef.toString()],
+    ['def:', data.pokemonData.def.toString(), 'speed:', data.pokemonData.speed.toString()],
   ]
 
   // set up the table style
   const cellWidth = 100
   const cellHeight = 40
-  const cellColor = "#212427"
-  const cellFont = "20px Pokemon"
+  const cellColor = '#212427'
+  const cellFont = '20px Pokemon'
 
   // move the entire table to a new position
   const tableX = canvasWidth / 2 - cellWidth * 1.5
@@ -210,30 +179,28 @@ export const generateImage1 = async (data: TParams) => {
   // draw talents
 
   const getTalent = async (name: string) => {
-    return await loadImage(
-      "./src/assets/sprites/UI/types/circle/" + name + ".png"
-    )
+    return await loadImage('./src/assets/sprites/UI/types/circle/' + name + '.png')
   }
 
   const pokemonTypes = [
-    "normal",
-    "fire",
-    "water",
-    "electric",
-    "grass",
-    "ice",
-    "fighting",
-    "poison",
-    "ground",
-    "flying",
-    "psychic",
-    "bug",
-    "rock",
-    "ghost",
-    "dragon",
-    "dark",
-    "steel",
-    "fairy",
+    'normal',
+    'fire',
+    'water',
+    'electric',
+    'grass',
+    'ice',
+    'fighting',
+    'poison',
+    'ground',
+    'flying',
+    'psychic',
+    'bug',
+    'rock',
+    'ghost',
+    'dragon',
+    'dark',
+    'steel',
+    'fairy',
   ]
 
   ctx.globalAlpha = 1
@@ -245,7 +212,7 @@ export const generateImage1 = async (data: TParams) => {
 
       // set up the circle style
       const circleRadius = 22
-      const circleColor = "#000000"
+      const circleColor = '#000000'
 
       // draw the circle path
       ctx.beginPath()
@@ -268,19 +235,19 @@ export const generateImage1 = async (data: TParams) => {
     const out = fs.createWriteStream(filepath)
     const stream = canvas.createPNGStream()
     stream.pipe(out)
-    out.on("finish", () => {
-      console.log("The PNG file was created.")
+    out.on('finish', () => {
+      console.log('The PNG file was created.')
       resolve(filepath)
     })
   })
 
   // Delete the file after 5 seconds
   setTimeout(() => {
-    fs.unlink(filepath, (error) => {
+    fs.unlink(filepath, error => {
       if (error) {
         console.error(`Failed to delete file: ${error}`)
       } else {
-        console.log("File deleted successfully.")
+        console.log('File deleted successfully.')
       }
     })
   }, 5000)

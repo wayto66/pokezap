@@ -1,24 +1,24 @@
-import { PrismaClient } from "@prisma/client"
-import { writeFileSync } from "fs"
-import fetch from "node-fetch"
-import { container } from "tsyringe"
-import { pokemonData } from "../data"
-import { itemsData } from "../items"
-import { skillsData } from "../moves"
+import { PrismaClient } from '@prisma/client'
+import { writeFileSync } from 'fs'
+import fetch from 'node-fetch'
+import { container } from 'tsyringe'
+import { skillsData } from './moves'
+import { pokemonData } from './data'
+import { itemsData } from './items'
 
 export async function thiefTime() {
-  const baseUrl = "https://pokeapi.co/api/v2"
-  const endpoint = "/pokemon/"
+  const baseUrl = 'https://pokeapi.co/api/v2'
+  const endpoint = '/pokemon/'
 
   // Fetch data for the first 151 Pokemon
   const limit = 721
   const url = `${baseUrl}${endpoint}?limit=${limit}`
 
   fetch(url)
-    .then((response) => response.json())
-    .then((data) => {
+    .then(response => response.json())
+    .then(data => {
       // Map each Pokemon to a new object with name and types properties
-      const pokemonData = data.results.map((pokemon) => ({
+      const pokemonData = data.results.map(pokemon => ({
         name: pokemon.name,
         types: [],
         sprites: [],
@@ -26,11 +26,11 @@ export async function thiefTime() {
 
       // Fetch additional data for each Pokemon and add types to the objects
       Promise.all(
-        pokemonData.map((pokemon) => {
+        pokemonData.map(pokemon => {
           const url = `${baseUrl}${endpoint}${pokemon.name}`
           return fetch(url)
-            .then((response) => response.json())
-            .then(async (data) => {
+            .then(response => response.json())
+            .then(async data => {
               pokemon.id = data.id
               pokemon.baseExperience = data.base_experience
               pokemon.height = data.height
@@ -43,22 +43,18 @@ export async function thiefTime() {
                 speed: data.stats[5].base_stat,
               }
 
-              const moves = data.moves.filter((move) => {
-                return move["version_group_details"].some((detail) => {
-                  return !detail["move_learn_method"]["name"].includes("egg")
+              const moves = data.moves.filter(move => {
+                return move['version_group_details'].some(detail => {
+                  return !detail['move_learn_method']['name'].includes('egg')
                 })
               })
 
-              pokemon.moves = moves.map((move) => {
-                const getLevelLearned = move.version_group_details.find(
-                  (detail) => {
-                    return detail.level_learned_at !== 0
-                  }
-                )
+              pokemon.moves = moves.map(move => {
+                const getLevelLearned = move.version_group_details.find(detail => {
+                  return detail.level_learned_at !== 0
+                })
 
-                const levelLearned = getLevelLearned
-                  ? getLevelLearned.level_learned_at
-                  : 0
+                const levelLearned = getLevelLearned ? getLevelLearned.level_learned_at : 0
 
                 return {
                   name: move.move.name,
@@ -66,7 +62,7 @@ export async function thiefTime() {
                 }
               })
 
-              pokemon.types = data.types.map((type) => type.type.name)
+              pokemon.types = data.types.map(type => type.type.name)
               pokemon.isDualType = pokemon.types.length === 1 ? false : true
               pokemon.sprites = {
                 normal: data.sprites.front_default,
@@ -76,64 +72,61 @@ export async function thiefTime() {
               const speciesResponse = await fetch(data.species.url)
               const speciesData = await speciesResponse.json()
 
-              const evolutionChainResponse = await fetch(
-                speciesData.evolution_chain.url
-              )
+              const evolutionChainResponse = await fetch(speciesData.evolution_chain.url)
               const evolutionData = await evolutionChainResponse.json()
 
               pokemon.evolutionData = {}
 
-              pokemon.evolutionData.isFirstEvolution =
-                evolutionData.chain.species.name === pokemon.name ? true : false
+              pokemon.evolutionData.isFirstEvolution = evolutionData.chain.species.name === pokemon.name ? true : false
               const evoto = evolutionData.chain.evolves_to
               pokemon.evolutionData.evolutionChain = evoto
 
               return pokemon
             })
         })
-      ).then((data) => {
+      ).then(data => {
         const dataString = `export const pokemonData = ${JSON.stringify(data)};`
 
         // Write data to file
-        const filename = "data.ts"
+        const filename = 'data.ts'
         writeFileSync(filename, dataString)
 
         console.log(`Data written to ${filename}`)
       })
     })
-    .catch((error) => console.error(error))
+    .catch(error => console.error(error))
 }
 
 export async function thiefTimeMoves() {
-  const baseUrl = "https://pokeapi.co/api/v2"
-  const endpoint = "/move/"
+  const baseUrl = 'https://pokeapi.co/api/v2'
+  const endpoint = '/move/'
 
   // Fetch data for the first 151 Pokemon
   const limit = 920
   const url = `${baseUrl}${endpoint}?limit=${limit}`
 
   fetch(url)
-    .then((response) => response.json())
-    .then((data) => {
+    .then(response => response.json())
+    .then(data => {
       // Map each Pokemon to a new object with name and types properties
-      const moveData = data.results.map((move) => ({
+      const moveData = data.results.map(move => ({
         name: move.name,
       }))
 
       // Fetch additional data for each Pokemon and add types to the objects
       Promise.all(
-        moveData.map((move) => {
+        moveData.map(move => {
           const url = `${baseUrl}${endpoint}${move.name}`
           return fetch(url)
-            .then((response) => response.json())
-            .then((data) => {
+            .then(response => response.json())
+            .then(data => {
               move.id = data.id
               move.type = data.type.name
               move.target = data.target.name
               move.pp = data.pp
               move.class = data.damage_class.name
               move.power = data.power
-              move.statChanges = data.stat_changes.map((data) => {
+              move.statChanges = data.stat_changes.map(data => {
                 return {
                   change: data.change,
                   stat: data.stat.name,
@@ -143,42 +136,42 @@ export async function thiefTimeMoves() {
               return move
             })
         })
-      ).then((data) => {
+      ).then(data => {
         const dataString = `export const pokemonData = ${JSON.stringify(data)};`
 
         // Write data to file
-        const filename = "moves.ts"
+        const filename = 'moves.ts'
         writeFileSync(filename, dataString)
 
         console.log(`Data written to ${filename}`)
       })
     })
-    .catch((error) => console.error(error))
+    .catch(error => console.error(error))
 }
 
 export async function stealItems() {
-  const baseUrl = "https://pokeapi.co/api/v2"
-  const endpoint = "/item/"
+  const baseUrl = 'https://pokeapi.co/api/v2'
+  const endpoint = '/item/'
 
   // Fetch data for the first 151 Pokemon
   const limit = 709
   const url = `${baseUrl}${endpoint}?limit=${limit}`
 
   fetch(url)
-    .then((response) => response.json())
-    .then((data) => {
+    .then(response => response.json())
+    .then(data => {
       // Map each Pokemon to a new object with name and types properties
-      const itemData = data.results.map((item) => ({
+      const itemData = data.results.map(item => ({
         name: item.name,
       }))
 
       // Fetch additional data for each Pokemon and add types to the objects
       Promise.all(
-        itemData.map((item) => {
+        itemData.map(item => {
           const url = `${baseUrl}${endpoint}${item.name}`
           return fetch(url)
-            .then((response) => response.json())
-            .then((data) => {
+            .then(response => response.json())
+            .then(data => {
               item.id = data.id
               item.category = data.category.name
               item.sprite = data.sprites.default
@@ -187,21 +180,21 @@ export async function stealItems() {
               return item
             })
         })
-      ).then((data) => {
+      ).then(data => {
         const dataString = `export const pokemonData = ${JSON.stringify(data)};`
 
         // Write data to file
-        const filename = "items.ts"
+        const filename = 'items.ts'
         writeFileSync(filename, dataString)
 
         console.log(`Data written to ${filename}`)
       })
     })
-    .catch((error) => console.error(error))
+    .catch(error => console.error(error))
 }
 
 export async function populate() {
-  const client = container.resolve<PrismaClient>("PrismaClient")
+  const client = container.resolve<PrismaClient>('PrismaClient')
   await client.basePokemon.deleteMany()
   await client.type.deleteMany()
   await client.talent.deleteMany()
@@ -212,24 +205,24 @@ export async function populate() {
   })
 
   const pokeTypes = [
-    "normal",
-    "fighting",
-    "flying",
-    "poison",
-    "ground",
-    "rock",
-    "bug",
-    "ghost",
-    "steel",
-    "fire",
-    "water",
-    "grass",
-    "electric",
-    "psychic",
-    "ice",
-    "dragon",
-    "dark",
-    "fairy",
+    'normal',
+    'fighting',
+    'flying',
+    'poison',
+    'ground',
+    'rock',
+    'bug',
+    'ghost',
+    'steel',
+    'fire',
+    'water',
+    'grass',
+    'electric',
+    'psychic',
+    'ice',
+    'dragon',
+    'dark',
+    'fairy',
   ]
 
   for (let i = 0; i < pokeTypes.length; i++) {
@@ -252,8 +245,8 @@ export async function populate() {
         data: {
           attackPower: skill.power ? skill.power : 0,
           name: skill.name,
-          isPhysical: skill.class === "physical" ? true : false,
-          isSpecial: skill.class === "special" ? true : false,
+          isPhysical: skill.class === 'physical' ? true : false,
+          isSpecial: skill.class === 'special' ? true : false,
           requiredLevel: 0,
           typeName: skill.type,
         },

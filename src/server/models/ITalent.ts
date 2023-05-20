@@ -1,5 +1,5 @@
-import { IPokemon } from "./IPokemon"
-import { IType } from "./IType"
+import { IPokemon } from './IPokemon'
+import { IType } from './IType'
 
 export interface ITalent {
   id: number

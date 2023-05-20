@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client"
-import { container } from "tsyringe"
-import { evoDataIdMap } from "../../../server/constants/evoDataIdMap"
-import { getRandomBetween2 } from "../../../server/helpers/getRandomBetween2"
-import { getRandomBetween3 } from "../../../server/helpers/getRandomBetween3"
-import { IPokemon } from "../../../server/models/IPokemon"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { evoDataIdMap } from '../../../server/constants/evoDataIdMap'
+import { getRandomBetween2 } from '../../../server/helpers/getRandomBetween2'
+import { getRandomBetween3 } from '../../../server/helpers/getRandomBetween3'
+import { IPokemon } from '../../../server/models/IPokemon'
 
 type TParams = {
   poke1: IPokemon
@@ -11,7 +11,7 @@ type TParams = {
 }
 
 export const breed = async (data: TParams): Promise<IPokemon | string> => {
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const babyId1 = evoDataIdMap.get(data.poke1.baseData.id)
   const babyId2 = evoDataIdMap.get(data.poke2.baseData.id)
@@ -21,7 +21,7 @@ export const breed = async (data: TParams): Promise<IPokemon | string> => {
     obj2: [babyId2, 0.5],
   })
 
-  if (!babyBaseDataId) return "ERROR: Failed to find babyBaseDataId."
+  if (!babyBaseDataId) return 'ERROR: Failed to find babyBaseDataId.'
 
   const babyBaseData = await prismaClient.basePokemon.findFirst({
     where: {
@@ -29,7 +29,7 @@ export const breed = async (data: TParams): Promise<IPokemon | string> => {
     },
   })
 
-  if (!babyBaseData) return "ERROR: Failed to find babyBaseData."
+  if (!babyBaseData) return 'ERROR: Failed to find babyBaseData.'
 
   const babyPoke = await prismaClient.pokemon.create({
     data: {
@@ -107,7 +107,7 @@ export const breed = async (data: TParams): Promise<IPokemon | string> => {
     },
   })
 
-  if (!babyPoke) return "ERROR: Failed to create babyPoke."
+  if (!babyPoke) return 'ERROR: Failed to create babyPoke.'
 
   return babyPoke
 }

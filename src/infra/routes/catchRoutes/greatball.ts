@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client"
-import { IResponse } from "server/models/IResponse"
-import { container } from "tsyringe"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { IResponse } from '../../../server/models/IResponse'
 
 type TParams = {
   playerPhone: string
@@ -9,12 +9,11 @@ type TParams = {
 }
 
 export const greatballCatch = async (data: TParams): Promise<IResponse> => {
-  console.log({ pbcatch: data })
-  const [initializer, thisRoute, ballType, givenId] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const [, , , givenId] = data.routeParams
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const pokeId = Number(givenId)
-  if (!pokeId || typeof pokeId !== "number") {
+  if (!pokeId || typeof pokeId !== 'number') {
     return {
       message: `Por favor, forneca o ID do pokemon à ser capturado. Exemplo:
         poke**p. catch pokebola 25`,
@@ -72,7 +71,7 @@ export const greatballCatch = async (data: TParams): Promise<IResponse> => {
     where: {
       ownerId: player.id,
       baseItem: {
-        name: "great-ball",
+        name: 'great-ball',
       },
     },
     include: {
@@ -118,20 +117,16 @@ export const greatballCatch = async (data: TParams): Promise<IResponse> => {
       },
     })
     return {
-      message: `${pokemon.baseData.name.toUpperCase()} foi capturado por ${
-        data.playerName
-      }!`,
+      message: `${pokemon.baseData.name.toUpperCase()} foi capturado por ${data.playerName}!`,
       status: 200,
       data: null,
     }
   }
 
   return {
-    message: `Sinto muito ${data.playerName}, sua greatball quebrou. Restam ${
-      greatball.amount - 1
-    } greatballs.`,
+    message: `Sinto muito ${data.playerName}, sua greatball quebrou. Restam ${greatball.amount - 1} greatballs.`,
     status: 200,
     data: null,
-    react: "😢",
+    react: '😢',
   }
 }

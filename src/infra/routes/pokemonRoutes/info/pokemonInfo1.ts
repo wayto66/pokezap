@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client"
-import { IResponse } from "server/models/IResponse"
-import { container } from "tsyringe"
-import { iGenPokemonAnalysis } from "../../../../server/modules/imageGen/iGenPokemonAnalysis"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { IResponse } from '../../../../server/models/IResponse'
+import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
 
 type TUserInfoParams = {
   playerPhone: string
@@ -9,12 +9,10 @@ type TUserInfoParams = {
   playerName: string
 }
 
-export const pokemonInfo1 = async (
-  data: TUserInfoParams
-): Promise<IResponse> => {
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+export const pokemonInfo1 = async (data: TUserInfoParams): Promise<IResponse> => {
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
-  const [command, route, subroute, pokemonId] = data.routeParams
+  const [, , , pokemonId] = data.routeParams
 
   if (!pokemonId) {
     return {
@@ -24,9 +22,9 @@ export const pokemonInfo1 = async (
     }
   }
 
-  const pokemonIdFix = Number(pokemonId.slice(pokemonId.indexOf("#") + 1))
+  const pokemonIdFix = Number(pokemonId.slice(pokemonId.indexOf('#') + 1))
 
-  if (typeof Number(pokemonIdFix) !== "number") {
+  if (typeof Number(pokemonIdFix) !== 'number') {
     return {
       message: `ERROR: ${pokemonIdFix} is not a number.`,
       status: 400,
@@ -53,7 +51,7 @@ export const pokemonInfo1 = async (
 
   if (!pokemon) {
     return {
-      message: "ERRO: Pokemon não encontrado para o código: " + pokemonIdFix,
+      message: 'ERRO: Pokemon não encontrado para o código: ' + pokemonIdFix,
       status: 400,
       data: null,
     }
@@ -65,9 +63,7 @@ export const pokemonInfo1 = async (
 
   if (pokemon.owner) {
     return {
-      message: `#${pokemon.id} ${pokemon.baseData.name.toUpperCase()} de *${
-        pokemon.owner.name
-      }* ! `,
+      message: `#${pokemon.id} ${pokemon.baseData.name.toUpperCase()} de *${pokemon.owner.name}* ! `,
       status: 200,
       data: null,
       imageUrl: imageUrl,

@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client"
-import { container } from "tsyringe"
-import { IResponse } from "../../../../server/models/IResponse"
-import { iGenPlayerAnalysis } from "../../../../server/modules/imageGen/iGenPlayerAnalysis"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { IResponse } from '../../../../server/models/IResponse'
+import { iGenPlayerAnalysis } from '../../../../server/modules/imageGen/iGenPlayerAnalysis'
 
 type TUserInfoParams = {
   playerPhone: string
@@ -9,19 +9,15 @@ type TUserInfoParams = {
   playerName: string
 }
 
-export const playerInfo1 = async (
-  data: TUserInfoParams
-): Promise<IResponse> => {
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+export const playerInfo1 = async (data: TUserInfoParams): Promise<IResponse> => {
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
-  const [command, route, subRoute, playerId] = data.routeParams
+  const [, , , playerId] = data.routeParams
 
   if (!playerId) {
     if (!data.playerPhone) {
       return {
-        message:
-          "ERRO: código de telefone não encontrado para o jogador: " +
-          data.playerName,
+        message: 'ERRO: código de telefone não encontrado para o jogador: ' + data.playerName,
         status: 400,
         data: null,
       }
@@ -73,9 +69,7 @@ export const playerInfo1 = async (
 
     if (!player) {
       return {
-        message:
-          "ERRO: Jogador não encontrado para o código de telefone: " +
-          data.playerPhone,
+        message: 'ERRO: Jogador não encontrado para o código de telefone: ' + data.playerPhone,
         status: 400,
         data: null,
       }
@@ -93,7 +87,7 @@ export const playerInfo1 = async (
     }
   }
 
-  if (typeof Number(playerId) !== "number") {
+  if (typeof Number(playerId) !== 'number') {
     return {
       message: `ERROR: ${playerId} is not a number.`,
       status: 400,
@@ -107,7 +101,7 @@ export const playerInfo1 = async (
 
   if (!player) {
     return {
-      message: "ERRO: Jogador não encontrado para o código: " + playerId,
+      message: 'ERRO: Jogador não encontrado para o código: ' + playerId,
       status: 400,
       data: null,
     }

@@ -1,11 +1,11 @@
-import { IResponse } from "../../server/models/IResponse"
-import { catchRoutes } from "./catchRoutes"
-import { duelRoutes } from "./duelRoutes"
-import { inventoryRoutes } from "./inventoryRoutes"
-import { pokemonRoutes } from "./pokemonRoutes"
-import { routeRoutes } from "./routeRoutes"
-import { playerInfo1 } from "./userRoutes/info/playerInfo1"
-import { newUser1 } from "./userRoutes/newUser/newUser1"
+import { IResponse } from '../../server/models/IResponse'
+import { catchRoutes } from './catchRoutes'
+import { duelRoutes } from './duelRoutes'
+import { inventoryRoutes } from './inventoryRoutes'
+import { pokemonRoutes } from './pokemonRoutes'
+import { routeRoutes } from './routeRoutes'
+import { playerInfo1 } from './userRoutes/info/playerInfo1'
+import { newUser1 } from './userRoutes/newUser/newUser1'
 
 export type TRouteParams = {
   playerPhone: string
@@ -15,31 +15,31 @@ export type TRouteParams = {
 }
 
 const routeMap = new Map<string, any>([
-  ["INICIAR", newUser1],
-  ["INICIO", newUser1],
-  ["START", newUser1],
-  ["INÍCIO", newUser1],
-  ["JOGADOR", playerInfo1],
-  ["PLAYER", playerInfo1],
-  ["POKEMON", pokemonRoutes],
-  ["POKÉMON", pokemonRoutes],
-  ["POKE", pokemonRoutes],
-  ["POKEMÓN", pokemonRoutes],
-  ["ROUTE", routeRoutes],
-  ["ROTA", routeRoutes],
-  ["ROTAS", routeRoutes],
-  ["ROUTES", routeRoutes],
-  ["CATCH", catchRoutes],
-  ["CAPTURAR", catchRoutes],
-  ["CAPTURA", catchRoutes],
-  ["INVENTARIO", inventoryRoutes],
-  ["INVENTORY", inventoryRoutes],
-  ["DUEL", duelRoutes],
-  ["DUELAR", duelRoutes],
+  ['INICIAR', newUser1],
+  ['INICIO', newUser1],
+  ['START', newUser1],
+  ['INÍCIO', newUser1],
+  ['JOGADOR', playerInfo1],
+  ['PLAYER', playerInfo1],
+  ['POKEMON', pokemonRoutes],
+  ['POKÉMON', pokemonRoutes],
+  ['POKE', pokemonRoutes],
+  ['POKEMÓN', pokemonRoutes],
+  ['ROUTE', routeRoutes],
+  ['ROTA', routeRoutes],
+  ['ROTAS', routeRoutes],
+  ['ROUTES', routeRoutes],
+  ['CATCH', catchRoutes],
+  ['CAPTURAR', catchRoutes],
+  ['CAPTURA', catchRoutes],
+  ['INVENTARIO', inventoryRoutes],
+  ['INVENTORY', inventoryRoutes],
+  ['DUEL', duelRoutes],
+  ['DUELAR', duelRoutes],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {
-  const [command, routeName] = data.routeParams
+  const [, routeName] = data.routeParams
 
   if (!routeName) {
     return {

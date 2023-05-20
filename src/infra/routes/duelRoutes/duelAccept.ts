@@ -1,16 +1,16 @@
-import { PrismaClient } from "@prisma/client"
-import { container } from "tsyringe"
-import { IResponse } from "../../../server/models/IResponse"
-import { duelX1 } from "../../../server/modules/duel/duelX1"
-import { TRouteParams } from "../router"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { IResponse } from '../../../server/models/IResponse'
+import { duelX1 } from '../../../server/modules/duel/duelX1'
+import { TRouteParams } from '../router'
 
 export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
-  const [command, route, subRoute, sessionIdString] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const [, , , sessionIdString] = data.routeParams
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const sessionId = Number(sessionIdString)
 
-  if (typeof sessionId !== "number")
+  if (typeof sessionId !== 'number')
     return {
       message: `ERRO: "${sessionIdString}" não é do tipo número.`,
       status: 400,
@@ -59,25 +59,21 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
 
   if (!player2)
     return {
-      message:
-        "ERRO: não foi possível encontrar um jogador com o codigo: " +
-        data.playerPhone,
+      message: 'ERRO: não foi possível encontrar um jogador com o codigo: ' + data.playerPhone,
       status: 400,
       data: null,
     }
 
   if (!session || session.isFinished)
     return {
-      message:
-        "ERRO: não foi possível encontrar uma sessão de duelo com o id: " +
-        sessionId,
+      message: 'ERRO: não foi possível encontrar uma sessão de duelo com o id: ' + sessionId,
       status: 400,
       data: null,
     }
 
   if (session.invitedId !== player2.id)
     return {
-      message: "",
+      message: '',
       status: 300,
       data: null,
     }

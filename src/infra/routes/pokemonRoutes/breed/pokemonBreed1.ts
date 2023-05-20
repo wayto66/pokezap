@@ -1,16 +1,15 @@
-import { PrismaClient } from "@prisma/client"
-import { TRouteParams } from "infra/routes/router"
-import { container } from "tsyringe"
-import { IPokemon } from "../../../../server/models/IPokemon"
-import { IResponse } from "../../../../server/models/IResponse"
-import { iGenPokemonBreed } from "../../../../server/modules/imageGen/iGenPokemonBreed"
-import { pokemonBreed2 } from "./pokemonBreed2"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { TRouteParams } from '../../../../infra/routes/router'
+import { IResponse } from '../../../../server/models/IResponse'
+import { iGenPokemonBreed } from '../../../../server/modules/imageGen/iGenPokemonBreed'
+import { pokemonBreed2 } from './pokemonBreed2'
 
 export const pokemonBreed1 = async (data: TRouteParams): Promise<IResponse> => {
-  const [command, route, subroute, id1, id2, amount] = data.routeParams
+  const [, , , id1, id2, amount] = data.routeParams
 
   if (amount) return await pokemonBreed2(data)
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   if (!id1 || !id2) {
     return {
@@ -20,10 +19,10 @@ export const pokemonBreed1 = async (data: TRouteParams): Promise<IResponse> => {
       data: null,
     }
   }
-  const idFix1 = Number(id1.slice(id1.indexOf("#") + 1))
-  const idFix2 = Number(id2.slice(id2.indexOf("#") + 1))
+  const idFix1 = Number(id1.slice(id1.indexOf('#') + 1))
+  const idFix2 = Number(id2.slice(id2.indexOf('#') + 1))
 
-  if (typeof idFix1 !== "number" || typeof idFix2 !== "number") {
+  if (typeof idFix1 !== 'number' || typeof idFix2 !== 'number') {
     return {
       message: `ERROR: something is wrong with the ids. Please verify if you are using the correct syntax.`,
       status: 400,
@@ -120,19 +119,7 @@ export const pokemonBreed1 = async (data: TRouteParams): Promise<IResponse> => {
       imageUrl: imageUrl,
     }
 
-  const getBreedingCosts = (poke: IPokemon) => {
-    if (!poke.childrenId1) return 100
-    if (!poke.childrenId2) return 200
-    if (!poke.childrenId3) return 500
-    if (!poke.childrenId4) return 1000
-    return 9999
-  }
-
-  const totalCost = getBreedingCosts(pokemon1) + getBreedingCosts(pokemon2)
-
-  const actions: string[] = [
-    "`pokezap. pokemon breed ${pokemon1.id} ${pokemon2.id} 1`",
-  ]
+  const actions: string[] = [`pokezap. pokemon breed ${pokemon1.id} ${pokemon2.id} 1`]
 
   if (!pokemon1.childrenId3 || !pokemon2.childrenId3)
     actions.push(`pokezap. pokemon breed ${pokemon1.id} ${pokemon2.id} 2`)

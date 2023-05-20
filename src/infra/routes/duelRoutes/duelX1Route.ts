@@ -1,18 +1,16 @@
-import { PrismaClient } from "@prisma/client"
-import { container } from "tsyringe"
-import { IResponse } from "../../../server/models/IResponse"
-import { iGenDuelX1 } from "../../../server/modules/imageGen/iGenDuelX1"
-import { TRouteParams } from "../router"
-
-const subRouteMap = new Map<string, any>([["X1", undefined]])
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { IResponse } from '../../../server/models/IResponse'
+import { iGenDuelX1 } from '../../../server/modules/imageGen/iGenDuelX1'
+import { TRouteParams } from '../router'
 
 export const duelX1Route = async (data: TRouteParams): Promise<IResponse> => {
-  const [command, route, subRoute, challengedPlayerIdString] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const [, , , challengedPlayerIdString] = data.routeParams
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const challengedPlayerId = Number(challengedPlayerIdString)
 
-  if (typeof challengedPlayerId !== "number")
+  if (typeof challengedPlayerId !== 'number')
     return {
       message: `ERRO: "${challengedPlayerIdString}" não é do tipo número.`,
       status: 400,
@@ -83,7 +81,7 @@ export const duelX1Route = async (data: TRouteParams): Promise<IResponse> => {
 
   const newSession = await prismaClient.session.create({
     data: {
-      mode: "duel-x1",
+      mode: 'duel-x1',
       creatorId: player1.id,
       invitedId: player2.id,
     },
