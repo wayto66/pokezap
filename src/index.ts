@@ -15,7 +15,7 @@ container.registerInstance<PrismaClient>('PrismaClient', prismaClient)
 prismaClient.message.deleteMany()
 
 const app = express()
-app.get('/', async () => {
+app.get('/a', async () => {
   const players = await prismaClient.player.findMany({
     include: {
       teamPoke1: {
