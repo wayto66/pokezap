@@ -1,9 +1,9 @@
-import { ISkill } from "server/models/ISkill"
-import { talentIdMap } from "../../../server/constants/talentIdMap"
-import { findKeyByValue } from "../../../server/helpers/findKeyByValue"
-import { getPairWithHighestKey } from "../../../server/helpers/getPairWithHighestKey"
-import { IPokemon } from "../../../server/models/IPokemon"
-import { defEffectivenessMap } from "../../constants/defEffectivenessMap"
+import { talentIdMap } from '../../../server/constants/talentIdMap'
+import { findKeyByValue } from '../../../server/helpers/findKeyByValue'
+import { getPairWithHighestKey } from '../../../server/helpers/getPairWithHighestKey'
+import { IPokemon } from '../../../server/models/IPokemon'
+import { ISkill } from '../../../server/models/ISkill'
+import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
 
 type TParams = {
   poke1: IPokemon
@@ -18,10 +18,6 @@ type TResponse = {
 }
 
 export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
-  console.log(
-    `starting duel process between ${data.poke1.baseData.name} and ${data.poke2.baseData.name} `
-  )
-
   /// will try to get the best possible skill ///
   const poke1Skill = await getBestSkills({
     attacker: data.poke1,
@@ -32,26 +28,20 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
     defender: data.poke1,
   })
 
-  console.log({ poke1Skill })
-  console.log({ poke2Skill })
-
   if (!poke1Skill || !poke1Skill[1] || !poke1Skill[0]) {
-    console.error("no pokeskill1")
+    console.error('no pokeskill1')
     return
   }
 
   if (!poke2Skill || !poke2Skill[1] || !poke2Skill[0]) {
-    console.error("no pokeskill2")
+    console.error('no pokeskill2')
     return
   }
 
   const poke1Data = {
     name: data.poke1.baseData.name,
     level: data.poke1.level,
-    hp:
-      ((2 * data.poke1.hp + 97) * data.poke1.level) / 100 +
-      data.poke1.level +
-      10,
+    hp: ((2 * data.poke1.hp + 97) * data.poke1.level) / 100 + data.poke1.level + 10,
     speed: data.poke1.speed,
     skillPower: poke1Skill[0],
     skillName: poke1Skill[1][0].name,
@@ -60,17 +50,11 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
   const poke2Data = {
     name: data.poke2.baseData.name,
     level: data.poke2.level,
-    hp:
-      ((2 * data.poke2.hp + 97) * data.poke2.level) / 100 +
-      data.poke2.level +
-      10,
+    hp: ((2 * data.poke2.hp + 97) * data.poke2.level) / 100 + data.poke2.level + 10,
     speed: data.poke2.speed,
     skillPower: poke2Skill[0],
     skillName: poke2Skill[1][0].name,
   }
-
-  console.log(poke1Data)
-  console.log(poke2Data)
 
   let duelFinished = false
   let isDraw = false
@@ -82,24 +66,14 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
     poke1Data.hp -= poke2Data.skillPower
     if (poke1Data.hp < 0) {
       winner = data.poke2
-      console.log(
-        `${poke2Data.name} derrota ${poke1Data.name} no round ${roundCount} utilizando ${poke2Data.skillName}`
-      )
       duelFinished = true
     }
 
     poke2Data.hp -= poke1Data.skillPower
     if (poke2Data.hp < 0) {
       winner = data.poke1
-      console.log(
-        `${poke1Data.name} derrota ${poke2Data.name} no round ${roundCount} utilizando ${poke1Data.skillName}`
-      )
       duelFinished = true
     }
-
-    console.log(
-      `round: ${roundCount} - ${poke1Data.name}: ${poke1Data.hp} VS ${poke2Data.name}: ${poke2Data.hp}`
-    )
 
     if (roundCount > 30) {
       duelFinished = true
@@ -167,39 +141,39 @@ const getBestTypes = (type1: string, type2?: string): any => {
 
   const entries = Object.entries(efObj)
   const entrymap2 = entries
-    .filter((entry) => {
+    .filter(entry => {
       if (entry[1] === 2) return entry[0]
     })
     .flat()
-    .filter((entry) => typeof entry === "string")
+    .filter(entry => typeof entry === 'string')
 
   const entrymap1 = entries
-    .filter((entry) => {
+    .filter(entry => {
       if (entry[1] === 1) return entry[0]
     })
     .flat()
-    .filter((entry) => typeof entry === "string")
+    .filter(entry => typeof entry === 'string')
 
   const entrymap0 = entries
-    .filter((entry) => {
+    .filter(entry => {
       if (entry[1] === 0) return entry[0]
     })
     .flat()
-    .filter((entry) => typeof entry === "string")
+    .filter(entry => typeof entry === 'string')
 
   const entrymapBad = entries
-    .filter((entry) => {
+    .filter(entry => {
       if (entry[1] === -1) return entry[0]
     })
     .flat()
-    .filter((entry) => typeof entry === "string")
+    .filter(entry => typeof entry === 'string')
 
   const entrymapWorse = entries
-    .filter((entry) => {
+    .filter(entry => {
       if (entry[1] === -2) return entry[0]
     })
     .flat()
-    .filter((entry) => typeof entry === "string")
+    .filter(entry => typeof entry === 'string')
 
   return {
     best: entrymap2,
@@ -211,16 +185,13 @@ const getBestTypes = (type1: string, type2?: string): any => {
 }
 
 const getBestSkills = async ({ attacker, defender }: any) => {
-  const efData = await getBestTypes(
-    defender.baseData.type1Name,
-    defender.baseData.type2Name
-  )
+  const efData = await getBestTypes(defender.baseData.type1Name, defender.baseData.type2Name)
   const skills = attacker.baseData.skills
   const skillTable = attacker.baseData.skillTable
   const learnedSkills: string[] = []
 
   for (const skill of skillTable) {
-    const split = skill.split("%")
+    const split = skill.split('%')
     if (Number(split[1]) <= attacker.level) {
       learnedSkills.push(split[0])
     }
@@ -228,15 +199,9 @@ const getBestSkills = async ({ attacker, defender }: any) => {
 
   const finalSkillMap = new Map<number, any[]>([])
 
-  let count = 0
-  console.log({ skills: skills.length })
-  console.log({ learnedSkills })
-
   for (const skill of skills) {
     const isPermited = await verifyTalentPermission(attacker, skill)
     if (!isPermited) {
-      count++
-      console.log({ count })
       continue
     }
     const stab = () => {
@@ -249,94 +214,37 @@ const getBestSkills = async ({ attacker, defender }: any) => {
       return attacker.spAtk / defender.spDef
     }
 
-    if (
-      efData.best.includes(skill.typeName) &&
-      learnedSkills.includes(skill.name)
-    ) {
-      const power =
-        (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 +
-          2) *
-        2 *
-        stab()
-      finalSkillMap.set(Number(power.toFixed(2)), [
-        ...(finalSkillMap.get(power) || []),
-        skill,
-      ])
+    if (efData.best.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
+      const power = (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 2 * stab()
+      finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
       continue
     }
-    if (
-      efData.good.includes(skill.typeName) &&
-      learnedSkills.includes(skill.name)
-    ) {
-      const power =
-        (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 +
-          2) *
-        1.5 *
-        stab()
-      finalSkillMap.set(Number(power.toFixed(2)), [
-        ...(finalSkillMap.get(power) || []),
-        skill,
-      ])
+    if (efData.good.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
+      const power = (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 1.5 * stab()
+      finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
       continue
     }
-    if (
-      efData.neutral.includes(skill.typeName) &&
-      learnedSkills.includes(skill.name)
-    ) {
-      const power =
-        (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 +
-          2) *
-        1 *
-        stab()
-      console.log(skill.name, power)
-      finalSkillMap.set(Number(power.toFixed(2)), [
-        ...(finalSkillMap.get(power) || []),
-        skill,
-      ])
+    if (efData.neutral.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
+      const power = (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 1 * stab()
+      finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
     }
 
-    if (
-      efData.bad.includes(skill.typeName) &&
-      learnedSkills.includes(skill.name)
-    ) {
-      const power =
-        (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 +
-          2) *
-        0.5 *
-        stab()
-      finalSkillMap.set(Number(power.toFixed(2)), [
-        ...(finalSkillMap.get(power) || []),
-        skill,
-      ])
+    if (efData.bad.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
+      const power = (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 0.5 * stab()
+      finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
     }
 
-    if (
-      efData.worse.includes(skill.typeName) &&
-      learnedSkills.includes(skill.name)
-    ) {
-      const power =
-        (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 +
-          2) *
-        0.25 *
-        stab()
-      finalSkillMap.set(Number(power.toFixed(2)), [
-        ...(finalSkillMap.get(power) || []),
-        skill,
-      ])
+    if (efData.worse.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
+      const power = (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 0.25 * stab()
+      finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
     }
   }
 
-  console.log({ finalSkillMap })
-  const bestSkill = getPairWithHighestKey(finalSkillMap)
-  return bestSkill
+  return getPairWithHighestKey(finalSkillMap)
 }
 
 const verifyTalentPermission = async (poke: IPokemon, skill: ISkill) => {
-  if (
-    poke.baseData.type1Name === skill.typeName ||
-    poke.baseData.type2Name === skill.typeName
-  )
-    return true
+  if (poke.baseData.type1Name === skill.typeName || poke.baseData.type2Name === skill.typeName) return true
   const talents = [
     poke.talentId1,
     poke.talentId2,
@@ -351,16 +259,13 @@ const verifyTalentPermission = async (poke: IPokemon, skill: ISkill) => {
 
   const typeId = findKeyByValue(talentIdMap, skill.typeName)
 
-  const count = talents.reduce(
-    (count, current) => count + (current === typeId ? 1 : 0),
-    0
-  )
+  const count = talents.reduce((count, current) => count + (current === typeId ? 1 : 0), 0)
 
   if (
     count >= 3 ||
     (count >= 2 && skill.attackPower <= 75) ||
     (count === 1 && skill.attackPower <= 40) ||
-    (skill.typeName === "normal" && skill.attackPower <= 40)
+    (skill.typeName === 'normal' && skill.attackPower <= 40)
   )
     return true
 

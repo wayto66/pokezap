@@ -1,14 +1,12 @@
-import { PrismaClient } from "@prisma/client"
-import { TRouteParams } from "infra/routes/router"
-import { container } from "tsyringe"
-import { IResponse } from "../../../../server/models/IResponse"
-import { iGenInvetoryPokemons } from "../../../../server/modules/imageGen/iGenInvetoryPokemons"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { TRouteParams } from '../../../../infra/routes/router'
+import { IResponse } from '../../../../server/models/IResponse'
+import { iGenInvetoryPokemons } from '../../../../server/modules/imageGen/iGenInvetoryPokemons'
 
-export const inventoryPokemons1 = async (
-  data: TRouteParams
-): Promise<IResponse> => {
-  const [initialize, route, subRoute, page] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse> => {
+  const [, , , page] = data.routeParams
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const player = await prismaClient.player.findFirst({
     where: {
@@ -34,13 +32,13 @@ export const inventoryPokemons1 = async (
 
   if (!player)
     return {
-      message: "ERROR: No player found with code " + data.playerPhone,
+      message: 'ERROR: No player found with code ' + data.playerPhone,
       status: 400,
       data: null,
     }
 
   const numberPage = () => {
-    if (typeof Number(page) === "number") return Number(page)
+    if (typeof Number(page) === 'number') return Number(page)
     return 0
   }
 

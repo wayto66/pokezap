@@ -1,7 +1,7 @@
-import { createCanvas, loadImage, registerFont } from "canvas"
-import fs from "fs"
-import path from "path"
-import { IPokemon } from "server/models/IPokemon"
+import { createCanvas, loadImage, registerFont } from 'canvas'
+import fs from 'fs'
+import path from 'path'
+import { IPokemon } from '../../models/IPokemon'
 
 type TParams = {
   pokemon1: IPokemon
@@ -11,13 +11,13 @@ type TParams = {
 export const iGenPokemonBreed = async (data: TParams) => {
   const canvasWidth = 500
   const canvasHeight = 500
-  const backgroundUrl = "./src/assets/sprites/UI/hud/pokemon_breed.png"
+  const backgroundUrl = './src/assets/sprites/UI/hud/pokemon_breed.png'
 
   // Load the font file and register it with the canvas
 
   registerFont(
-    "C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf",
-    { family: "Righteous" }
+    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf',
+    { family: 'Righteous' }
   )
 
   // Load the background image
@@ -25,7 +25,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
-  const ctx = canvas.getContext("2d")
+  const ctx = canvas.getContext('2d')
   ctx.imageSmoothingEnabled = false
 
   // Draw the background on the canvas
@@ -44,11 +44,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
     ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight)
 
     ctx.globalAlpha = 1
-    const typeLabel1 = await loadImage(
-      "./src/assets/sprites/UI/types/" +
-        data.pokemon1.baseData.type1Name +
-        ".png"
-    )
+    const typeLabel1 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemon1.baseData.type1Name + '.png')
     // Calculate the position of the sprite in the middle of the canvas
     const typeLabel1Width = 80 // replace with the actual width of the typeLabel1
     const typeLabel1Height = 25 // replace with the actual height of the typeLabel1
@@ -56,19 +52,9 @@ export const iGenPokemonBreed = async (data: TParams) => {
     const typeLabel1Y = 105
     // Draw the typeLabel1 on the canvas
     ctx.globalAlpha = 0.8
-    ctx.drawImage(
-      typeLabel1,
-      typeLabel1X,
-      typeLabel1Y,
-      typeLabel1Width,
-      typeLabel1Height
-    )
+    ctx.drawImage(typeLabel1, typeLabel1X, typeLabel1Y, typeLabel1Width, typeLabel1Height)
     if (data.pokemon1.baseData.type2Name) {
-      const typeLabel2 = await loadImage(
-        "./src/assets/sprites/UI/types/" +
-          data.pokemon1.baseData.type2Name +
-          ".png"
-      )
+      const typeLabel2 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemon1.baseData.type2Name + '.png')
       // Calculate the position of the sprite in the middle of the canvas
       const typeLabel2Width = 80 // replace with the actual width of the typeLabel2
       const typeLabel2Height = 25 // replace with the actual height of the typeLabel2
@@ -76,13 +62,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
       const typeLabel2Y = 140
       // Draw the typeLabel2 on the canvas
       ctx.globalAlpha = 1
-      ctx.drawImage(
-        typeLabel2,
-        typeLabel2X,
-        typeLabel2Y,
-        typeLabel2Width,
-        typeLabel2Height
-      )
+      ctx.drawImage(typeLabel2, typeLabel2X, typeLabel2Y, typeLabel2Width, typeLabel2Height)
     }
 
     // write pokemon name
@@ -90,24 +70,18 @@ export const iGenPokemonBreed = async (data: TParams) => {
     const name = data.pokemon1.baseData.name
     const nameLength = name.length
 
-    ctx.font = Math.round(30 - nameLength * 0.85) + "px Righteous"
-    ctx.fillStyle = "white"
-    ctx.textAlign = "start"
+    ctx.font = Math.round(30 - nameLength * 0.85) + 'px Righteous'
+    ctx.fillStyle = 'white'
+    ctx.textAlign = 'start'
 
-    ctx.fillText(
-      `#${data.pokemon1.id} ${data.pokemon1.baseData.name.toUpperCase()}`,
-      10,
-      70
-    )
-    ctx.strokeStyle = "rgba(0,0,0,0.5) 10px solid"
+    ctx.fillText(`#${data.pokemon1.id} ${data.pokemon1.baseData.name.toUpperCase()}`, 10, 70)
+    ctx.strokeStyle = 'rgba(0,0,0,0.5) 10px solid'
     ctx.lineWidth = 2
 
     // draw talents
 
     const getTalent = async (name: string) => {
-      return await loadImage(
-        "./src/assets/sprites/UI/types/circle/" + name + ".png"
-      )
+      return await loadImage('./src/assets/sprites/UI/types/circle/' + name + '.png')
     }
 
     const talents = [
@@ -131,7 +105,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
 
         // set up the circle style
         const circleRadius = 14
-        const circleColor = "rgba(0,0,0,0.5)"
+        const circleColor = 'rgba(0,0,0,0.5)'
 
         // draw the circle path
         ctx.beginPath()
@@ -161,11 +135,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
     ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight)
 
     ctx.globalAlpha = 1
-    const typeLabel1 = await loadImage(
-      "./src/assets/sprites/UI/types/" +
-        data.pokemon2.baseData.type1Name +
-        ".png"
-    )
+    const typeLabel1 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemon2.baseData.type1Name + '.png')
     // Calculate the position of the sprite in the middle of the canvas
     const typeLabel1Width = 80 // replace with the actual width of the typeLabel1
     const typeLabel1Height = 25 // replace with the actual height of the typeLabel1
@@ -173,19 +143,9 @@ export const iGenPokemonBreed = async (data: TParams) => {
     const typeLabel1Y = 105
     // Draw the typeLabel1 on the canvas
     ctx.globalAlpha = 0.8
-    ctx.drawImage(
-      typeLabel1,
-      typeLabel1X,
-      typeLabel1Y,
-      typeLabel1Width,
-      typeLabel1Height
-    )
+    ctx.drawImage(typeLabel1, typeLabel1X, typeLabel1Y, typeLabel1Width, typeLabel1Height)
     if (data.pokemon2.baseData.type2Name) {
-      const typeLabel2 = await loadImage(
-        "./src/assets/sprites/UI/types/" +
-          data.pokemon2.baseData.type2Name +
-          ".png"
-      )
+      const typeLabel2 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemon2.baseData.type2Name + '.png')
       // Calculate the position of the sprite in the middle of the canvas
       const typeLabel2Width = 80 // replace with the actual width of the typeLabel2
       const typeLabel2Height = 25 // replace with the actual height of the typeLabel2
@@ -193,13 +153,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
       const typeLabel2Y = 140
       // Draw the typeLabel2 on the canvas
       ctx.globalAlpha = 1
-      ctx.drawImage(
-        typeLabel2,
-        typeLabel2X,
-        typeLabel2Y,
-        typeLabel2Width,
-        typeLabel2Height
-      )
+      ctx.drawImage(typeLabel2, typeLabel2X, typeLabel2Y, typeLabel2Width, typeLabel2Height)
     }
 
     // write pokemon name
@@ -207,20 +161,18 @@ export const iGenPokemonBreed = async (data: TParams) => {
     const name = data.pokemon2.baseData.name
     const nameLength = name.length
 
-    ctx.font = Math.round(30 - nameLength * 0.85) + "px Righteous"
-    ctx.fillStyle = "white"
-    ctx.textAlign = "start"
+    ctx.font = Math.round(30 - nameLength * 0.85) + 'px Righteous'
+    ctx.fillStyle = 'white'
+    ctx.textAlign = 'start'
 
     ctx.fillText(`#${data.pokemon2.id} ${name.toUpperCase()}`, 290, 70)
-    ctx.strokeStyle = "rgba(0,0,0,0.5) 10px solid"
+    ctx.strokeStyle = 'rgba(0,0,0,0.5) 10px solid'
     ctx.lineWidth = 2
 
     // draw talents
 
     const getTalent = async (name: string) => {
-      return await loadImage(
-        "./src/assets/sprites/UI/types/circle/" + name + ".png"
-      )
+      return await loadImage('./src/assets/sprites/UI/types/circle/' + name + '.png')
     }
 
     const talents = [
@@ -244,7 +196,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
 
         // set up the circle style
         const circleRadius = 14
-        const circleColor = "rgba(0,0,0,0.5)"
+        const circleColor = 'rgba(0,0,0,0.5)'
 
         // draw the circle path
         ctx.beginPath()
@@ -268,19 +220,19 @@ export const iGenPokemonBreed = async (data: TParams) => {
     const out = fs.createWriteStream(filepath)
     const stream = canvas.createPNGStream()
     stream.pipe(out)
-    out.on("finish", () => {
-      console.log("The PNG file was created.")
+    out.on('finish', () => {
+      console.log('The PNG file was created.')
       resolve(filepath)
     })
   })
 
   // Delete the file after 5 seconds
   setTimeout(() => {
-    fs.unlink(filepath, (error) => {
+    fs.unlink(filepath, error => {
       if (error) {
         console.error(`Failed to delete file: ${error}`)
       } else {
-        console.log("File deleted successfully.")
+        console.log('File deleted successfully.')
       }
     })
   }, 5000)

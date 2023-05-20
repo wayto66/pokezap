@@ -1,18 +1,18 @@
-import { PrismaClient } from "@prisma/client"
-import { TRouteParams } from "infra/routes/router"
-import { container } from "tsyringe"
-import { Client, MessageMedia } from "whatsapp-web.js"
-import { IPokemon } from "../../../../server/models/IPokemon"
-import { IResponse } from "../../../../server/models/IResponse"
-import { iGenPokemonAnalysis } from "../../../../server/modules/imageGen/iGenPokemonAnalysis"
-import { iGenPokemonBreed } from "../../../../server/modules/imageGen/iGenPokemonBreed"
-import { breed } from "../../../../server/modules/pokemon/breed"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { Client, MessageMedia } from 'whatsapp-web.js'
+import { TRouteParams } from '../../../../infra/routes/router'
+import { IPokemon } from '../../../../server/models/IPokemon'
+import { IResponse } from '../../../../server/models/IResponse'
+import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
+import { iGenPokemonBreed } from '../../../../server/modules/imageGen/iGenPokemonBreed'
+import { breed } from '../../../../server/modules/pokemon/breed'
 
 export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
-  const [command, route, subroute, id1, id2, amount, confirm] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const [, , , id1, id2, amount, confirm] = data.routeParams
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
-  if (typeof Number(amount) !== "number" || Number(amount) > 4) {
+  if (typeof Number(amount) !== 'number' || Number(amount) > 4) {
     return {
       message: `ERROR: invalid children amount.`,
       status: 400,
@@ -28,10 +28,10 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
       data: null,
     }
   }
-  const idFix1 = Number(id1.slice(id1.indexOf("#") + 1))
-  const idFix2 = Number(id2.slice(id2.indexOf("#") + 1))
+  const idFix1 = Number(id1.slice(id1.indexOf('#') + 1))
+  const idFix2 = Number(id2.slice(id2.indexOf('#') + 1))
 
-  if (typeof idFix1 !== "number" || typeof idFix2 !== "number") {
+  if (typeof idFix1 !== 'number' || typeof idFix2 !== 'number') {
     return {
       message: `ERROR: something is wrong with the ids. Please verify if you are using the correct syntax.`,
       status: 400,
@@ -143,16 +143,14 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
 
   console.log({ confirm })
 
-  if (confirm === "CONFIRM") {
-    let poke1ChildCount = poke1ChildrenCount
-    let poke2ChildCount = poke2ChildrenCount
+  if (confirm === 'CONFIRM') {
+    const poke1ChildCount = poke1ChildrenCount
+    const poke2ChildCount = poke2ChildrenCount
 
     for (let i = 0; i < Number(amount); i++) {
       if (player1.cash < totalCost)
         return {
-          message: `${
-            player1.name
-          } não possui POKECOINS suficientes. São necessários ${totalCost}, ainda falta ${
+          message: `${player1.name} não possui POKECOINS suficientes. São necessários ${totalCost}, ainda falta ${
             totalCost - player1.cash
           } `,
           status: 300,
@@ -175,7 +173,7 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
         poke2: pokemon2,
       })
 
-      if (typeof newBaby === "string") {
+      if (typeof newBaby === 'string') {
         return {
           message: newBaby,
           status: 200,
@@ -200,7 +198,7 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
           counter++
           return { childrenId4: newBaby.id }
         }
-        throw new Error("p1updatechildrendata error")
+        throw new Error('p1updatechildrendata error')
       }
 
       await prismaClient.pokemon.update({
@@ -221,9 +219,9 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
         pokemonData: newBaby,
       })
 
-      const zapClient = container.resolve<Client>("ZapClientInstance1")
+      const zapClient = container.resolve<Client>('ZapClientInstance1')
 
-      const media = MessageMedia.fromFilePath(imageUrl)
+      const media = MessageMedia.fromFilePath(imageUrl as string)
       await zapClient.sendMessage(data.groupCode, media, {
         caption: `Novo pokemon gerado por breed de #${pokemon1.id} ${pokemon1.baseData.name} e #${pokemon2.id} ${pokemon2.baseData.name}`,
       })
@@ -245,8 +243,6 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
     status: 200,
     data: null,
     imageUrl: imageUrl,
-    actions: [
-      `pokezap. pokemon breed ${pokemon1.id} ${pokemon2.id} ${amount} confirm`,
-    ],
+    actions: [`pokezap. pokemon breed ${pokemon1.id} ${pokemon2.id} ${amount} confirm`],
   }
 }

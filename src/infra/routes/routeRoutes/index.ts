@@ -1,30 +1,29 @@
-import { IResponse } from "server/models/IResponse"
-import { TRouteParams } from "../router"
-import { routeEnter } from "./enter/routeEnter"
-import { routeInfo } from "./info/routeInfo"
-import { routeStart } from "./start/routeStart"
+import { IResponse } from '../../../server/models/IResponse'
+import { TRouteParams } from '../router'
+import { routeEnter } from './enter/routeEnter'
+import { routeInfo } from './info/routeInfo'
+import { routeStart } from './start/routeStart'
 
 const routesMap = new Map<string, any>([
-  ["ENTRAR", routeEnter],
-  ["ENTER", routeEnter],
-  ["SAIR", undefined],
-  ["LEAVE", undefined],
-  ["QUIT", undefined],
-  ["EXIT", undefined],
-  ["UPGRADE", undefined],
-  ["INFO", routeInfo],
-  ["START", routeStart],
-  ["INICIO", routeStart],
-  ["INICIAR", routeStart],
+  ['ENTRAR', routeEnter],
+  ['ENTER', routeEnter],
+  ['SAIR', undefined],
+  ['LEAVE', undefined],
+  ['QUIT', undefined],
+  ['EXIT', undefined],
+  ['UPGRADE', undefined],
+  ['INFO', routeInfo],
+  ['START', routeStart],
+  ['INICIO', routeStart],
+  ['INICIAR', routeStart],
 ])
 
 export const routeRoutes = async (data: TRouteParams): Promise<IResponse> => {
-  const [command, routeName, subRouteName] = data.routeParams
+  const [, , subRouteName] = data.routeParams
 
   if (!subRouteName) {
     return {
-      message:
-        "DUMMY: This is the routes route. Please specify a sub-route name",
+      message: 'DUMMY: This is the routes route. Please specify a sub-route name',
       status: 300,
       data: null,
     }

@@ -1,17 +1,16 @@
-import { PrismaClient } from "@prisma/client"
-import { TRouteParams } from "infra/routes/router"
-import { generateGeneralStats } from "server/modules/pokemon/generateGeneralStats"
-import { generateHpStat } from "server/modules/pokemon/generateHpStat"
-import { container } from "tsyringe"
-import { IResponse } from "../../../../server/models/IResponse"
-import { iGenPlayerAnalysis } from "../../../../server/modules/imageGen/iGenPlayerAnalysis"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { IResponse } from '../../../../server/models/IResponse'
+import { iGenPlayerAnalysis } from '../../../../server/modules/imageGen/iGenPlayerAnalysis'
+import { generateGeneralStats } from '../../../../server/modules/pokemon/generateGeneralStats'
+import { generateHpStat } from '../../../../server/modules/pokemon/generateHpStat'
+import { TRouteParams } from '../../router'
 
 export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
-  const [initializer, start, gender, spriteId] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const [, , gender, spriteId] = data.routeParams
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
-  if (gender !== "MENINO" && gender !== "MENINA") {
-    console.log({ gender })
+  if (gender !== 'MENINO' && gender !== 'MENINA') {
     return {
       message: `ERRO: Gênero "${gender}" não encontrado. Utilize: 'menino' ou 'menina'.`,
       status: 400,
@@ -20,9 +19,9 @@ export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
   }
 
   const playerSprite = () => {
-    if (gender === "MENINO") return "male/" + spriteId + ".png"
-    if (gender === "MENINA") return "female/" + spriteId + ".png"
-    return ""
+    if (gender === 'MENINO') return 'male/' + spriteId + '.png'
+    if (gender === 'MENINA') return 'female/' + spriteId + '.png'
+    return ''
   }
 
   const newPlayer = await prismaClient.player.create({

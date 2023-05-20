@@ -1,11 +1,11 @@
-import { PrismaClient } from "@prisma/client"
-import { TRouteParams } from "infra/routes/router"
-import { IResponse } from "server/models/IResponse"
-import { container } from "tsyringe"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { TRouteParams } from '../../../../infra/routes/router'
+import { IResponse } from '../../../../server/models/IResponse'
 
 export const routeInfo = async (data: TRouteParams): Promise<IResponse> => {
-  const [command, routeName, subRoute, routeId] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+  const [, , , routeId] = data.routeParams
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   if (!routeId) {
     const route = await prismaClient.gameRoom.findFirst({
@@ -19,7 +19,7 @@ export const routeInfo = async (data: TRouteParams): Promise<IResponse> => {
     })
     if (!route) {
       return {
-        message: "ERROR: It seems that you are not on a valid route.",
+        message: 'ERROR: It seems that you are not on a valid route.',
         status: 400,
         data: null,
       }
@@ -36,10 +36,9 @@ export const routeInfo = async (data: TRouteParams): Promise<IResponse> => {
     }
   }
 
-  if (typeof Number(routeId) !== "number") {
+  if (typeof Number(routeId) !== 'number') {
     return {
-      message:
-        "ERROR: invalid route id. Please verify if you are using the correct syntax.",
+      message: 'ERROR: invalid route id. Please verify if you are using the correct syntax.',
       status: 400,
       data: null,
     }
@@ -56,7 +55,7 @@ export const routeInfo = async (data: TRouteParams): Promise<IResponse> => {
   })
   if (!route) {
     return {
-      message: "ERROR: No route found for id: " + Number(routeId),
+      message: 'ERROR: No route found for id: ' + Number(routeId),
       status: 400,
       data: null,
     }

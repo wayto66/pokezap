@@ -1,25 +1,25 @@
-import { IResponse } from "server/models/IResponse"
-import { TRouteParams } from "../router"
-import { pokemonBreed1 } from "./breed/pokemonBreed1"
-import { pokemonInfo1 } from "./info/pokemonInfo1"
-import { pokemonTeam } from "./team/pokemonTeam"
+import { IResponse } from '../../../server/models/IResponse'
+import { TRouteParams } from '../router'
+import { pokemonBreed1 } from './breed/pokemonBreed1'
+import { pokemonInfo1 } from './info/pokemonInfo1'
+import { pokemonTeam } from './team/pokemonTeam'
 
 const subRouteMap = new Map<string, any>([
-  ["INFO", pokemonInfo1],
-  ["BREED", pokemonBreed1],
-  ["TEAM", pokemonTeam],
-  ["TIME", pokemonTeam],
-  ["EQUIPE", pokemonTeam],
+  ['INFO', pokemonInfo1],
+  ['BREED', pokemonBreed1],
+  ['TEAM', pokemonTeam],
+  ['TIME', pokemonTeam],
+  ['EQUIPE', pokemonTeam],
 ])
 
 export const pokemonRoutes = async (data: TRouteParams): Promise<IResponse> => {
-  const [command, route, subRoute] = data.routeParams
+  const [, , subRoute] = data.routeParams
 
   if (subRoute) {
     const route = subRouteMap.get(subRoute)
     if (!route) {
       return {
-        message: "ERROR: no route found for subroutename: " + subRoute,
+        message: 'ERROR: no route found for subroutename: ' + subRoute,
         status: 400,
         data: null,
       }
@@ -29,7 +29,7 @@ export const pokemonRoutes = async (data: TRouteParams): Promise<IResponse> => {
   }
 
   return {
-    message: "DUMMY: This is the pokemon route, specify a sub route.",
+    message: 'DUMMY: This is the pokemon route, specify a sub route.',
     status: 300,
     data: null,
   }

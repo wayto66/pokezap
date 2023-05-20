@@ -1,7 +1,7 @@
-import { createCanvas, loadImage, registerFont } from "canvas"
-import fs from "fs"
-import path from "path"
-import { talentIdMap } from "../../../server/constants/talentIdMap"
+import { createCanvas, loadImage, registerFont } from 'canvas'
+import fs from 'fs'
+import path from 'path'
+import { talentIdMap } from '../../../server/constants/talentIdMap'
 
 type TParams = {
   player1: any
@@ -12,12 +12,12 @@ export const iGenDuelX1 = async (data: TParams) => {
   // Define the dimensions of the canvas and the background
   const canvasWidth = 500
   const canvasHeight = 500
-  const backgroundUrl = "./src/assets/sprites/UI/hud/duel_x1.png"
+  const backgroundUrl = './src/assets/sprites/UI/hud/duel_x1.png'
 
   // Load the font file and register it with the canvas
   registerFont(
-    "C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf",
-    { family: "Pokemon" }
+    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf',
+    { family: 'Pokemon' }
   )
 
   // Load the background image
@@ -25,16 +25,14 @@ export const iGenDuelX1 = async (data: TParams) => {
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
-  const ctx = canvas.getContext("2d")
+  const ctx = canvas.getContext('2d')
   ctx.imageSmoothingEnabled = false
 
   // Draw the background on the canvas
   ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
 
   // draw image avatar
-  const sprite = await loadImage(
-    "./src/assets/sprites/avatars/" + data.player1.spriteUrl
-  )
+  const sprite = await loadImage('./src/assets/sprites/avatars/' + data.player1.spriteUrl)
   const spriteWidth = 200
   const spriteHeight = 200
   const spriteX = 0
@@ -42,35 +40,31 @@ export const iGenDuelX1 = async (data: TParams) => {
   ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight)
 
   // write player name
-  ctx.font = "21px Righteous"
-  ctx.fillStyle = "white"
-  ctx.textAlign = "start"
+  ctx.font = '21px Righteous'
+  ctx.fillStyle = 'white'
+  ctx.textAlign = 'start'
   ctx.fillText(`${data.player1.name.toUpperCase()}`, 5, 55)
 
   // write player rank
-  ctx.font = "14px Righteous"
-  ctx.fillStyle = "white"
-  ctx.textAlign = "start"
+  ctx.font = '14px Righteous'
+  ctx.fillStyle = 'white'
+  ctx.textAlign = 'start'
   ctx.fillText(`RANK: ${data.player1.elo}`, 51, 75)
 
   // draw poke sprite
-  const pokeSprite1 = await loadImage(
-    data.player1.teamPoke1.baseData.defaultSpriteUrl
-  )
+  const pokeSprite1 = await loadImage(data.player1.teamPoke1.baseData.defaultSpriteUrl)
   ctx.drawImage(pokeSprite1, 0, 275, 200, 200)
 
   // write poke id
-  ctx.font = "16px Righteous"
-  ctx.fillStyle = "white"
-  ctx.textAlign = "start"
+  ctx.font = '16px Righteous'
+  ctx.fillStyle = 'white'
+  ctx.textAlign = 'start'
   ctx.fillText(`#${data.player1.teamPoke1.id}`, 5, 340)
 
   // draw talents
 
   const getTalent = async (name: string) => {
-    return await loadImage(
-      "./src/assets/sprites/UI/types/circle/" + name + ".png"
-    )
+    return await loadImage('./src/assets/sprites/UI/types/circle/' + name + '.png')
   }
 
   const talents = [
@@ -93,20 +87,18 @@ export const iGenDuelX1 = async (data: TParams) => {
 
     const talent = talents[i]
     if (!talent) {
-      console.error("invalid talents: " + [i])
+      console.error('invalid talents: ' + [i])
       return
     }
     ctx.drawImage(await getTalent(talent), x, y, 18, 18)
   }
 
-  ///////////////// PLAYER 2 /////////////////////////////
-  //////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////
+  /// ////////////// PLAYER 2 /////////////////////////////
+  /// ///////////////////////////////////////////////////
+  /// ////////////////////////////////////////////////////
 
   // draw image avatar
-  const sprite2 = await loadImage(
-    "./src/assets/sprites/avatars/" + data.player2.spriteUrl
-  )
+  const sprite2 = await loadImage('./src/assets/sprites/avatars/' + data.player2.spriteUrl)
   const sprite2Width = 200
   const sprite2Height = 200
   const sprite2X = 300
@@ -114,27 +106,25 @@ export const iGenDuelX1 = async (data: TParams) => {
   ctx.drawImage(sprite2, sprite2X, sprite2Y, sprite2Width, sprite2Height)
 
   // write player name
-  ctx.font = "21px Righteous"
-  ctx.fillStyle = "white"
-  ctx.textAlign = "end"
+  ctx.font = '21px Righteous'
+  ctx.fillStyle = 'white'
+  ctx.textAlign = 'end'
   ctx.fillText(`${data.player2.name.toUpperCase()}`, 495, 55)
 
   // write player rank
-  ctx.font = "14px Righteous"
-  ctx.fillStyle = "white"
-  ctx.textAlign = "end"
+  ctx.font = '14px Righteous'
+  ctx.fillStyle = 'white'
+  ctx.textAlign = 'end'
   ctx.fillText(`RANK: ${data.player2.elo}`, 450, 75)
 
   // draw poke sprite
-  const pokeSprite2 = await loadImage(
-    data.player2.teamPoke1.baseData.defaultSpriteUrl
-  )
+  const pokeSprite2 = await loadImage(data.player2.teamPoke1.baseData.defaultSpriteUrl)
   ctx.drawImage(pokeSprite2, 300, 275, 200, 200)
 
   // write poke id
-  ctx.font = "16px Righteous"
-  ctx.fillStyle = "white"
-  ctx.textAlign = "end"
+  ctx.font = '16px Righteous'
+  ctx.fillStyle = 'white'
+  ctx.textAlign = 'end'
   ctx.fillText(`#${data.player2.teamPoke1.id}`, 495, 340)
 
   // draw talents
@@ -159,7 +149,7 @@ export const iGenDuelX1 = async (data: TParams) => {
 
     const talent = talents2[i]
     if (!talent) {
-      console.error("invalid talents: " + [i])
+      console.error('invalid talents: ' + [i])
       return
     }
     ctx.drawImage(await getTalent(talent), x, y, 18, 18)
@@ -172,19 +162,19 @@ export const iGenDuelX1 = async (data: TParams) => {
     const out = fs.createWriteStream(filepath)
     const stream = canvas.createPNGStream()
     stream.pipe(out)
-    out.on("finish", () => {
-      console.log("The PNG file was created.")
+    out.on('finish', () => {
+      console.log('The PNG file was created.')
       resolve(filepath)
     })
   })
 
   // Delete the file after 5 seconds
   setTimeout(() => {
-    fs.unlink(filepath, (error) => {
+    fs.unlink(filepath, error => {
       if (error) {
         console.error(`Failed to delete file: ${error}`)
       } else {
-        console.log("File deleted successfully.")
+        console.log('File deleted successfully.')
       }
     })
   }, 15000)

@@ -1,6 +1,6 @@
-import { IBasePokemon } from "./IBasePokemon"
-import { ISkill } from "./ISkill"
-import { ITalent } from "./ITalent"
+import { IBasePokemon } from './IBasePokemon'
+import { ISkill } from './ISkill'
+import { ITalent } from './ITalent'
 
 export interface IType {
   id: number

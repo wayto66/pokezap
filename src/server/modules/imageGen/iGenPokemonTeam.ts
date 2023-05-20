@@ -1,7 +1,7 @@
-import { Image, createCanvas, loadImage, registerFont } from "canvas"
-import fs from "fs"
-import path from "path"
-import { talentIdMap } from "../../../server/constants/talentIdMap"
+import { Image, createCanvas, loadImage, registerFont } from 'canvas'
+import fs from 'fs'
+import path from 'path'
+import { talentIdMap } from '../../../server/constants/talentIdMap'
 
 type TParams = {
   playerData: any
@@ -11,20 +11,18 @@ export const iGenPokemonTeam = async (data: TParams) => {
   // Define the dimensions of the canvas and the background
   const canvasWidth = 500
   const canvasHeight = 500
-  const backgroundUrl = "./src/assets/sprites/UI/hud/pokemon_team.png"
+  const backgroundUrl = './src/assets/sprites/UI/hud/pokemon_team.png'
 
   // Load the font file and register it with the canvas
   registerFont(
-    "C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf",
-    { family: "Pokemon" }
+    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf',
+    { family: 'Pokemon' }
   )
 
   const talentSpritesMap = new Map<number, Image>([])
 
   for (let i = 1; i < 19; i++) {
-    const image = await loadImage(
-      "./src/assets/sprites/UI/types/circle/" + talentIdMap.get(i) + ".png"
-    )
+    const image = await loadImage('./src/assets/sprites/UI/types/circle/' + talentIdMap.get(i) + '.png')
     talentSpritesMap.set(i, image)
   }
 
@@ -33,7 +31,7 @@ export const iGenPokemonTeam = async (data: TParams) => {
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
-  const ctx = canvas.getContext("2d")
+  const ctx = canvas.getContext('2d')
   ctx.imageSmoothingEnabled = false
   ctx.imageSmoothingEnabled = false
 
@@ -61,16 +59,14 @@ export const iGenPokemonTeam = async (data: TParams) => {
       k = 0
     }
 
-    if (!pokeTeam[i]) {
-      console.log(`no pokemon for i:${i} `)
-      continue
-    }
+    if (!pokeTeam[i]) continue
+
     const x = 0 + k * 245
     const y = 5 + j * 165
 
     // draw the circle
     const circleRadius = 35
-    const circleColor = "rgba(0,0,0,0.33)"
+    const circleColor = 'rgba(0,0,0,0.33)'
     ctx.beginPath()
     ctx.arc(x + 80, y + 85, circleRadius, 0, Math.PI * 2)
     ctx.fillStyle = circleColor
@@ -81,17 +77,11 @@ export const iGenPokemonTeam = async (data: TParams) => {
     ctx.drawImage(sprite, x, y, 160, 160)
 
     // draw the pokemon types
-    const typeSprite1 = await loadImage(
-      "./src/assets/sprites/UI/types/" + pokeTeam[i].baseData.type1Name + ".png"
-    )
+    const typeSprite1 = await loadImage('./src/assets/sprites/UI/types/' + pokeTeam[i].baseData.type1Name + '.png')
     ctx.drawImage(typeSprite1, x + 130, y + 70, 50, 25)
 
     if (pokeTeam[i].baseData.type2Name) {
-      const typeSprite2 = await loadImage(
-        "./src/assets/sprites/UI/types/" +
-          pokeTeam[i].baseData.type2Name +
-          ".png"
-      )
+      const typeSprite2 = await loadImage('./src/assets/sprites/UI/types/' + pokeTeam[i].baseData.type2Name + '.png')
       ctx.drawImage(typeSprite2, x + 180, y + 70, 50, 25)
     }
 
@@ -122,26 +112,20 @@ export const iGenPokemonTeam = async (data: TParams) => {
     }
 
     /// draw pokemon level
-    ctx.font = " 18px Pokemon"
-    ctx.fillStyle = "white"
-    ctx.textAlign = "center"
+    ctx.font = ' 18px Pokemon'
+    ctx.fillStyle = 'white'
+    ctx.textAlign = 'center'
     ctx.fillText(`lvl: ${pokeTeam[i].level}`, x + 110, y + 135)
 
     /// draw pokemon name
-    ctx.font = " 18px Pokemon"
-    ctx.fillStyle = "white"
-    ctx.textAlign = "start"
-    ctx.fillText(
-      `${
-        pokeTeam[i].nickname ? pokeTeam[i].nickname : pokeTeam[i].baseData.name
-      }`,
-      x + 135,
-      y + 52
-    )
+    ctx.font = ' 18px Pokemon'
+    ctx.fillStyle = 'white'
+    ctx.textAlign = 'start'
+    ctx.fillText(`${pokeTeam[i].nickname ? pokeTeam[i].nickname : pokeTeam[i].baseData.name}`, x + 135, y + 52)
 
-    ctx.font = " 18px Pokemon"
-    ctx.fillStyle = "white"
-    ctx.textAlign = "start"
+    ctx.font = ' 18px Pokemon'
+    ctx.fillStyle = 'white'
+    ctx.textAlign = 'start'
     ctx.fillText(`#${pokeTeam[i].id}`, x + 25, y + 41)
 
     k++
@@ -154,19 +138,19 @@ export const iGenPokemonTeam = async (data: TParams) => {
     const out = fs.createWriteStream(filepath)
     const stream = canvas.createPNGStream()
     stream.pipe(out)
-    out.on("finish", () => {
-      console.log("The PNG file was created.")
+    out.on('finish', () => {
+      console.log('The PNG file was created.')
       resolve(filepath)
     })
   })
 
   // Delete the file after 5 seconds
   setTimeout(() => {
-    fs.unlink(filepath, (error) => {
+    fs.unlink(filepath, error => {
       if (error) {
         console.error(`Failed to delete file: ${error}`)
       } else {
-        console.log("File deleted successfully.")
+        console.log('File deleted successfully.')
       }
     })
   }, 5000)

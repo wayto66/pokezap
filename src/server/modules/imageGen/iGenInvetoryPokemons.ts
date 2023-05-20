@@ -1,6 +1,6 @@
-import { createCanvas, loadImage, registerFont } from "canvas"
-import fs from "fs"
-import path from "path"
+import { createCanvas, loadImage, registerFont } from 'canvas'
+import fs from 'fs'
+import path from 'path'
 
 type TParams = {
   playerData: any
@@ -12,12 +12,12 @@ export const iGenInvetoryPokemons = async (data: TParams) => {
   // Define the dimensions of the canvas and the background
   const canvasWidth = 500
   const canvasHeight = 500
-  const backgroundUrl = "./src/assets/sprites/UI/hud/player_inventory_items.png"
+  const backgroundUrl = './src/assets/sprites/UI/hud/player_inventory_items.png'
 
   // Load the font file and register it with the canvas
   registerFont(
-    "C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf",
-    { family: "Pokemon" }
+    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf',
+    { family: 'Pokemon' }
   )
 
   // Load the background image
@@ -25,7 +25,7 @@ export const iGenInvetoryPokemons = async (data: TParams) => {
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
-  const ctx = canvas.getContext("2d")
+  const ctx = canvas.getContext('2d')
   ctx.imageSmoothingEnabled = false
 
   // Draw the background on the canvas
@@ -39,11 +39,7 @@ export const iGenInvetoryPokemons = async (data: TParams) => {
   let j = 0
   let k = 0
 
-  for (
-    let i = 0;
-    i < Math.min(19 + page * 19, data.playerData.ownedPokemons.length);
-    i++
-  ) {
+  for (let i = 0; i < Math.min(19 + page * 19, data.playerData.ownedPokemons.length); i++) {
     if (
       i === 5 ||
       i === 10 ||
@@ -71,7 +67,7 @@ export const iGenInvetoryPokemons = async (data: TParams) => {
 
     // set up the circle style
     const circleRadius = 15
-    const circleColor = "rgba(0,0,0,0.33)"
+    const circleColor = 'rgba(0,0,0,0.33)'
     // draw the circle path
     ctx.beginPath()
     ctx.arc(x + 25, y + 25, circleRadius, 0, Math.PI * 2)
@@ -79,28 +75,18 @@ export const iGenInvetoryPokemons = async (data: TParams) => {
     ctx.fillStyle = circleColor
     ctx.fill()
 
-    const sprite = await loadImage(
-      data.playerData.ownedPokemons[i + page * 19].baseData.defaultSpriteUrl
-    )
+    const sprite = await loadImage(data.playerData.ownedPokemons[i + page * 19].baseData.defaultSpriteUrl)
     ctx.drawImage(sprite, x - 12, y - 12, 75, 75)
 
-    ctx.font = " 14px Pokemon"
-    ctx.fillStyle = "white"
-    ctx.textAlign = "center"
-    ctx.fillText(
-      `lvl: ${data.playerData.ownedPokemons[i + page * 19].level}`,
-      x + 20,
-      y + 80
-    )
+    ctx.font = ' 14px Pokemon'
+    ctx.fillStyle = 'white'
+    ctx.textAlign = 'center'
+    ctx.fillText(`lvl: ${data.playerData.ownedPokemons[i + page * 19].level}`, x + 20, y + 80)
 
-    ctx.font = " 14px Pokemon"
-    ctx.fillStyle = "white"
-    ctx.textAlign = "start"
-    ctx.fillText(
-      `#${data.playerData.ownedPokemons[i + page * 19].id}`,
-      x,
-      y + 5
-    )
+    ctx.font = ' 14px Pokemon'
+    ctx.fillStyle = 'white'
+    ctx.textAlign = 'start'
+    ctx.fillText(`#${data.playerData.ownedPokemons[i + page * 19].id}`, x, y + 5)
 
     k++
   }
@@ -112,19 +98,19 @@ export const iGenInvetoryPokemons = async (data: TParams) => {
     const out = fs.createWriteStream(filepath)
     const stream = canvas.createPNGStream()
     stream.pipe(out)
-    out.on("finish", () => {
-      console.log("The PNG file was created.")
+    out.on('finish', () => {
+      console.log('The PNG file was created.')
       resolve(filepath)
     })
   })
 
   // Delete the file after 5 seconds
   setTimeout(() => {
-    fs.unlink(filepath, (error) => {
+    fs.unlink(filepath, error => {
       if (error) {
         console.error(`Failed to delete file: ${error}`)
       } else {
-        console.log("File deleted successfully.")
+        console.log('File deleted successfully.')
       }
     })
   }, 5000)

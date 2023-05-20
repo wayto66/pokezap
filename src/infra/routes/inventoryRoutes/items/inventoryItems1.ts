@@ -1,13 +1,11 @@
-import { PrismaClient } from "@prisma/client"
-import { TRouteParams } from "infra/routes/router"
-import { container } from "tsyringe"
-import { IResponse } from "../../../../server/models/IResponse"
-import { iGenInventoryItems } from "../../../../server/modules/imageGen/iGenInventoryItems"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { TRouteParams } from '../../../../infra/routes/router'
+import { IResponse } from '../../../../server/models/IResponse'
+import { iGenInventoryItems } from '../../../../server/modules/imageGen/iGenInventoryItems'
 
-export const inventoryItems1 = async (
-  data: TRouteParams
-): Promise<IResponse> => {
-  const prismaClient = container.resolve<PrismaClient>("PrismaClient")
+export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> => {
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const player = await prismaClient.player.findFirst({
     where: {
@@ -24,7 +22,7 @@ export const inventoryItems1 = async (
 
   if (!player)
     return {
-      message: "ERROR: No player found with code " + data.playerPhone,
+      message: 'ERROR: No player found with code ' + data.playerPhone,
       status: 400,
       data: null,
     }
@@ -34,7 +32,7 @@ export const inventoryItems1 = async (
   })
 
   return {
-    message: "Invetário de " + player.name,
+    message: 'Invetário de ' + player.name,
     status: 200,
     data: null,
     imageUrl: imageUrl,

@@ -1,6 +1,6 @@
-import { IResponse } from "server/models/IResponse"
-import { greatballCatch } from "./greatball"
-import { pokeballCatch } from "./pokeball"
+import { IResponse } from '../../../server/models/IResponse'
+import { greatballCatch } from './greatball'
+import { pokeballCatch } from './pokeball'
 
 type TParams = {
   playerPhone: string
@@ -9,16 +9,16 @@ type TParams = {
 }
 
 const subRouteMap = new Map<string, any>([
-  ["POKEBALL", pokeballCatch],
-  ["POKEBOLA", pokeballCatch],
-  ["PB", pokeballCatch],
-  ["GREATBOLA", greatballCatch],
-  ["GREATBALL", greatballCatch],
-  ["GB", greatballCatch],
+  ['POKEBALL', pokeballCatch],
+  ['POKEBOLA', pokeballCatch],
+  ['PB', pokeballCatch],
+  ['GREATBOLA', greatballCatch],
+  ['GREATBALL', greatballCatch],
+  ['GB', greatballCatch],
 ])
 
 export const catchRoutes = async (data: TParams): Promise<IResponse> => {
-  const [initializer, thisRoute, ballType, pokeId] = data.routeParams
+  const [, , ballType] = data.routeParams
 
   if (!ballType) {
     return {

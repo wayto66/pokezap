@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client"
-import { container } from "tsyringe"
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
 
 type TParams = {
   pokemonId: number
@@ -7,7 +7,7 @@ type TParams = {
 }
 
 export const checkEvolutionPermition = async (data: TParams) => {
-  const client = container.resolve<PrismaClient>("PrismaClient")
+  const client = container.resolve<PrismaClient>('PrismaClient')
 
   const poke = await client.pokemon.findFirst({
     where: {
@@ -26,30 +26,23 @@ export const checkEvolutionPermition = async (data: TParams) => {
   const fullData: any = poke.baseData.evolutionData
   const evData = fullData.evolutionChain[0]
 
-  if (!evData) {
-    console.log("no evo data for: " + poke.baseData.name)
-    return
-  }
+  if (!evData) return
 
   const getCurrentPosition = () => {
     if (poke.baseData.isFirstEvolution) return 0
     if (poke.baseData.name === evData?.species?.name) return 1
     if (poke.baseData.name === evData?.evolves_to[0]?.species?.name) return 2
-    console.log("no current position found.")
+
     return -1
   }
 
   const currentPosition = getCurrentPosition()
 
-  if (currentPosition === 2) {
-    console.log("already on 3d evo for: " + poke.baseData.name)
-    return
-  }
+  if (currentPosition === 2) return
 
   if (currentPosition === -1) {
     return {
-      message:
-        "ERROR: Could not get the current position of your pokemon in the evolution chain.",
+      message: 'ERROR: Could not get the current position of your pokemon in the evolution chain.',
       status: 400,
       data: null,
     }
@@ -61,15 +54,14 @@ export const checkEvolutionPermition = async (data: TParams) => {
   if (currentPosition === 1) evoData = evData.evolves_to[0]
 
   if (evoData === null) {
-    console.log("evoData is null. currentPosition out of [-1,0,1,2]")
+    console.log('evoData is null. currentPosition out of [-1,0,1,2]')
     return
   }
 
   const evoTrigger = evoData.evolution_details[0].trigger
-  if (evoTrigger.name !== "level-up") {
+  if (evoTrigger.name !== 'level-up') {
     return {
-      message:
-        "ERROR: Only evolution method allowed at this moment is level-up.",
+      message: 'ERROR: Only evolution method allowed at this moment is level-up.',
       status: 400,
       data: null,
     }
