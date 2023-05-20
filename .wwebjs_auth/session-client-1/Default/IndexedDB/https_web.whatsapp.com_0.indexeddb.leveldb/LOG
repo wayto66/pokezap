@@ -1,7 +1,0 @@
-2023/05/18-17:32:39.710 4220 Creating DB C:\Users\yuri_\OneDrive\Área de Trabalho\dev shit\PROJETOS\pokezap\pokezap-new\.wwebjs_auth\session-client-1\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb since it was missing.
-2023/05/18-17:32:39.719 4220 Reusing MANIFEST C:\Users\yuri_\OneDrive\Área de Trabalho\dev shit\PROJETOS\pokezap\pokezap-new\.wwebjs_auth\session-client-1\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2023/05/18-17:32:39.976 920 Manual compaction at level-0 from '\x00\x01\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x02\x00\x00\x00' @ 0 : 0; will stop at (end)
-2023/05/18-17:32:41.958 920 Level-0 table #5: started
-2023/05/18-17:32:41.964 920 Level-0 table #5: 24492 bytes OK
-2023/05/18-17:32:41.966 920 Delete type=0 #3
-2023/05/18-17:32:41.967 920 Manual compaction at level-0 from '\x00\x06\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x07\x00\x00\x00' @ 0 : 0; will stop at (end)
