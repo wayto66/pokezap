@@ -4,6 +4,7 @@ import { duelRoutes } from './duelRoutes'
 import { inventoryRoutes } from './inventoryRoutes'
 import { pokemonRoutes } from './pokemonRoutes'
 import { routeRoutes } from './routeRoutes'
+import { tradeRoutes } from './tradeRoutes'
 import { playerInfo1 } from './userRoutes/info/playerInfo1'
 import { newUser1 } from './userRoutes/newUser/newUser1'
 
@@ -12,6 +13,7 @@ export type TRouteParams = {
   groupCode: string
   routeParams: string[]
   playerName: string
+  fromReact?: boolean
 }
 
 const routeMap = new Map<string, any>([
@@ -36,6 +38,10 @@ const routeMap = new Map<string, any>([
   ['INVENTORY', inventoryRoutes],
   ['DUEL', duelRoutes],
   ['DUELAR', duelRoutes],
+  ['DUELO', duelRoutes],
+  ['TRADE', tradeRoutes],
+  ['TROCA', tradeRoutes],
+  ['TROCAR', tradeRoutes],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {

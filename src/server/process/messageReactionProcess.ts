@@ -63,6 +63,7 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
     routeParams: routeParams,
     playerName: player?.name || '',
     groupCode: msg.msgId.remote,
+    fromReact: true,
   })
 
   if (!response.imageUrl) {

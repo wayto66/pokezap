@@ -1,6 +1,6 @@
-export interface IUser {
+export interface IPlayer {
   id: number
-  playerPhone: string
+  phone: string
   name: string
   nickname?: string | null
   elo: number

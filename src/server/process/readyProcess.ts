@@ -10,8 +10,8 @@ export const readyProcess = (zapIstanceName: string) => {
   const zapClient = container.resolve<Client>(zapIstanceName)
   console.log('READY')
 
-  cron.schedule('*/3 * * * *', () => {
-    console.log('Running a task every 3 minutes')
+  cron.schedule('*/23 * * * *', () => {
+    console.log('Running a task every 23 minutes')
     CronActions({
       prismaClient,
       zapClient,
