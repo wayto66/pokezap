@@ -1,12 +1,10 @@
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
-import { pokemonBreed1 } from './breed/pokemonBreed1'
 import { pokemonInfo1 } from './info/pokemonInfo1'
 import { pokemonTeam } from './team/pokemonTeam'
 
 const subRouteMap = new Map<string, any>([
   ['INFO', pokemonInfo1],
-  ['BREED', pokemonBreed1],
   ['TEAM', pokemonTeam],
   ['TIME', pokemonTeam],
   ['EQUIPE', pokemonTeam],

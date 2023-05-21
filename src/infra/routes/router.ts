@@ -1,4 +1,5 @@
 import { IResponse } from '../../server/models/IResponse'
+import { pokemonBreed1 } from './breedRoutes/pokemonBreed1'
 import { catchRoutes } from './catchRoutes'
 import { duelRoutes } from './duelRoutes'
 import { inventoryRoutes } from './inventoryRoutes'
@@ -42,6 +43,7 @@ const routeMap = new Map<string, any>([
   ['TRADE', tradeRoutes],
   ['TROCA', tradeRoutes],
   ['TROCAR', tradeRoutes],
+  ['BREED', pokemonBreed1],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {
