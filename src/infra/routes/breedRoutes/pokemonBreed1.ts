@@ -1,12 +1,12 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { TRouteParams } from '../../../../infra/routes/router'
-import { IResponse } from '../../../../server/models/IResponse'
-import { iGenPokemonBreed } from '../../../../server/modules/imageGen/iGenPokemonBreed'
+import { IResponse } from '../../../server/models/IResponse'
+import { iGenPokemonBreed } from '../../../server/modules/imageGen/iGenPokemonBreed'
+import { TRouteParams } from '../router'
 import { pokemonBreed2 } from './pokemonBreed2'
 
 export const pokemonBreed1 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , , id1, id2, amount] = data.routeParams
+  const [, , id1, id2, amount] = data.routeParams
 
   if (amount) return await pokemonBreed2(data)
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')

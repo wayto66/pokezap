@@ -1,15 +1,15 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { Client, MessageMedia } from 'whatsapp-web.js'
-import { TRouteParams } from '../../../../infra/routes/router'
-import { IPokemon } from '../../../../server/models/IPokemon'
-import { IResponse } from '../../../../server/models/IResponse'
-import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
-import { iGenPokemonBreed } from '../../../../server/modules/imageGen/iGenPokemonBreed'
-import { breed } from '../../../../server/modules/pokemon/breed'
+import { IPokemon } from '../../../server/models/IPokemon'
+import { IResponse } from '../../../server/models/IResponse'
+import { iGenPokemonAnalysis } from '../../../server/modules/imageGen/iGenPokemonAnalysis'
+import { iGenPokemonBreed } from '../../../server/modules/imageGen/iGenPokemonBreed'
+import { breed } from '../../../server/modules/pokemon/breed'
+import { TRouteParams } from '../router'
 
 export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , , id1, id2, amount, confirm] = data.routeParams
+  const [, , id1, id2, amount, confirm] = data.routeParams
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   if (typeof Number(amount) !== 'number' || Number(amount) > 4) {
