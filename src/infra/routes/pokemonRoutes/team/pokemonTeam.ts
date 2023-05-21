@@ -73,9 +73,10 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
   }
 
   const ids = [Number(id1), Number(id2 || 0), Number(id3 || 0), Number(id4 || 0), Number(id5 || 0), Number(id6 || 0)]
+  const uniqueIds = [...new Set(ids)]
 
-  for (const id of ids) {
-    if (typeof id !== 'number')
+  for (const id of uniqueIds) {
+    if (typeof id !== 'number' || isNaN(id))
       return {
         message: 'ERROR: problem parsing id: ' + id,
         status: 400,
@@ -83,7 +84,8 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
       }
   }
 
-  for (const id of ids) {
+  for (const id of uniqueIds) {
+    if (id === 0) continue
     const poke = await prismaClient.pokemon.findFirst({
       where: {
         id: id,
@@ -105,71 +107,78 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
       }
   }
 
-  if (ids[0] !== 0) {
+  for (let i = 0; i < 6; i++) {
     await prismaClient.player.update({
       where: {
         id: player.id,
       },
       data: {
-        teamPokeId1: ids[0],
+        ['teamPoke' + (i + 1)]: {
+          disconnect: true,
+        },
       },
     })
   }
 
-  if (ids[1] !== 0) {
-    await prismaClient.player.update({
-      where: {
-        id: player.id,
-      },
-      data: {
-        teamPokeId2: ids[1],
-      },
-    })
+  for (let i = 0; i < 6; i++) {
+    if (uniqueIds[i] !== 0) {
+      await prismaClient.player.update({
+        where: {
+          id: player.id,
+        },
+        data: {
+          ['teamPokeId' + (i + 1)]: uniqueIds[i],
+        },
+      })
+    }
   }
-  if (ids[2] !== 0) {
-    await prismaClient.player.update({
-      where: {
-        id: player.id,
+
+  const updatedPlayer = await prismaClient.player.findUnique({
+    where: {
+      id: player.id,
+    },
+    include: {
+      teamPoke1: {
+        include: {
+          baseData: true,
+        },
       },
-      data: {
-        teamPokeId3: ids[2],
+      teamPoke2: {
+        include: {
+          baseData: true,
+        },
       },
-    })
-  }
-  if (ids[3] !== 0) {
-    await prismaClient.player.update({
-      where: {
-        id: player.id,
+      teamPoke3: {
+        include: {
+          baseData: true,
+        },
       },
-      data: {
-        teamPokeId4: ids[3],
+      teamPoke4: {
+        include: {
+          baseData: true,
+        },
       },
-    })
-  }
-  if (ids[4] !== 0) {
-    await prismaClient.player.update({
-      where: {
-        id: player.id,
+      teamPoke5: {
+        include: {
+          baseData: true,
+        },
       },
-      data: {
-        teamPokeId5: ids[4],
+      teamPoke6: {
+        include: {
+          baseData: true,
+        },
       },
-    })
-  }
-  if (ids[5] !== 0) {
-    await prismaClient.player.update({
-      where: {
-        id: player.id,
-      },
-      data: {
-        teamPokeId6: ids[5],
-      },
-    })
-  }
+    },
+  })
+
+  const imageUrl = await iGenPokemonTeam({
+    playerData: updatedPlayer,
+  })
 
   return {
-    message: 'DUMMY: poketeam updated',
+    message: `Time de *#${player.id}-${player.name}* foi atualizado!`,
     status: 200,
     data: null,
+    imageUrl,
   }
 }
