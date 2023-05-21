@@ -119,20 +119,22 @@ export const pokemonBreed1 = async (data: TRouteParams): Promise<IResponse> => {
       imageUrl: imageUrl,
     }
 
-  const actions: string[] = [`pokezap. pokemon breed ${pokemon1.id} ${pokemon2.id} 1`]
-
-  if (!pokemon1.childrenId3 || !pokemon2.childrenId3)
-    actions.push(`pokezap. pokemon breed ${pokemon1.id} ${pokemon2.id} 2`)
-  if (!pokemon1.childrenId2 || !pokemon2.childrenId2)
-    actions.push(`pokezap. pokemon breed ${pokemon1.id} ${pokemon2.id} 3`)
-  if (!pokemon1.childrenId1 || !pokemon2.childrenId1)
-    actions.push(`pokezap. pokemon breed ${pokemon1.id} ${pokemon2.id} 4`)
-
   return {
-    message: `DUMMY: breeding process started for:#${pokemon1.id} ${pokemon1.baseData.name} and #${pokemon2.id} ${pokemon2.baseData.name} `,
+    message: `*${player1.name}* inicou o processo de breed entre:
+    #${pokemon1.id} ${pokemon1.baseData.name} e #${pokemon2.id} ${pokemon2.baseData.name}
+    
+    👍 - 1 filhote
+    ❤ - 2 filhotes
+    😂 - 3 filhotes
+    😮 - 4 filhotes`,
     status: 200,
     data: null,
     imageUrl: imageUrl,
-    actions: actions,
+    actions: [
+      `pz. breed ${pokemon1.id} ${pokemon2.id} 1`,
+      `pz. breed ${pokemon1.id} ${pokemon2.id} 2`,
+      `pz. breed ${pokemon1.id} ${pokemon2.id} 3`,
+      `pz. breed ${pokemon1.id} ${pokemon2.id} 4`,
+    ],
   }
 }
