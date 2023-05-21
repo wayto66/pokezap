@@ -4,6 +4,8 @@ import { evoDataIdMap } from '../../../server/constants/evoDataIdMap'
 import { getRandomBetween2 } from '../../../server/helpers/getRandomBetween2'
 import { getRandomBetween3 } from '../../../server/helpers/getRandomBetween3'
 import { IPokemon } from '../../../server/models/IPokemon'
+import { generateGeneralStats } from './generateGeneralStats'
+import { generateHpStat } from './generateHpStat'
 
 type TParams = {
   poke1: IPokemon
@@ -34,12 +36,12 @@ export const breed = async (data: TParams): Promise<IPokemon | string> => {
   const babyPoke = await prismaClient.pokemon.create({
     data: {
       basePokemonId: babyBaseDataId,
-      atk: Math.round(babyBaseData.BaseAtk * (0.8 + Math.random() * 0.4)),
-      def: Math.round(babyBaseData.BaseDef * (0.8 + Math.random() * 0.4)),
-      hp: Math.round(babyBaseData.BaseHp * (0.8 + Math.random() * 0.4)),
-      spAtk: Math.round(babyBaseData.BaseSpAtk * (0.8 + Math.random() * 0.4)),
-      spDef: Math.round(babyBaseData.BaseSpDef * (0.8 + Math.random() * 0.4)),
-      speed: Math.round(babyBaseData.BaseSpeed * (0.8 + Math.random() * 0.4)),
+      hp: generateHpStat(babyBaseData.BaseHp, 1),
+      atk: generateGeneralStats(babyBaseData.BaseAtk, 1),
+      def: generateGeneralStats(babyBaseData.BaseDef, 1),
+      spAtk: generateGeneralStats(babyBaseData.BaseSpAtk, 1),
+      spDef: generateGeneralStats(babyBaseData.BaseSpDef, 1),
+      speed: generateGeneralStats(babyBaseData.BaseSpeed, 1),
       isAdult: false,
       savage: false,
       isMale: Math.random() > 0.5,
