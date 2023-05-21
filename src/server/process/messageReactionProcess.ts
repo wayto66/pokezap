@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import moment from 'moment'
 import { container } from 'tsyringe'
 import { Client, MessageMedia, Reaction } from 'whatsapp-web.js'
 import { router } from '../../infra/routes/router'
@@ -20,6 +21,15 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
   })
 
   if (!message) return
+
+  const currentTimestamp: number = Math.floor(Date.now() / 1000)
+  const difference: number = moment
+    .duration(currentTimestamp - Math.floor(new Date(message.createdAt).getTime() / 1000), 'seconds')
+    .asMinutes()
+  if (difference >= 5) {
+    console.log('ignoring old msg. difference: ' + difference)
+    return
+  }
 
   const player = await prismaClient.player.findFirst({
     where: {
