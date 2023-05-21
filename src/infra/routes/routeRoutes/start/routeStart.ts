@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
+import { PlayerNotFoundError, RouteAlreadyRegisteredError } from 'infra/errors/AppErrors'
 
 export const routeStart = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
@@ -11,30 +12,14 @@ export const routeStart = async (data: TRouteParams): Promise<IResponse> => {
       phone: data.playerPhone,
     },
   })
-
-  if (!player) {
-    return {
-      message: `Você ainda não possui um personagem registrado.
-        Utilize o comando: 
-        pok***p. start`,
-      status: 300,
-      data: null,
-    }
-  }
+  if (!player) throw new PlayerNotFoundError(data.playerName)
 
   const route = await prismaClient.gameRoom.findFirst({
     where: {
       phone: data.groupCode,
     },
   })
-
-  if (route) {
-    return {
-      message: `O grupo atual já está registrado como uma rota no jogo.`,
-      status: 300,
-      data: null,
-    }
-  }
+  if (route) throw new RouteAlreadyRegisteredError()
 
   const newRoute = await prismaClient.gameRoom.create({
     data: {

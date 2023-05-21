@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPlayerAnalysis } from '../../../../server/modules/imageGen/iGenPlayerAnalysis'
+import { PlayerNotFoundError, TypeMissmatchError } from 'infra/errors/AppErrors'
 
 type TUserInfoParams = {
   playerPhone: string
@@ -10,18 +11,11 @@ type TUserInfoParams = {
 }
 
 export const playerInfo1 = async (data: TUserInfoParams): Promise<IResponse> => {
-  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
-
   const [, , , playerId] = data.routeParams
 
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
+
   if (!playerId) {
-    if (!data.playerPhone) {
-      return {
-        message: 'ERRO: código de telefone não encontrado para o jogador: ' + data.playerName,
-        status: 400,
-        data: null,
-      }
-    }
     const player = await prismaClient.player.findUnique({
       where: {
         phone: data.playerPhone,
@@ -67,13 +61,7 @@ export const playerInfo1 = async (data: TUserInfoParams): Promise<IResponse> => 
       },
     })
 
-    if (!player) {
-      return {
-        message: 'ERRO: Jogador não encontrado para o código de telefone: ' + data.playerPhone,
-        status: 400,
-        data: null,
-      }
-    }
+    if (!player) throw new PlayerNotFoundError(data.playerName)
 
     const imageUrl = await iGenPlayerAnalysis({
       playerData: player,
@@ -87,25 +75,12 @@ export const playerInfo1 = async (data: TUserInfoParams): Promise<IResponse> => 
     }
   }
 
-  if (typeof Number(playerId) !== 'number') {
-    return {
-      message: `ERROR: ${playerId} is not a number.`,
-      status: 400,
-      data: null,
-    }
-  }
+  if (typeof Number(playerId) !== 'number') throw new TypeMissmatchError(playerId, 'number')
 
   const player = await prismaClient.player.findUnique({
     where: { id: Number(playerId) },
   })
-
-  if (!player) {
-    return {
-      message: 'ERRO: Jogador não encontrado para o código: ' + playerId,
-      status: 400,
-      data: null,
-    }
-  }
+  if (!player) throw new PlayerNotFoundError(data.playerName)
 
   return {
     message: `DUMMY: Jogador encontrado, #${player.id} ${player.name}  `,

@@ -1,42 +1,27 @@
+import { MissingParametersCatchRouteError, SubRouteNotFoundError } from 'infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
+import { TRouteParams } from '../router'
 import { greatballCatch } from './greatball'
 import { pokeballCatch } from './pokeball'
 
-type TParams = {
-  playerPhone: string
-  routeParams: string[]
-  playerName: string
-}
-
 const subRouteMap = new Map<string, any>([
+  // POKEBALL CATCH ROUTES
   ['POKEBALL', pokeballCatch],
   ['POKEBOLA', pokeballCatch],
   ['PB', pokeballCatch],
+
+  // GREATBALL CATCH ROUTES
   ['GREATBOLA', greatballCatch],
   ['GREATBALL', greatballCatch],
   ['GB', greatballCatch],
 ])
 
-export const catchRoutes = async (data: TParams): Promise<IResponse> => {
-  const [, , ballType] = data.routeParams
+export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
+  const [, , pokeballType] = data.routeParams
+  if (!pokeballType) throw new MissingParametersCatchRouteError()
 
-  if (!ballType) {
-    return {
-      message: `Por favor, escolha a pokebola à ser utilizada e informe o ID do pokemon à ser capturado. Exemplo:
-        poke**p. catch pokebola 25`,
-      status: 300,
-      data: null,
-    }
-  }
-
-  const route = subRouteMap.get(ballType)
-
-  if (!route)
-    return {
-      message: `ERROR: Nenhuma rota encontrada para ${ballType}, verifique a ortografia e a sintáxe do comando.`,
-      status: 400,
-      data: null,
-    }
+  const route = subRouteMap.get(pokeballType)
+  if (!route) throw new SubRouteNotFoundError(pokeballType)
 
   return await route(data)
 }

@@ -1,3 +1,4 @@
+import { MissingParametersTradeRouteError, SubRouteNotFoundError } from 'infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { tradePoke1 } from './tradePoke/tradePoke1'
@@ -12,25 +13,11 @@ const routesMap = new Map<string, any>([
 ])
 
 export const tradeRoutes = async (data: TRouteParams): Promise<IResponse> => {
-  const [initializer, tradeRoute, subRouteName] = data.routeParams
-
-  if (!subRouteName) {
-    return {
-      message: 'Esta é a rota de trade/trocas. Especifique se deseja trocar Pokemon ou item.',
-      status: 300,
-      data: null,
-    }
-  }
+  const [, , subRouteName] = data.routeParams
+  if (!subRouteName) throw new MissingParametersTradeRouteError()
 
   const route = routesMap.get(subRouteName)
-
-  if (!route) {
-    return {
-      message: `ERRO: Nenhuma rota encontrada com: "${subRouteName}". Verifique se digitou corretamente.`,
-      status: 400,
-      data: null,
-    }
-  }
+  if (!route) throw new SubRouteNotFoundError(subRouteName)
 
   return await route(data)
 }

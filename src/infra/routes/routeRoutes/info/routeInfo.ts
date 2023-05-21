@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
+import { InvalidRouteError, SubRouteNotFoundError, TypeMissmatchError } from 'infra/errors/AppErrors'
 
 export const routeInfo = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , routeId] = data.routeParams
@@ -17,13 +18,7 @@ export const routeInfo = async (data: TRouteParams): Promise<IResponse> => {
         players: true,
       },
     })
-    if (!route) {
-      return {
-        message: 'ERROR: It seems that you are not on a valid route.',
-        status: 400,
-        data: null,
-      }
-    }
+    if (!route) throw new InvalidRouteError()
 
     return {
       message: `DUMMY: route found:
@@ -35,14 +30,7 @@ export const routeInfo = async (data: TRouteParams): Promise<IResponse> => {
       data: null,
     }
   }
-
-  if (typeof Number(routeId) !== 'number') {
-    return {
-      message: 'ERROR: invalid route id. Please verify if you are using the correct syntax.',
-      status: 400,
-      data: null,
-    }
-  }
+  if (typeof Number(routeId) !== 'number') throw new TypeMissmatchError(routeId, 'number')
 
   const route = await prismaClient.gameRoom.findFirst({
     where: {
@@ -53,13 +41,7 @@ export const routeInfo = async (data: TRouteParams): Promise<IResponse> => {
       players: true,
     },
   })
-  if (!route) {
-    return {
-      message: 'ERROR: No route found for id: ' + Number(routeId),
-      status: 400,
-      data: null,
-    }
-  }
+  if (!route) throw new SubRouteNotFoundError(routeId)
 
   return {
     message: `DUMMY: route found:

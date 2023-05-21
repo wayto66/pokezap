@@ -5,42 +5,42 @@ import { IPokemon } from '../../../../server/models/IPokemon'
 import { IResponse } from '../../../../server/models/IResponse'
 
 export type TTradePokeParams = {
-  creatorPoke: IPokemon
-  invitedPoke: IPokemon
+  creatorPokemon: IPokemon
+  invitedPokemon: IPokemon
   session: ISession
 }
 
 export const tradePoke2 = async (data: TTradePokeParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
-  if (!data.creatorPoke.ownerId || !data.invitedPoke.ownerId)
+  if (!data.creatorPokemon.ownerId || !data.invitedPokemon.ownerId)
     return {
       message: `ERRO" `,
       status: 400,
       data: null,
     }
 
-  const poke1 = await prismaClient.pokemon.update({
+  await prismaClient.pokemon.update({
     where: {
-      id: data.creatorPoke.id,
+      id: data.creatorPokemon.id,
     },
     data: {
       owner: {
         connect: {
-          id: data.invitedPoke.ownerId,
+          id: data.invitedPokemon.ownerId,
         },
       },
     },
   })
 
-  const poke2 = await prismaClient.pokemon.update({
+  await prismaClient.pokemon.update({
     where: {
-      id: data.invitedPoke.id,
+      id: data.invitedPokemon.id,
     },
     data: {
       owner: {
         connect: {
-          id: data.creatorPoke.ownerId,
+          id: data.creatorPokemon.ownerId,
         },
       },
     },
