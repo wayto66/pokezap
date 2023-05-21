@@ -1,44 +1,16 @@
 import { PrismaClient } from '@prisma/client'
+import { ISession } from 'server/models/ISession'
 import { container } from 'tsyringe'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenTradePokemon } from '../../../../server/modules/imageGen/iGenTradePokemon'
 import { TRouteParams } from '../../router'
 import { tradePoke2 } from './tradePoke2'
 
-const verifySession = async ({ sessionId, invitedPlayerId, prismaClient, confirm, fromReact }: any) => {
-  if (typeof sessionId !== 'number' || isNaN(sessionId))
-    return {
-      message: `ERRO: "${sessionId}" não é do tipo número.`,
-      status: 400,
-      data: null,
-    }
-  if (confirm === 'CONFIRM' && fromReact) {
-    const session = await prismaClient.session.findUnique({
-      where: {
-        id: sessionId,
-      },
-    })
-    if (!session)
-      return {
-        message: `ERRO: Nenhuma sessão de troca encontrada com codigo: "${sessionId}" `,
-        status: 400,
-        data: null,
-      }
-    if (session.invitedId !== invitedPlayerId || session.isFinished) {
-      return {
-        message: ``,
-        status: 400,
-        data: null,
-        react: '❌',
-      }
-    }
-    return session
-  }
-}
 export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , , creatorPokeIdString, invitedPokeIdString, confirm, sessionId] = data.routeParams
+  const [, , , creatorPokeIdString, invitedPokeIdString, confirm, sessionIdString] = data.routeParams
   const creatorPokeId = Number(creatorPokeIdString)
   const invitedPokeId = Number(invitedPokeIdString)
+  const sessionId = Number(sessionIdString)
   if (typeof creatorPokeId !== 'number' || isNaN(creatorPokeId))
     return {
       message: `ERRO: "${creatorPokeIdString}" não é do tipo número.`,
@@ -67,12 +39,35 @@ export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
       data: null,
     }
 
-  const session = await verifySession({
-    invitedPlayerId: requesterPlayer.id,
-    sessionId: Number(sessionId),
-    prismaClient,
-  })
-  if (session.message) return session
+  if (data.fromReact && (typeof sessionId !== 'number' || isNaN(sessionId)))
+    return {
+      message: `ERRO: "${sessionId}" não é do tipo número.`,
+      status: 400,
+      data: null,
+    }
+
+  let session: ISession | undefined | null
+  if (confirm === 'CONFIRM' && data.fromReact) {
+    session = await prismaClient.session.findUnique({
+      where: {
+        id: sessionId,
+      },
+    })
+    if (!session)
+      return {
+        message: `ERRO: Nenhuma sessão de troca encontrada com codigo: "${sessionId}" `,
+        status: 400,
+        data: null,
+      }
+    if (session.invitedId !== requesterPlayer.id || session.isFinished) {
+      return {
+        message: ``,
+        status: 400,
+        data: null,
+        react: '❌',
+      }
+    }
+  }
 
   const pokes = await prismaClient.pokemon.findMany({
     where: {
@@ -133,12 +128,19 @@ export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
       data: null,
     }
 
-  if (confirm == 'CONFIRM' && data.fromReact)
+  if (confirm == 'CONFIRM' && data.fromReact) {
+    if (!session)
+      return {
+        message: `ERRO: Nenhuma sessão de troca encontrada com codigo: "${sessionId}" `,
+        status: 400,
+        data: null,
+      }
     return await tradePoke2({
       creatorPoke,
       invitedPoke,
       session,
     })
+  }
 
   const newSession = await prismaClient.session.create({
     data: {

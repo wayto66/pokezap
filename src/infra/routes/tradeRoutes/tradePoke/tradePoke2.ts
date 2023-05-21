@@ -13,12 +13,23 @@ export type TTradePokeParams = {
 export const tradePoke2 = async (data: TTradePokeParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
+  if (!data.creatorPoke.ownerId || !data.invitedPoke.ownerId)
+    return {
+      message: `ERRO" `,
+      status: 400,
+      data: null,
+    }
+
   const poke1 = await prismaClient.pokemon.update({
     where: {
       id: data.creatorPoke.id,
     },
     data: {
-      ownerId: data.invitedPoke.ownerId,
+      owner: {
+        connect: {
+          id: data.invitedPoke.ownerId,
+        },
+      },
     },
   })
 
@@ -27,7 +38,11 @@ export const tradePoke2 = async (data: TTradePokeParams): Promise<IResponse> => 
       id: data.invitedPoke.id,
     },
     data: {
-      ownerId: data.creatorPoke.ownerId,
+      owner: {
+        connect: {
+          id: data.creatorPoke.ownerId,
+        },
+      },
     },
   })
 
