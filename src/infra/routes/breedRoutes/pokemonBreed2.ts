@@ -223,7 +223,7 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
 
       const media = MessageMedia.fromFilePath(imageUrl as string)
       await zapClient.sendMessage(data.groupCode, media, {
-        caption: `Novo pokemon gerado por breed de #${pokemon1.id} ${pokemon1.baseData.name} e #${pokemon2.id} ${pokemon2.baseData.name}`,
+        caption: `#${newBaby.id}-${newBaby.baseData.name} foi gerado por breed de #${pokemon1.id} ${pokemon1.baseData.name} e #${pokemon2.id} ${pokemon2.baseData.name}`,
       })
     }
     return {
@@ -239,10 +239,12 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
   })
 
   return {
-    message: `Para realizar o breed de ${amount} filhotes, será necessário pagar ${totalCost} POKECOINS.  `,
+    message: `Para realizar o breed de ${amount} filhotes, será necessário pagar ${totalCost} POKECOINS. 
+    
+    👍 - CONFIRMAR`,
     status: 200,
     data: null,
     imageUrl: imageUrl,
-    actions: [`pokezap. pokemon breed ${pokemon1.id} ${pokemon2.id} ${amount} confirm`],
+    actions: [`pokezap. breed ${pokemon1.id} ${pokemon2.id} ${amount} confirm`],
   }
 }

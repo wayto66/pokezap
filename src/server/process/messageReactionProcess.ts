@@ -37,6 +37,8 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
     },
   })
 
+  console.log({ react: msg.reaction })
+
   const getRequestedAction = () => {
     for (let i = 0; i < message.actions.length; i++) {
       if (reactions[i].includes(msg.reaction)) {
@@ -82,7 +84,17 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
   }
 
   const media = MessageMedia.fromFilePath(response.imageUrl)
-  await zapClient.sendMessage(msg.id.remote, media, {
+  const result = await zapClient.sendMessage(msg.id.remote, media, {
     caption: response.message,
   })
+  if (response.actions) {
+    await prismaClient.message.create({
+      data: {
+        msgId: result.id.id,
+        type: 'default',
+        body: result.body,
+        actions: response.actions,
+      },
+    })
+  }
 }
