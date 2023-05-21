@@ -5,7 +5,7 @@ export const qrCodeProcess = (qrCodeString: string, instanceName: string) => {
 
   console.log('starting qrCodeProcess')
 
-  const name = `qrcode-${instanceName}.png`
+  const name = `qrCodes/qrcode-${instanceName}.png`
   qr.toFile(name, qrCodeString, err => {
     if (err) {
       console.error(err)
