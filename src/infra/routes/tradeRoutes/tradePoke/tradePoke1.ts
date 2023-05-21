@@ -5,24 +5,27 @@ import { IResponse } from '../../../../server/models/IResponse'
 import { iGenTradePokemon } from '../../../../server/modules/imageGen/iGenTradePokemon'
 import { TRouteParams } from '../../router'
 import { tradePoke2 } from './tradePoke2'
+import {
+  PlayerNotFoundError,
+  PokemonDoesNotBelongsToTheUserError,
+  PokemonDoesNotHaveOwnerError,
+  PokemonNotFoundError,
+  SendEmptyMessageError,
+  SessionIdNotFoundError,
+  SessionNotFoundError,
+  TypeMissmatchError,
+} from 'infra/errors/AppErrors'
 
 export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , , creatorPokeIdString, invitedPokeIdString, confirm, sessionIdString] = data.routeParams
-  const creatorPokeId = Number(creatorPokeIdString)
-  const invitedPokeId = Number(invitedPokeIdString)
+  const [, , , creatorPokemonIdString, invitedPokemonIdString, confirm, sessionIdString] = data.routeParams
+  const creatorPokemonId = Number(creatorPokemonIdString)
+  const invitedPokemonId = Number(invitedPokemonIdString)
   const sessionId = Number(sessionIdString)
-  if (typeof creatorPokeId !== 'number' || isNaN(creatorPokeId))
-    return {
-      message: `ERRO: "${creatorPokeIdString}" não é do tipo número.`,
-      status: 400,
-      data: null,
-    }
-  if (typeof invitedPokeId !== 'number' || isNaN(invitedPokeId))
-    return {
-      message: `ERRO: "${invitedPokeIdString}" não é do tipo número.`,
-      status: 400,
-      data: null,
-    }
+  if (typeof creatorPokemonId !== 'number' || isNaN(creatorPokemonId))
+    throw new TypeMissmatchError(creatorPokemonIdString, 'number')
+
+  if (typeof invitedPokemonId !== 'number' || isNaN(invitedPokemonId))
+    throw new TypeMissmatchError(invitedPokemonIdString, 'number')
 
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
@@ -31,52 +34,32 @@ export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
       phone: data.playerPhone,
     },
   })
-
-  if (!requesterPlayer)
-    return {
-      message: `ERRO: Nenhum jogador encontrado com codigo: "${data.playerPhone}" `,
-      status: 400,
-      data: null,
-    }
+  if (!requesterPlayer) throw new PlayerNotFoundError(data.playerPhone)
 
   if (data.fromReact && (typeof sessionId !== 'number' || isNaN(sessionId)))
-    return {
-      message: `ERRO: "${sessionId}" não é do tipo número.`,
-      status: 400,
-      data: null,
-    }
+    throw new TypeMissmatchError(sessionIdString, 'number')
 
   let session: ISession | undefined | null
+
   if (confirm === 'CONFIRM' && data.fromReact) {
     session = await prismaClient.session.findUnique({
       where: {
         id: sessionId,
       },
     })
-    if (!session)
-      return {
-        message: `ERRO: Nenhuma sessão de troca encontrada com codigo: "${sessionId}" `,
-        status: 400,
-        data: null,
-      }
-    if (session.invitedId !== requesterPlayer.id || session.isFinished) {
-      return {
-        message: ``,
-        status: 400,
-        data: null,
-        react: '❌',
-      }
-    }
+
+    if (!session) throw new SessionNotFoundError(sessionId)
+    if (session.invitedId !== requesterPlayer.id || session.isFinished) throw new SendEmptyMessageError()
   }
 
-  const pokes = await prismaClient.pokemon.findMany({
+  const pokemons = await prismaClient.pokemon.findMany({
     where: {
       OR: [
         {
-          id: creatorPokeId,
+          id: creatorPokemonId,
         },
         {
-          id: invitedPokeId,
+          id: invitedPokemonId,
         },
       ],
     },
@@ -85,59 +68,31 @@ export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
     },
   })
 
-  const creatorPoke = pokes.find(poke => poke.id === creatorPokeId)
-  if (!creatorPoke)
-    return {
-      message: `ERRO: Nenhum pokemon encontrado com id: "${creatorPokeId}" `,
-      status: 400,
-      data: null,
-    }
+  const creatorPokemon = pokemons.find(pokemon => pokemon.id === creatorPokemonId)
+  if (!creatorPokemon) throw new PokemonNotFoundError(creatorPokemonId)
 
-  const invitedPoke = pokes.find(poke => poke.id === invitedPokeId)
-  if (!invitedPoke)
-    return {
-      message: `ERRO: Nenhum pokemon encontrado com id: "${invitedPokeId}" `,
-      status: 400,
-      data: null,
-    }
+  const invitedPokemon = pokemons.find(poke => poke.id === invitedPokemonId)
+  if (!invitedPokemon) throw new PokemonNotFoundError(invitedPokemonId)
 
-  if (creatorPoke?.ownerId !== requesterPlayer.id && !data.fromReact)
-    return {
-      message: `ERRO: Pokemon #${creatorPoke.id} ${creatorPoke.baseData.name} não pertence à ${requesterPlayer.name}. `,
-      status: 400,
-      data: null,
-    }
+  if (creatorPokemon.ownerId !== requesterPlayer.id && !data.fromReact)
+    throw new PokemonDoesNotBelongsToTheUserError(creatorPokemon.id, creatorPokemon.baseData.name, requesterPlayer.name)
 
-  if (!invitedPoke.ownerId)
-    return {
-      message: `ERRO: Pokemon #${invitedPoke.id} ${invitedPoke.baseData.name} não possui dono. `,
-      status: 400,
-      data: null,
-    }
+  if (!invitedPokemon.ownerId) throw new PokemonDoesNotHaveOwnerError(invitedPokemon.id, invitedPokemon.baseData.name)
 
   const invitedPlayer = await prismaClient.player.findUnique({
     where: {
-      id: invitedPoke.ownerId,
+      id: invitedPokemon.ownerId,
     },
   })
 
-  if (!invitedPlayer)
-    return {
-      message: `ERRO: Nenhum jogador encontrado com codigo: "${invitedPoke.ownerId}" `,
-      status: 400,
-      data: null,
-    }
+  if (!invitedPlayer) throw new PlayerNotFoundError(String(invitedPokemon.ownerId))
 
-  if (confirm == 'CONFIRM' && data.fromReact) {
-    if (!session)
-      return {
-        message: `ERRO: Nenhuma sessão de troca encontrada com codigo: "${sessionId}" `,
-        status: 400,
-        data: null,
-      }
+  if (confirm === 'CONFIRM' && data.fromReact) {
+    if (!session) throw new SessionIdNotFoundError(sessionId)
+
     return await tradePoke2({
-      creatorPoke,
-      invitedPoke,
+      creatorPokemon,
+      invitedPokemon,
       session,
     })
   }
@@ -151,16 +106,16 @@ export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
   })
 
   const imageUrl = await iGenTradePokemon({
-    pokemon1: creatorPoke,
-    pokemon2: invitedPoke,
+    pokemon1: creatorPokemon,
+    pokemon2: invitedPokemon,
   })
 
   return {
-    message: `${requesterPlayer.name} deseja trocar seu #${creatorPoke.id}-${creatorPoke.baseData.name} com o #${invitedPoke.id}-${invitedPoke.baseData.name} de ${invitedPlayer.name}.
+    message: `${requesterPlayer.name} deseja trocar seu #${creatorPokemon.id}-${creatorPokemon.baseData.name} com o #${invitedPokemon.id}-${invitedPokemon.baseData.name} de ${invitedPlayer.name}.
     👍 - Aceitar`,
     status: 200,
     data: null,
     imageUrl: imageUrl,
-    actions: [`pz. trade poke ${creatorPoke.id} ${invitedPoke.id} confirm ${newSession.id}`],
+    actions: [`pz. trade poke ${creatorPokemon.id} ${invitedPokemon.id} confirm ${newSession.id}`],
   }
 }

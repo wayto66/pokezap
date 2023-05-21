@@ -3,20 +3,14 @@ import { container } from 'tsyringe'
 import { IResponse } from '../../../server/models/IResponse'
 import { iGenDuelX1 } from '../../../server/modules/imageGen/iGenDuelX1'
 import { TRouteParams } from '../router'
+import { PlayerDoesNotHaveThePokemonInTheTeam, PlayerNotFoundError, TypeMissmatchError } from 'infra/errors/AppErrors'
 
 export const duelX1Route = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , challengedPlayerIdString] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
-
   const challengedPlayerId = Number(challengedPlayerIdString)
+  if (typeof challengedPlayerId !== 'number') throw new TypeMissmatchError(challengedPlayerIdString, 'number')
 
-  if (typeof challengedPlayerId !== 'number')
-    return {
-      message: `ERRO: "${challengedPlayerIdString}" não é do tipo número.`,
-      status: 400,
-      data: null,
-    }
-
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const player1 = await prismaClient.player.findFirst({
     where: {
       phone: data.playerPhone,
@@ -33,6 +27,9 @@ export const duelX1Route = async (data: TRouteParams): Promise<IResponse> => {
       },
     },
   })
+  if (!player1) throw new PlayerNotFoundError(data.playerPhone)
+  if (!player1.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeam(player1.name)
+
   const player2 = await prismaClient.player.findFirst({
     where: {
       id: challengedPlayerId,
@@ -49,35 +46,8 @@ export const duelX1Route = async (data: TRouteParams): Promise<IResponse> => {
       },
     },
   })
-
-  if (!player1)
-    return {
-      message: `ERRO: Nenhum jogador encontrado com codigo: "${data.playerPhone}" `,
-      status: 400,
-      data: null,
-    }
-
-  if (!player2)
-    return {
-      message: `ERRO: Nenhum pokemon encontrado com id: "${challengedPlayerId}" `,
-      status: 400,
-      data: null,
-    }
-
-  if (!player1.teamPoke1) {
-    return {
-      message: `ERRO: Jogador *${player1.name}* não possui um pokemon em seu time. `,
-      status: 400,
-      data: null,
-    }
-  }
-  if (!player2.teamPoke1) {
-    return {
-      message: `ERRO: Jogador *${player2.name}* não possui um pokemon em seu time. `,
-      status: 400,
-      data: null,
-    }
-  }
+  if (!player2) throw new PlayerNotFoundError(challengedPlayerIdString)
+  if (!player2.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeam(player2.name)
 
   const newSession = await prismaClient.session.create({
     data: {

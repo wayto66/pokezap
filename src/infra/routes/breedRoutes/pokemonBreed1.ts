@@ -4,45 +4,32 @@ import { IResponse } from '../../../server/models/IResponse'
 import { iGenPokemonBreed } from '../../../server/modules/imageGen/iGenPokemonBreed'
 import { TRouteParams } from '../router'
 import { pokemonBreed2 } from './pokemonBreed2'
+import {
+  MissingParametersBreedRouteError,
+  PlayerNotFoundError,
+  PlayersPokemonNotFoundError,
+  PokemonAlreadyHasChildrenError,
+  TypeMissmatchError,
+} from 'infra/errors/AppErrors'
 
 export const pokemonBreed1 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , id1, id2, amount] = data.routeParams
-
+  if (!id1 || !id2) throw new MissingParametersBreedRouteError()
   if (amount) return await pokemonBreed2(data)
-  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
-  if (!id1 || !id2) {
-    return {
-      message: `ERROR: you must provide the ids for the pokemon pair to be breeded. The correct syntax would be something like:
-      pokemon breed 123 456`,
-      status: 400,
-      data: null,
-    }
-  }
   const idFix1 = Number(id1.slice(id1.indexOf('#') + 1))
+  if (typeof idFix1 !== 'number') throw new TypeMissmatchError(id1, 'number')
+
   const idFix2 = Number(id2.slice(id2.indexOf('#') + 1))
+  if (typeof idFix2 !== 'number') throw new TypeMissmatchError(id2, 'number')
 
-  if (typeof idFix1 !== 'number' || typeof idFix2 !== 'number') {
-    return {
-      message: `ERROR: something is wrong with the ids. Please verify if you are using the correct syntax.`,
-      status: 400,
-      data: null,
-    }
-  }
-
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const player1 = await prismaClient.player.findFirst({
     where: {
       phone: data.playerPhone,
     },
   })
-
-  if (!player1) {
-    return {
-      message: `UNEXPECTED_ERROR: no player found for phoneCode: ${data.playerPhone}`,
-      status: 400,
-      data: null,
-    }
-  }
+  if (!player1) throw new PlayerNotFoundError(data.playerPhone)
 
   const pokemon1 = await prismaClient.pokemon.findFirst({
     where: {
@@ -62,14 +49,7 @@ export const pokemonBreed1 = async (data: TRouteParams): Promise<IResponse> => {
       talent9: true,
     },
   })
-
-  if (!pokemon1) {
-    return {
-      message: `ERROR: no pokemon found for id: ${idFix1} and player: ${player1.name}`,
-      status: 400,
-      data: null,
-    }
-  }
+  if (!pokemon1) throw new PlayersPokemonNotFoundError(idFix1, player1.name)
 
   const pokemon2 = await prismaClient.pokemon.findFirst({
     where: {
@@ -89,35 +69,15 @@ export const pokemonBreed1 = async (data: TRouteParams): Promise<IResponse> => {
       talent9: true,
     },
   })
-
-  if (!pokemon2) {
-    return {
-      message: `ERROR: no pokemon found for id: ${idFix2} and player: ${player1.name}`,
-      status: 400,
-      data: null,
-    }
-  }
+  if (!pokemon2) throw new PlayersPokemonNotFoundError(idFix2, player1.name)
 
   const imageUrl = await iGenPokemonBreed({
     pokemon1: pokemon1,
     pokemon2: pokemon2,
   })
 
-  if (pokemon1.childrenId4)
-    return {
-      message: `#${pokemon1.id} ${pokemon1.baseData.name} já possui 3 filhotes.`,
-      status: 300,
-      data: null,
-      imageUrl: imageUrl,
-    }
-
-  if (pokemon2.childrenId4)
-    return {
-      message: `#${pokemon2.id} ${pokemon2.baseData.name} já possui 3 filhotes.`,
-      status: 300,
-      data: null,
-      imageUrl: imageUrl,
-    }
+  if (pokemon1.childrenId4) throw new PokemonAlreadyHasChildrenError(pokemon1.id, pokemon1.baseData.name)
+  if (pokemon2.childrenId4) throw new PokemonAlreadyHasChildrenError(pokemon2.id, pokemon1.baseData.name)
 
   return {
     message: `*${player1.name}* inicou o processo de breed entre:

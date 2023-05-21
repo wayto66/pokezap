@@ -5,18 +5,11 @@ import { iGenPlayerAnalysis } from '../../../../server/modules/imageGen/iGenPlay
 import { generateGeneralStats } from '../../../../server/modules/pokemon/generateGeneralStats'
 import { generateHpStat } from '../../../../server/modules/pokemon/generateHpStat'
 import { TRouteParams } from '../../router'
+import { GenderDoesNotExistError } from 'infra/errors/AppErrors'
 
 export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , gender, spriteId] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
-
-  if (gender !== 'MENINO' && gender !== 'MENINA') {
-    return {
-      message: `ERRO: Gênero "${gender}" não encontrado. Utilize: 'menino' ou 'menina'.`,
-      status: 400,
-      data: null,
-    }
-  }
+  if (gender !== 'MENINO' && gender !== 'MENINA') throw new GenderDoesNotExistError(gender)
 
   const playerSprite = () => {
     if (gender === 'MENINO') return 'male/' + spriteId + '.png'
@@ -24,6 +17,7 @@ export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
     return ''
   }
 
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const newPlayer = await prismaClient.player.create({
     data: {
       name: data.playerName,
@@ -41,8 +35,6 @@ export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
   })
 
   const basePoke = basePokes[Math.floor(Math.random() * basePokes.length)]
-
-  const talents = await prismaClient.talent.findMany()
 
   const newPokemon = await prismaClient.pokemon.create({
     data: {

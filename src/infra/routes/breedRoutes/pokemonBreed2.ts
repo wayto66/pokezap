@@ -7,51 +7,35 @@ import { iGenPokemonAnalysis } from '../../../server/modules/imageGen/iGenPokemo
 import { iGenPokemonBreed } from '../../../server/modules/imageGen/iGenPokemonBreed'
 import { breed } from '../../../server/modules/pokemon/breed'
 import { TRouteParams } from '../router'
+import {
+  InsufficientFundsError,
+  InvalidChildrenAmountError,
+  MissingParametersBreedRouteError,
+  PlayerNotFoundError,
+  PlayersPokemonNotFoundError,
+  PokemonAlreadyHasChildrenError,
+  TypeMissmatchError,
+} from 'infra/errors/AppErrors'
 
 export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , id1, id2, amount, confirm] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
+  const [, , , id1, id2, amount, confirm] = data.routeParams
+  if (!id1 || !id2) throw new MissingParametersBreedRouteError()
+  if (typeof Number(amount) !== 'number' || Number(amount) > 4) throw new InvalidChildrenAmountError()
 
-  if (typeof Number(amount) !== 'number' || Number(amount) > 4) {
-    return {
-      message: `ERROR: invalid children amount.`,
-      status: 400,
-      data: null,
-    }
-  }
-
-  if (!id1 || !id2) {
-    return {
-      message: `ERROR: you must provide the ids for the pokemon pair to be breeded. The correct syntax would be something like:
-      pokemon breed 123 456`,
-      status: 400,
-      data: null,
-    }
-  }
   const idFix1 = Number(id1.slice(id1.indexOf('#') + 1))
+  if (typeof idFix1 !== 'number') throw new TypeMissmatchError(id1, 'number')
+
   const idFix2 = Number(id2.slice(id2.indexOf('#') + 1))
+  if (typeof idFix2 !== 'number') throw new TypeMissmatchError(id2, 'number')
 
-  if (typeof idFix1 !== 'number' || typeof idFix2 !== 'number') {
-    return {
-      message: `ERROR: something is wrong with the ids. Please verify if you are using the correct syntax.`,
-      status: 400,
-      data: null,
-    }
-  }
-
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const player1 = await prismaClient.player.findFirst({
     where: {
       phone: data.playerPhone,
     },
   })
 
-  if (!player1) {
-    return {
-      message: `UNEXPECTED_ERROR: no player found for phoneCode: ${data.playerPhone}`,
-      status: 400,
-      data: null,
-    }
-  }
+  if (!player1) throw new PlayerNotFoundError(data.playerPhone)
 
   const pokemon1 = await prismaClient.pokemon.findFirst({
     where: {
@@ -71,14 +55,7 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
       talent9: true,
     },
   })
-
-  if (!pokemon1) {
-    return {
-      message: `ERROR: no pokemon found for id: ${idFix1} and player: ${player1.name}`,
-      status: 400,
-      data: null,
-    }
-  }
+  if (!pokemon1) throw new PlayersPokemonNotFoundError(idFix1, player1.name)
 
   const pokemon2 = await prismaClient.pokemon.findFirst({
     where: {
@@ -98,14 +75,7 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
       talent9: true,
     },
   })
-
-  if (!pokemon2) {
-    return {
-      message: `ERROR: no pokemon found for id: ${idFix2} and player: ${player1.name}`,
-      status: 400,
-      data: null,
-    }
-  }
+  if (!pokemon2) throw new PlayersPokemonNotFoundError(idFix2, player1.name)
 
   const getChildrenCount = (poke: IPokemon): number => {
     if (!poke.childrenId1) return 0
@@ -117,19 +87,11 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
 
   const poke1ChildrenCount = getChildrenCount(pokemon1)
   if (Number(amount) > 4 - poke1ChildrenCount)
-    return {
-      message: `#${pokemon1.id} ${pokemon1.baseData.name} já possui ${poke1ChildrenCount} filhotes e não é apto à conceber mais ${amount} filhotes.`,
-      status: 300,
-      data: null,
-    }
+    throw new PokemonAlreadyHasChildrenError(pokemon1.id, pokemon1.baseData.name, amount)
 
   const poke2ChildrenCount = getChildrenCount(pokemon2)
   if (Number(amount) > 4 - poke2ChildrenCount)
-    return {
-      message: `#${pokemon2.id} ${pokemon2.baseData.name} já possui ${poke2ChildrenCount} filhotes e não é apto à conceber mais ${amount} filhotes.`,
-      status: 300,
-      data: null,
-    }
+    throw new PokemonAlreadyHasChildrenError(pokemon2.id, pokemon2.baseData.name, amount)
 
   const getBreedingCosts = (poke: IPokemon) => {
     if (!poke.childrenId1) return 100
@@ -138,25 +100,11 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
     if (!poke.childrenId4) return 1000
     return 9999
   }
-
   const totalCost = getBreedingCosts(pokemon1) + getBreedingCosts(pokemon2)
-
-  console.log({ confirm })
+  if (player1.cash < totalCost) throw new InsufficientFundsError(player1.name, player1.cash, totalCost)
 
   if (confirm === 'CONFIRM') {
-    const poke1ChildCount = poke1ChildrenCount
-    const poke2ChildCount = poke2ChildrenCount
-
     for (let i = 0; i < Number(amount); i++) {
-      if (player1.cash < totalCost)
-        return {
-          message: `${player1.name} não possui POKECOINS suficientes. São necessários ${totalCost}, ainda falta ${
-            totalCost - player1.cash
-          } `,
-          status: 300,
-          data: null,
-        }
-
       await prismaClient.player.update({
         where: {
           id: player1.id,
@@ -201,6 +149,7 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
         throw new Error('p1updatechildrendata error')
       }
 
+      const poke1ChildCount = poke1ChildrenCount
       await prismaClient.pokemon.update({
         where: {
           id: pokemon1.id,
@@ -208,6 +157,7 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
         data: updateChildrenData(poke1ChildCount),
       })
 
+      const poke2ChildCount = poke2ChildrenCount
       await prismaClient.pokemon.update({
         where: {
           id: pokemon2.id,

@@ -3,11 +3,12 @@ import { container } from 'tsyringe'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenInvetoryPokemons } from '../../../../server/modules/imageGen/iGenInvetoryPokemons'
+import { PlayerNotFoundError } from 'infra/errors/AppErrors'
 
 export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , page] = data.routeParams
-  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const player = await prismaClient.player.findFirst({
     where: {
       phone: data.playerPhone,
@@ -29,13 +30,7 @@ export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse>
       },
     },
   })
-
-  if (!player)
-    return {
-      message: 'ERROR: No player found with code ' + data.playerPhone,
-      status: 400,
-      data: null,
-    }
+  if (!player) throw new PlayerNotFoundError(data.playerPhone)
 
   const numberPage = () => {
     if (typeof Number(page) === 'number') return Number(page)

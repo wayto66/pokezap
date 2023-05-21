@@ -1,3 +1,4 @@
+import { MissingParametersRouteRouteError, SubRouteNotFoundError } from 'infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { routeEnter } from './enter/routeEnter'
@@ -5,39 +6,32 @@ import { routeInfo } from './info/routeInfo'
 import { routeStart } from './start/routeStart'
 
 const routesMap = new Map<string, any>([
+  // ROUTE ENTER ROUTES
   ['ENTRAR', routeEnter],
   ['ENTER', routeEnter],
+
+  // ROUTE LEAVE ROUTES
   ['SAIR', undefined],
   ['LEAVE', undefined],
   ['QUIT', undefined],
   ['EXIT', undefined],
   ['UPGRADE', undefined],
+
+  // ROUTE INFO ROUTES
   ['INFO', routeInfo],
+
+  // ROUTE START ROUTES
   ['START', routeStart],
   ['INICIO', routeStart],
   ['INICIAR', routeStart],
 ])
 
 export const routeRoutes = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , subRouteName] = data.routeParams
+  const [, , subRoute] = data.routeParams
+  if (!subRoute) throw new MissingParametersRouteRouteError()
 
-  if (!subRouteName) {
-    return {
-      message: 'DUMMY: This is the routes route. Please specify a sub-route name',
-      status: 300,
-      data: null,
-    }
-  }
-
-  const route = routesMap.get(subRouteName)
-
-  if (!route) {
-    return {
-      message: `ERROR: No route found for: "${subRouteName}". Please verify if the route name is correct.`,
-      status: 400,
-      data: null,
-    }
-  }
+  const route = routesMap.get(subRoute)
+  if (!route) throw new SubRouteNotFoundError(subRoute)
 
   return await route(data)
 }

@@ -2,25 +2,16 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
+import { PlayerNotFoundError } from 'infra/errors/AppErrors'
 
 export const routeEnter = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
-
   const player = await prismaClient.player.findFirst({
     where: {
       phone: data.playerPhone,
     },
   })
-
-  if (!player) {
-    return {
-      message: `Você ainda não possui um personagem registrado.
-        Utilize o comando: 
-        pok***p. start`,
-      status: 300,
-      data: null,
-    }
-  }
+  if (!player) throw new PlayerNotFoundError(data.playerName)
 
   const updatedRoute = await prismaClient.gameRoom.update({
     where: {

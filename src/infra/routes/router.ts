@@ -1,3 +1,4 @@
+import { AppError, RouteNotFoundError, RouteNotProvidedError, UnexpectedError } from 'infra/errors/AppErrors'
 import { IResponse } from '../../server/models/IResponse'
 import { pokemonBreed1 } from './breedRoutes/pokemonBreed1'
 import { catchRoutes } from './catchRoutes'
@@ -16,30 +17,45 @@ export type TRouteParams = {
   playerName: string
   fromReact?: boolean
 }
+type TRouteType = (data: TRouteParams) => Promise<IResponse>
 
-const routeMap = new Map<string, any>([
+const routeMap = new Map<string, TRouteType>([
+  // NEW USER ROUTES
   ['INICIAR', newUser1],
   ['INICIO', newUser1],
   ['START', newUser1],
   ['INÍCIO', newUser1],
+
+  // PLAYER INFO ROUTES
   ['JOGADOR', playerInfo1],
   ['PLAYER', playerInfo1],
+
+  // POKEMON ROUTES
   ['POKEMON', pokemonRoutes],
-  ['POKÉMON', pokemonRoutes],
   ['POKE', pokemonRoutes],
   ['POKEMÓN', pokemonRoutes],
+
+  // ROUTE ROUTES
   ['ROUTE', routeRoutes],
   ['ROTA', routeRoutes],
   ['ROTAS', routeRoutes],
   ['ROUTES', routeRoutes],
+
+  // CATCH ROUTES
   ['CATCH', catchRoutes],
   ['CAPTURAR', catchRoutes],
   ['CAPTURA', catchRoutes],
+
+  // INVENTORY ROUTES
   ['INVENTARIO', inventoryRoutes],
   ['INVENTORY', inventoryRoutes],
+
+  // DUEL ROUTES
   ['DUEL', duelRoutes],
   ['DUELAR', duelRoutes],
   ['DUELO', duelRoutes],
+
+  // TRADE ROUTES
   ['TRADE', tradeRoutes],
   ['TROCA', tradeRoutes],
   ['TROCAR', tradeRoutes],
@@ -48,22 +64,20 @@ const routeMap = new Map<string, any>([
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {
   const [, routeName] = data.routeParams
-
-  if (!routeName) {
-    return {
-      status: 300,
-      data: null,
-      message: `Please specify a route.`,
-    }
-  }
+  if (!routeName) throw new RouteNotProvidedError()
 
   const route = routeMap.get(routeName.toUpperCase().trim())
-  if (!route)
-    return {
-      status: 400,
-      data: null,
-      message: `No route found for ${data.playerName} with ${data.routeParams[1]}`,
-    }
+  if (!route) throw new RouteNotFoundError(data.playerName, routeName)
 
-  return await route(data)
+  try {
+    return await route(data)
+  } catch (error) {
+    if (!(error instanceof AppError)) throw new UnexpectedError('')
+
+    return {
+      data: error.data,
+      message: error.message,
+      status: error.statusCode,
+    }
+  }
 }

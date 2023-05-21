@@ -2,35 +2,21 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
+import { TRouteParams } from 'infra/routes/router'
+import {
+  MissingParametersPokemonInformationError,
+  PokemonNotFoundError,
+  TypeMissmatchError,
+} from 'infra/errors/AppErrors'
 
-type TUserInfoParams = {
-  playerPhone: string
-  routeParams: string[]
-  playerName: string
-}
-
-export const pokemonInfo1 = async (data: TUserInfoParams): Promise<IResponse> => {
+export const pokemonInfo1 = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const [, , , pokemonId] = data.routeParams
-
-  if (!pokemonId) {
-    return {
-      message: `ERROR: you must provide a pokemon id. `,
-      status: 400,
-      data: null,
-    }
-  }
+  if (!pokemonId) throw new MissingParametersPokemonInformationError()
 
   const pokemonIdFix = Number(pokemonId.slice(pokemonId.indexOf('#') + 1))
-
-  if (typeof Number(pokemonIdFix) !== 'number') {
-    return {
-      message: `ERROR: ${pokemonIdFix} is not a number.`,
-      status: 400,
-      data: null,
-    }
-  }
+  if (typeof Number(pokemonIdFix) !== 'number') throw new TypeMissmatchError(pokemonId, 'number')
 
   const pokemon = await prismaClient.pokemon.findUnique({
     where: { id: Number(pokemonIdFix) },
@@ -48,14 +34,7 @@ export const pokemonInfo1 = async (data: TUserInfoParams): Promise<IResponse> =>
       owner: true,
     },
   })
-
-  if (!pokemon) {
-    return {
-      message: 'ERRO: Pokemon não encontrado para o código: ' + pokemonIdFix,
-      status: 400,
-      data: null,
-    }
-  }
+  if (!pokemon) throw new PokemonNotFoundError(pokemonIdFix)
 
   const imageUrl = await iGenPokemonAnalysis({
     pokemonData: pokemon,

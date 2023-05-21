@@ -3,6 +3,7 @@ import { container } from 'tsyringe'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokemonTeam } from '../../../../server/modules/imageGen/iGenPokemonTeam'
 import { TRouteParams } from '../../router'
+import { PlayerNotFoundError, PokemonNotFoundError, TypeMissmatchError } from 'infra/errors/AppErrors'
 
 export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , id1, id2, id3, id4, id5, id6] = data.routeParams
@@ -52,12 +53,7 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
     },
   })
 
-  if (!player)
-    return {
-      message: 'ERROR: NO PLAYER FOUND WITH ' + data.playerPhone,
-      status: 400,
-      data: null,
-    }
+  if (!player) throw new PlayerNotFoundError(data.playerName)
 
   if (!id1) {
     const imageUrl = await iGenPokemonTeam({
@@ -76,35 +72,14 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
   const uniqueIds = [...new Set(ids)]
 
   for (const id of uniqueIds) {
-    if (typeof id !== 'number' || isNaN(id))
-      return {
-        message: 'ERROR: problem parsing id: ' + id,
-        status: 400,
-        data: null,
-      }
-  }
-
-  for (const id of uniqueIds) {
+    if (typeof id !== 'number' || isNaN(id)) throw new TypeMissmatchError(String(id), 'number')
     if (id === 0) continue
-    const poke = await prismaClient.pokemon.findFirst({
+    const pokemon = await prismaClient.pokemon.findFirst({
       where: {
         id: id,
       },
     })
-
-    if (!poke)
-      return {
-        message: `ERRO: Não foi encontrado nenhum Pokemon com id ${id}.`,
-        status: 400,
-        data: null,
-      }
-
-    if (poke.ownerId !== player.id)
-      return {
-        message: `ERRO: Não foi encontrado nenhum Pokemon com id ${id}.`,
-        status: 400,
-        data: null,
-      }
+    if (!pokemon || pokemon.ownerId !== player.id) throw new PokemonNotFoundError(id)
   }
 
   for (let i = 0; i < 6; i++) {
