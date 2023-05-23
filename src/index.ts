@@ -18,22 +18,7 @@ const app = express()
 app.get('/', async () => {
   const items = await prismaClient.baseItem.findMany({
     where: {
-      OR: [
-        { name: 'poke-ball' },
-        { name: 'great-ball' },
-        { name: 'super-ball' },
-        { name: 'ultra-ball' },
-        { name: 'net-ball' },
-        { name: 'dive-ball' },
-        { name: 'nest-ball' },
-        { name: 'timer-ball' },
-        { name: 'heal-ball' },
-        { name: 'dusk-ball' },
-        { name: 'thunder-stone' },
-        { name: 'water-stone' },
-        { name: 'fire-stone' },
-        { name: 'moon-stone' },
-      ],
+      OR: [{ name: 'poke-ball' }, { name: 'great-ball' }, { name: 'ultra-ball' }],
     },
   })
 
@@ -45,7 +30,7 @@ app.listen(4000, async () => {
   console.log('pokezap is online!')
 })
 
-const enableZap = false
+const enableZap = true
 if (enableZap) {
   const client = new Client({
     authStrategy: new LocalAuth({ clientId: 'ZapClientInstance1' }),

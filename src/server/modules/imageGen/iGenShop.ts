@@ -59,6 +59,20 @@ export const iGenShop = async (data: TParams) => {
     ctx.textAlign = 'center'
     ctx.fillText(`$${data.items[i].npcPrice}`, x + 20, y + 80)
 
+    // draw itemid circle
+    const circle2Radius = 12
+    // draw the circle path
+    ctx.beginPath()
+    ctx.arc(x, y, circle2Radius, 0, Math.PI * 2)
+    // fill the circle path with black color
+    ctx.fillStyle = circleColor
+    ctx.fill()
+
+    ctx.font = ' 20px Pokemon'
+    ctx.fillStyle = 'white'
+    ctx.textAlign = 'center'
+    ctx.fillText(`${i + 1}`, x + 0, y + 7)
+
     k++
   }
 
