@@ -3,7 +3,6 @@ import express from 'express'
 import 'reflect-metadata'
 import { container } from 'tsyringe'
 import { Client, LocalAuth } from 'whatsapp-web.js'
-import { iGenDuelX1 } from './server/modules/imageGen/iGenDuelX1'
 import { handleAllProcess } from './server/process'
 
 process.on('uncaughtException', error => {
@@ -24,11 +23,6 @@ app.get('/', async () => {
         },
       },
     },
-  })
-
-  await iGenDuelX1({
-    player1: players[1],
-    player2: players[2],
   })
 })
 app.listen(4000, async () => {
