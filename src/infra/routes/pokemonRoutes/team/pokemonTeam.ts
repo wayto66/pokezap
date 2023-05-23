@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { PlayerNotFoundError, PokemonNotFoundError, TypeMissmatchError } from '../../../../infra/errors/AppErrors'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokemonTeam } from '../../../../server/modules/imageGen/iGenPokemonTeam'
 import { TRouteParams } from '../../router'
-import { PlayerNotFoundError, PokemonNotFoundError, TypeMissmatchError } from 'infra/errors/AppErrors'
 
 export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , id1, id2, id3, id4, id5, id6] = data.routeParams

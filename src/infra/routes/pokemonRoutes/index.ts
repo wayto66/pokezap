@@ -1,4 +1,4 @@
-import { MissingParametersPokemonRouteError, SubRouteNotFoundError } from 'infra/errors/AppErrors'
+import { MissingParametersPokemonRouteError, SubRouteNotFoundError } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { pokemonInfo1 } from './info/pokemonInfo1'

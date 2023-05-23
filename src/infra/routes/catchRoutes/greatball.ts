@@ -1,13 +1,13 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { IResponse } from '../../../server/models/IResponse'
 import {
+  MissingParametersCatchRouteError,
   PlayerDoesNotHaveItemError,
   PlayerNotFoundError,
   PokemonAlreadyHasOwnerError,
   PokemonNotFoundError,
-  MissingParametersCatchRouteError,
-} from 'infra/errors/AppErrors'
+} from '../../../infra/errors/AppErrors'
+import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 
 export const greatballCatch = async (data: TRouteParams): Promise<IResponse> => {

@@ -8,7 +8,7 @@ type TParams = {
 }
 
 export const iGenInvetoryPokemons = async (data: TParams) => {
-  const page = data.page || 0
+  const page = data.page ? data.page - 1 : 0
   // Define the dimensions of the canvas and the background
   const canvasWidth = 500
   const canvasHeight = 500

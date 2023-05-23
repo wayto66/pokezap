@@ -1,8 +1,5 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { IResponse } from '../../../server/models/IResponse'
-import { duelX1 } from '../../../server/modules/duel/duelX1'
-import { TRouteParams } from '../router'
 import {
   PlayerDoesNotHaveThePokemonInTheTeamError,
   PlayerNotFoundError,
@@ -10,7 +7,10 @@ import {
   SessionIdNotFoundError,
   TypeMissmatchError,
   UnexpectedError,
-} from 'infra/errors/AppErrors'
+} from '../../../infra/errors/AppErrors'
+import { IResponse } from '../../../server/models/IResponse'
+import { duelX1 } from '../../../server/modules/duel/duelX1'
+import { TRouteParams } from '../router'
 
 export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , sessionIdString] = data.routeParams

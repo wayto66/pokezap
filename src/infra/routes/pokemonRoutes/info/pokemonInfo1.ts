@@ -1,13 +1,13 @@
 import { PrismaClient } from '@prisma/client'
-import { container } from 'tsyringe'
-import { IResponse } from '../../../../server/models/IResponse'
-import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
 import { TRouteParams } from 'infra/routes/router'
+import { container } from 'tsyringe'
 import {
   MissingParametersPokemonInformationError,
   PokemonNotFoundError,
   TypeMissmatchError,
-} from 'infra/errors/AppErrors'
+} from '../../../../infra/errors/AppErrors'
+import { IResponse } from '../../../../server/models/IResponse'
+import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
 
 export const pokemonInfo1 = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')

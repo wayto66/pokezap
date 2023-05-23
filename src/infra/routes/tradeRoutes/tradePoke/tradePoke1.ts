@@ -1,10 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { ISession } from 'server/models/ISession'
 import { container } from 'tsyringe'
-import { IResponse } from '../../../../server/models/IResponse'
-import { iGenTradePokemon } from '../../../../server/modules/imageGen/iGenTradePokemon'
-import { TRouteParams } from '../../router'
-import { tradePoke2 } from './tradePoke2'
 import {
   PlayerNotFoundError,
   PokemonDoesNotBelongsToTheUserError,
@@ -14,7 +10,11 @@ import {
   SessionIdNotFoundError,
   SessionNotFoundError,
   TypeMissmatchError,
-} from 'infra/errors/AppErrors'
+} from '../../../../infra/errors/AppErrors'
+import { IResponse } from '../../../../server/models/IResponse'
+import { iGenTradePokemon } from '../../../../server/modules/imageGen/iGenTradePokemon'
+import { TRouteParams } from '../../router'
+import { tradePoke2 } from './tradePoke2'
 
 export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , creatorPokemonIdString, invitedPokemonIdString, confirm, sessionIdString] = data.routeParams

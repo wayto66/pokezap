@@ -1,4 +1,4 @@
-import { AppError, RouteNotFoundError, RouteNotProvidedError, UnexpectedError } from 'infra/errors/AppErrors'
+import { AppError, RouteNotFoundError, RouteNotProvidedError, UnexpectedError } from '../../infra/errors/AppErrors'
 import { IResponse } from '../../server/models/IResponse'
 import { pokemonBreed1 } from './breedRoutes/pokemonBreed1'
 import { catchRoutes } from './catchRoutes'
@@ -63,13 +63,13 @@ const routeMap = new Map<string, TRouteType>([
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {
-  const [, routeName] = data.routeParams
-  if (!routeName) throw new RouteNotProvidedError()
-
-  const route = routeMap.get(routeName.toUpperCase().trim())
-  if (!route) throw new RouteNotFoundError(data.playerName, routeName)
-
   try {
+    const [, routeName] = data.routeParams
+    if (!routeName) throw new RouteNotProvidedError()
+
+    const route = routeMap.get(routeName.toUpperCase().trim())
+    if (!route) throw new RouteNotFoundError(data.playerName, routeName)
+
     return await route(data)
   } catch (error) {
     if (!(error instanceof AppError)) throw new UnexpectedError('')

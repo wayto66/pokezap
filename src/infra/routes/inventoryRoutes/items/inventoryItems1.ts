@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { PlayerNotFoundError } from '../../../../infra/errors/AppErrors'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenInventoryItems } from '../../../../server/modules/imageGen/iGenInventoryItems'
-import { PlayerNotFoundError } from 'infra/errors/AppErrors'
 
 export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
@@ -26,7 +26,7 @@ export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> =>
   })
 
   return {
-    message: 'Invetário de ' + player.name,
+    message: 'Inventário de ' + player.name,
     status: 200,
     data: null,
     imageUrl: imageUrl,

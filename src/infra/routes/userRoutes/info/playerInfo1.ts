@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { PlayerNotFoundError, TypeMissmatchError } from '../../../../infra/errors/AppErrors'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPlayerAnalysis } from '../../../../server/modules/imageGen/iGenPlayerAnalysis'
-import { PlayerNotFoundError, TypeMissmatchError } from 'infra/errors/AppErrors'
 
 type TUserInfoParams = {
   playerPhone: string
@@ -83,7 +83,7 @@ export const playerInfo1 = async (data: TUserInfoParams): Promise<IResponse> => 
   if (!player) throw new PlayerNotFoundError(data.playerName)
 
   return {
-    message: `DUMMY: Jogador encontrado, #${player.id} ${player.name}  `,
+    message: `Jogador encontrado, #${player.id} ${player.name}  `,
     status: 200,
     data: null,
   }

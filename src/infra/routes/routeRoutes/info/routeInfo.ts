@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { InvalidRouteError, SubRouteNotFoundError, TypeMissmatchError } from '../../../../infra/errors/AppErrors'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
-import { InvalidRouteError, SubRouteNotFoundError, TypeMissmatchError } from 'infra/errors/AppErrors'
 
 export const routeInfo = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , routeId] = data.routeParams

@@ -1,11 +1,11 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { GenderDoesNotExistError } from '../../../../infra/errors/AppErrors'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPlayerAnalysis } from '../../../../server/modules/imageGen/iGenPlayerAnalysis'
 import { generateGeneralStats } from '../../../../server/modules/pokemon/generateGeneralStats'
 import { generateHpStat } from '../../../../server/modules/pokemon/generateHpStat'
 import { TRouteParams } from '../../router'
-import { GenderDoesNotExistError } from 'infra/errors/AppErrors'
 
 export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , gender, spriteId] = data.routeParams
