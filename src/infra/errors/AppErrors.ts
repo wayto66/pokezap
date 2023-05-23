@@ -87,6 +87,15 @@ export class MissingParametersDuelRouteError extends AppError {
   }
 }
 
+export class MissingParametersBuyAmountError extends AppError {
+  constructor() {
+    const message = 'Por favor, especifique a quantidade que deseja comprar ao enviar o comando de compra.'
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class MissingParametersInventoryRouteError extends AppError {
   constructor() {
     const message = 'DUMMY: This is the inventory route, specify a sub route.'
@@ -153,6 +162,15 @@ export class PokemonNotFoundError extends AppError {
   constructor(pokemonId: number) {
     const message = `ERRO: Pokemon não encontrado com o id ${pokemonId}`
     const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class NoItemsFoundError extends AppError {
+  constructor() {
+    const message = `ERRO: Nenhum item encontrado.`
+    const statusCode = 400
 
     super(message, statusCode)
   }
@@ -258,6 +276,15 @@ export class SessionIdNotFoundError extends AppError {
 export class PlayerDoesNotHaveThePokemonInTheTeamError extends AppError {
   constructor(playerName: string) {
     const message = `${playerName} não possui um pokemon no seu time.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class RequestedShopItemDoesNotExists extends AppError {
+  constructor(itemId: number | string) {
+    const message = `Não há um item com id: ${itemId} disponível na loja.`
     const statusCode = 300
 
     super(message, statusCode)
