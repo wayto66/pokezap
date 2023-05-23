@@ -1,4 +1,4 @@
-import { MissingParametersTradeRouteError, SubRouteNotFoundError } from 'infra/errors/AppErrors'
+import { MissingParametersTradeRouteError, SubRouteNotFoundError } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { tradePoke1 } from './tradePoke/tradePoke1'

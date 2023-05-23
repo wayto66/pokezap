@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { PlayerNotFoundError, RouteAlreadyRegisteredError } from '../../../../infra/errors/AppErrors'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
-import { PlayerNotFoundError, RouteAlreadyRegisteredError } from 'infra/errors/AppErrors'
 
 export const routeStart = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')

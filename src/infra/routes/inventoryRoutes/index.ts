@@ -1,4 +1,4 @@
-import { MissingParametersInventoryRouteError, SubRouteNotFoundError } from 'infra/errors/AppErrors'
+import { MissingParametersInventoryRouteError, SubRouteNotFoundError } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { inventoryItems1 } from './items/inventoryItems1'

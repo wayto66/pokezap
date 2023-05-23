@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { PlayerNotFoundError } from '../../../../infra/errors/AppErrors'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenInvetoryPokemons } from '../../../../server/modules/imageGen/iGenInvetoryPokemons'
-import { PlayerNotFoundError } from 'infra/errors/AppErrors'
 
 export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , page] = data.routeParams
@@ -33,8 +33,8 @@ export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse>
   if (!player) throw new PlayerNotFoundError(data.playerPhone)
 
   const numberPage = () => {
-    if (typeof Number(page) === 'number') return Number(page)
-    return 0
+    if (typeof Number(page) === 'number' && !isNaN(Number(page))) return Number(page)
+    return 1
   }
 
   const imageUrl = await iGenInvetoryPokemons({
@@ -43,7 +43,7 @@ export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse>
   })
 
   return {
-    message: `Página ${numberPage() + 1} de Pokemons de ${player.name}.`,
+    message: `Página ${numberPage()} de Pokemons de ${player.name}.`,
     status: 200,
     data: null,
     imageUrl: imageUrl,

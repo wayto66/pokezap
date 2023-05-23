@@ -1,4 +1,4 @@
-import { MissingParametersRouteRouteError, SubRouteNotFoundError } from 'infra/errors/AppErrors'
+import { MissingParametersRouteRouteError, SubRouteNotFoundError } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { routeEnter } from './enter/routeEnter'

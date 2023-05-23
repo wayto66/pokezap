@@ -1,4 +1,4 @@
-import { MissingParametersCatchRouteError, SubRouteNotFoundError } from 'infra/errors/AppErrors'
+import { MissingParametersCatchRouteError, SubRouteNotFoundError } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { greatballCatch } from './greatball'

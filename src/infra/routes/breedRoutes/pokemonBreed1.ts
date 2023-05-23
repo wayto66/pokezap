@@ -1,16 +1,16 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { IResponse } from '../../../server/models/IResponse'
-import { iGenPokemonBreed } from '../../../server/modules/imageGen/iGenPokemonBreed'
-import { TRouteParams } from '../router'
-import { pokemonBreed2 } from './pokemonBreed2'
 import {
   MissingParametersBreedRouteError,
   PlayerNotFoundError,
   PlayersPokemonNotFoundError,
   PokemonAlreadyHasChildrenError,
   TypeMissmatchError,
-} from 'infra/errors/AppErrors'
+} from '../../../infra/errors/AppErrors'
+import { IResponse } from '../../../server/models/IResponse'
+import { iGenPokemonBreed } from '../../../server/modules/imageGen/iGenPokemonBreed'
+import { TRouteParams } from '../router'
+import { pokemonBreed2 } from './pokemonBreed2'
 
 export const pokemonBreed1 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , id1, id2, amount] = data.routeParams

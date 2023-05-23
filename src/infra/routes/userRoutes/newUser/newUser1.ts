@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { PlayerNotFoundError } from '../../../../infra/errors/AppErrors'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
 import { newUser2 } from './newUser2'
-import { PlayerNotFoundError } from 'infra/errors/AppErrors'
 
 export const newUser1 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , gender] = data.routeParams

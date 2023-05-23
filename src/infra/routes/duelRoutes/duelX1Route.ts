@@ -1,9 +1,13 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import {
+  PlayerDoesNotHaveThePokemonInTheTeamError,
+  PlayerNotFoundError,
+  TypeMissmatchError,
+} from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { iGenDuelX1 } from '../../../server/modules/imageGen/iGenDuelX1'
 import { TRouteParams } from '../router'
-import { PlayerDoesNotHaveThePokemonInTheTeam, PlayerNotFoundError, TypeMissmatchError } from 'infra/errors/AppErrors'
 
 export const duelX1Route = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , challengedPlayerIdString] = data.routeParams
@@ -28,7 +32,7 @@ export const duelX1Route = async (data: TRouteParams): Promise<IResponse> => {
     },
   })
   if (!player1) throw new PlayerNotFoundError(data.playerPhone)
-  if (!player1.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeam(player1.name)
+  if (!player1.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(player1.name)
 
   const player2 = await prismaClient.player.findFirst({
     where: {
@@ -47,7 +51,7 @@ export const duelX1Route = async (data: TRouteParams): Promise<IResponse> => {
     },
   })
   if (!player2) throw new PlayerNotFoundError(challengedPlayerIdString)
-  if (!player2.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeam(player2.name)
+  if (!player2.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(player2.name)
 
   const newSession = await prismaClient.session.create({
     data: {

@@ -1,4 +1,4 @@
-import { MissingParametersDuelRouteError, SubRouteNotFoundError } from 'infra/errors/AppErrors'
+import { MissingParametersDuelRouteError, SubRouteNotFoundError } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { duelAccept } from './duelAccept'

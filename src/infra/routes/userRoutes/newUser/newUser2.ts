@@ -1,4 +1,4 @@
-import { InvalidSpriteError } from 'infra/errors/AppErrors'
+import { InvalidSpriteError } from '../../../../infra/errors/AppErrors'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenAvatarChoose } from '../../../../server/modules/imageGen/iGenAvatarChoose'
