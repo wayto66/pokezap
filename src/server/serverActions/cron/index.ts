@@ -2,8 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { Client, MessageMedia } from 'whatsapp-web.js'
 import { iGenWildPokemon } from '../../../server/modules/imageGen/iGenWildPokemon'
-import { generateHpStat } from '../../modules/pokemon/generateHpStat'
-import { generateGeneralStats } from '../../modules/pokemon/generateGeneralStats'
+import { generateWildPokemon } from '../../../server/modules/pokemon/generate/generateWildPokemon'
 
 type TParams = {
   prismaClient: PrismaClient
@@ -40,41 +39,12 @@ export const CronActions = async (data: TParams) => {
 
     const level = Math.floor(Math.min(1 + Math.random() * gameRoom.level, 100))
 
-    const newWildPokemon = await prismaClient.pokemon.create({
-      data: {
-        basePokemonId: baseData.id,
-        savage: true,
-        level: level,
-        isMale: Math.random() > 0.5,
-        hp: generateHpStat(baseData.BaseHp, level),
-        atk: generateGeneralStats(baseData.BaseAtk, level),
-        def: generateGeneralStats(baseData.BaseDef, level),
-        spAtk: generateGeneralStats(baseData.BaseSpAtk, level),
-        spDef: generateGeneralStats(baseData.BaseSpDef, level),
-        speed: generateGeneralStats(baseData.BaseSpeed, level),
-        isAdult: true,
-        talentId1: Math.max(Math.ceil(Math.random() * 18), 1),
-        talentId2: Math.max(Math.ceil(Math.random() * 18), 1),
-        talentId3: Math.max(Math.ceil(Math.random() * 18), 1),
-        talentId4: Math.max(Math.ceil(Math.random() * 18), 1),
-        talentId5: Math.max(Math.ceil(Math.random() * 18), 1),
-        talentId6: Math.max(Math.ceil(Math.random() * 18), 1),
-        talentId7: Math.max(Math.ceil(Math.random() * 18), 1),
-        talentId8: Math.max(Math.ceil(Math.random() * 18), 1),
-        talentId9: Math.max(Math.ceil(Math.random() * 18), 1),
-      },
-      include: {
-        baseData: true,
-        talent1: true,
-        talent2: true,
-        talent3: true,
-        talent4: true,
-        talent5: true,
-        talent6: true,
-        talent7: true,
-        talent8: true,
-        talent9: true,
-      },
+    const newWildPokemon = await generateWildPokemon({
+      baseData,
+      level,
+      shinyChance: 0.05,
+      savage: true,
+      isAdult: true,
     })
 
     const imageUrl = await iGenWildPokemon({
@@ -83,13 +53,16 @@ export const CronActions = async (data: TParams) => {
 
     const media = MessageMedia.fromFilePath(imageUrl!)
 
+    const displayName = newWildPokemon.isShiny
+      ? `shiny ${newWildPokemon.baseData.name}`
+      : `${newWildPokemon.baseData.name}`
+
     data.zapClient
       .sendMessage(gameRoom.phone, media, {
-        caption: `Um ${newWildPokemon.baseData.name} selvagem de nível ${newWildPokemon.level} acaba de aparecer!
+        caption: `Um *${displayName}* selvagem de nível ${newWildPokemon.level} acaba de aparecer!
 Ações:
 
 👍 - Lançar pokeball
-❤ - Lançar greatball
 
 `,
       })
