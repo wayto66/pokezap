@@ -4,7 +4,7 @@ import 'reflect-metadata'
 import { container } from 'tsyringe'
 import { Client, LocalAuth } from 'whatsapp-web.js'
 import { handleAllProcess } from './server/process'
-import { iGenShop } from './server/modules/imageGen/iGenShop'
+import { duelX1 } from './server/modules/duel/duelX1'
 
 process.on('uncaughtException', error => {
   console.error(error)
@@ -16,15 +16,32 @@ prismaClient.message.deleteMany()
 
 const app = express()
 app.get('/', async () => {
-  const items = await prismaClient.baseItem.findMany({
+  const pokemons = await prismaClient.pokemon.findMany({
     where: {
-      OR: [{ name: 'poke-ball' }, { name: 'great-ball' }, { name: 'ultra-ball' }],
+      OR: [
+        { id: 1331 },
+        {
+          id: 1332,
+        },
+      ],
+    },
+    include: {
+      baseData: {
+        include: {
+          skills: true,
+        },
+      },
     },
   })
 
-  await iGenShop({
-    items,
+  if (!pokemons) return
+
+  const res = await duelX1({
+    poke1: pokemons[0],
+    poke2: pokemons[1],
   })
+
+  if (res) console.log(res.message)
 })
 app.listen(4000, async () => {
   console.log('pokezap is online!')
@@ -34,6 +51,10 @@ const enableZap = true
 if (enableZap) {
   const client = new Client({
     authStrategy: new LocalAuth({ clientId: 'ZapClientInstance1' }),
+    puppeteer: {
+      executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    },
+    ffmpegPath: './src/infra/ffmpeg/bin/ffmpeg.exe',
   })
 
   container.registerInstance<Client>('ZapClientInstance1', client)

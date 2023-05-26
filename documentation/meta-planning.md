@@ -31,16 +31,88 @@ Mastermind[dark+psychic+ghost]: 46+74+35 = 155
 Seavell[water+ice]: 118+33 = 151
 Wingeon[flying+dragon] 90+38 = 128
 Wonderleaf[grass+fairy] 84+35 = 119
-Thundeforge[steel+rock+electric] 41+55+42 = 138
+Thunderforge[steel+rock+electric] 41+55+42 = 138
 
 ---
 
-Gardestrike[normal+fighting]: 92 + 39 = 131
-Volcanic[fire+ground]: 35+48 = 83
-Seavell[water+ice]: 118+30 = 135
-Naturia[grass+bug]: 78+75 = 153
-Raibolt[electric]: 53
-Psycraft[psychic+fairy]: 69+28 = 97
-Malefic[dark+ghost+poison]:44+34+45 = 123
-Wingeon[flying+dragon]: 53+34 = 77
-Ironhard[steel+rock]49+43 = 92
+volcanic
+
+- pro: grass,ice,steel,bug,eletric,rock,fire
+- neutral: fairy,ghost,dark,psychic,dragon,fight,normal
+- mid: fly
+- cons: water,
+
+toxibug
+
+- pro: grass,dark,psy,fairy
+- neutral: ice,bug,eletric,rock,fire,ghost,dragon,fight,normal,water
+- mid : fly
+- cons: steel
+
+gardestrike
+
+- pro: ice,steel,rock,normal
+- neutral: td
+- mid: psy,fairy,fly
+
+mastermind
+
+- pro: ghost,psy,poison
+- neutral: fire, grass, steel, bug, electric, rock, fairy, dragon,
+- cons: ?
+
+seavell
+
+- pro: grass, rock, fire, fly, ground, dragon
+- neutral:
+- mid: steel
+- cons:
+
+wingeon
+
+- pro: grass,bug,dragon,fight
+- cons: ice
+- mid: fairy
+
+wonderleaf:
+
+- pro: rock,dark,water,ground
+- mid: bug,
+- cons: steel, poison
+
+thunderforge:
+
+- pro: ice, bug, fairy, fly, water, rock,
+- cons: ground
+
+=========================================================================================
+
+## TEAM BONUSES
+
+# available bonuses:
+
+- hp,atk,def,speed,spatk,spdef
+- crit chance
+- block chance
+- mana charge
+- lifesteal
+
+# - by clan
+
+- VOLCANIC: critchance
+- TOXIBUG: lifesteal
+- GARDESTRIKE: atk bonus
+- MASTERMIND: manacharge
+- SEAVELL: spatk+
+- WINGEON: speed bonus?
+- WONDERLEAF: hp+
+- THUNDERFORGE: def+spdef
+
+# - by attribute
+
+- heavy and slow: blockchance
+- little and fast: atk+spatk
+- only 1 dragon: dragon receives atk bonus
+- airlines [all-winged]: speed
+- petclub [cat/dog/rat]:
+- caotic [nobonus]:

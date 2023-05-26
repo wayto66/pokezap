@@ -311,6 +311,42 @@ export class SendEmptyMessageError extends AppError {
   }
 }
 
+export class NoDuelWinnerFoundError extends AppError {
+  constructor() {
+    const message = `ERRO: não houve um vencedor registrado do duelo.'`
+    const statusCode = 400
+
+    super(message, statusCode)
+  }
+}
+
+export class NoDuelLoserFoundError extends AppError {
+  constructor() {
+    const message = `ERRO: não houve um perdedor registrado do duelo.'`
+    const statusCode = 400
+
+    super(message, statusCode)
+  }
+}
+
+export class CouldNotUpdatePlayerError extends AppError {
+  constructor(parameter: string, value: string | number) {
+    const message = `ERRO: não foi possivel atualizar o jogador com ${parameter}: ${value}`
+    const statusCode = 400
+
+    super(message, statusCode)
+  }
+}
+
+export class NoEnergyError extends AppError {
+  constructor(playerName: string) {
+    const message = `*${playerName}* não possui energia suficiente.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class UnexpectedError extends AppError {
   constructor(routeName: string) {
     const message = `ERRO: ouve um erro inesperado no ${routeName}.`

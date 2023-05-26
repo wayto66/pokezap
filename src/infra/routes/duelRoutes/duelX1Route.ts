@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import {
+  NoEnergyError,
   PlayerDoesNotHaveThePokemonInTheTeamError,
   PlayerNotFoundError,
   TypeMissmatchError,
@@ -33,6 +34,7 @@ export const duelX1Route = async (data: TRouteParams): Promise<IResponse> => {
   })
   if (!player1) throw new PlayerNotFoundError(data.playerPhone)
   if (!player1.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(player1.name)
+  if (player1.energy <= 0) throw new NoEnergyError(player1.name)
 
   const player2 = await prismaClient.player.findFirst({
     where: {

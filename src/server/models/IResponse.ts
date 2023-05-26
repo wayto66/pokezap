@@ -5,4 +5,6 @@ export type IResponse = {
   imageUrl?: string
   actions?: any[]
   react?: any
+  afterMessage?: string
+  isAnimated?: boolean
 }

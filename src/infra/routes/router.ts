@@ -80,7 +80,10 @@ export const router = async (data: TRouteParams): Promise<IResponse> => {
 
     return await route(data)
   } catch (error) {
-    if (!(error instanceof AppError)) throw new UnexpectedError('')
+    if (!(error instanceof AppError)) {
+      console.log(error)
+      throw new UnexpectedError('')
+    }
 
     return {
       data: error.data,

@@ -88,9 +88,11 @@ model Pokemon {
   ownerId       Int?
   basePokemonId Int
   gameRoomId    Int?
-  nickName      String?
+  nickName      String? 
   savage        Boolean
   level         Int
+  experience    Int @default(0)
+  spriteUrl     String @default("")
   hp            Int
   atk           Int
   def           Int
