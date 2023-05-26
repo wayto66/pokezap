@@ -101,6 +101,7 @@ model Pokemon {
   speed         Int
   isAdult       Boolean
   isMale        Boolean
+  isShiny       Boolean @default(false)
   talentId1     Int
   talentId2     Int
   talentId3     Int
