@@ -1,31 +1,49 @@
+import { BasePokemon, Pokemon } from '@prisma/client'
+import { typeEffectivenessMap } from '../../../server/constants/atkEffectivenessMap'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import { findKeyByValue } from '../../../server/helpers/findKeyByValue'
-import { getPairWithHighestKey } from '../../../server/helpers/getPairWithHighestKey'
+import { getBestSkillPair } from '../../helpers/getBestSkillPair'
 import { IPokemon } from '../../../server/models/IPokemon'
 import { ISkill } from '../../../server/models/ISkill'
 import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
+import { iGenDuelRound } from '../imageGen/iGenDuelRound'
+import { getTeamBonuses } from './getTeamBonuses'
 
 type TParams = {
-  poke1: IPokemon
-  poke2: IPokemon
+  poke1: Pokemon & {
+    baseData: BasePokemon
+  }
+  poke2: Pokemon & {
+    baseData: BasePokemon
+  }
 }
 
 type TResponse = {
-  winner: IPokemon | null
-  loser: IPokemon | null
+  winner: any | null
+  loser: any | null
   message: string
   isDraw: boolean
+  imageUrl: string
 }
 
 export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
+  /// apply team-bonuses to the pokemons
+  const poke1 = await getTeamBonuses({
+    poke: data.poke1,
+    team: undefined,
+  })
+  const poke2 = await getTeamBonuses({
+    poke: data.poke2,
+    team: undefined,
+  })
   /// will try to get the best possible skill ///
   const poke1Skill = await getBestSkills({
-    attacker: data.poke1,
-    defender: data.poke2,
+    attacker: poke1,
+    defender: poke2,
   })
   const poke2Skill = await getBestSkills({
-    attacker: data.poke2,
-    defender: data.poke1,
+    attacker: poke2,
+    defender: poke1,
   })
 
   if (!poke1Skill || !poke1Skill[1] || !poke1Skill[0]) {
@@ -39,53 +57,315 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
   }
 
   const poke1Data = {
-    name: data.poke1.baseData.name,
-    level: data.poke1.level,
-    hp: ((2 * data.poke1.hp + 97) * data.poke1.level) / 100 + data.poke1.level + 10,
-    speed: data.poke1.speed,
-    skillPower: poke1Skill[0],
-    skillName: poke1Skill[1][0].name,
+    name: poke1.baseData.name,
+    id: poke1.id,
+    ownerId: poke1.ownerId,
+    type1: poke1.baseData.type1Name,
+    type2: poke1.baseData.type2Name,
+    level: poke1.level,
+    maxHp: 4 * poke1.hp,
+    hp: 4 * poke1.hp,
+    speed: poke1.speed,
+    skillPower: poke1Skill[0][0],
+    skillName: poke1Skill[0][1].name,
+    skillType: poke1Skill[0][1].typeName,
+    ultimatePower: poke1Skill[1][0],
+    ultimateName: poke1Skill[1][1].name,
+    ultimateType: poke1Skill[1][1].typeName,
+    currentSkillPower: poke1Skill[0][0],
+    currentSkillName: poke1Skill[0][1].name,
+    currentSkillType: poke1Skill[0][1].typeName,
+    crit: false,
+    block: false,
+    mana: 0,
+    hasUltimate: poke1Skill[0] !== poke1Skill[1],
+    manaBonus: poke1.manaBonus || 0,
+    lifeSteal: poke1.lifeSteal || 0,
+    critChance: poke1.critChance || 0,
+    blockChance: poke1.blockChance || 0,
   }
 
   const poke2Data = {
-    name: data.poke2.baseData.name,
-    level: data.poke2.level,
-    hp: ((2 * data.poke2.hp + 97) * data.poke2.level) / 100 + data.poke2.level + 10,
-    speed: data.poke2.speed,
-    skillPower: poke2Skill[0],
-    skillName: poke2Skill[1][0].name,
+    name: poke2.baseData.name,
+    id: poke2.id,
+    ownerId: poke2.ownerId,
+    type1: poke2.baseData.type1Name,
+    type2: poke2.baseData.type2Name,
+    level: poke2.level,
+    maxHp: 4 * poke2.hp,
+    hp: 4 * poke2.hp,
+    speed: poke2.speed,
+    skillPower: poke2Skill[0][0],
+    skillName: poke2Skill[0][1].name,
+    skillType: poke2Skill[0][1].typeName,
+    ultimatePower: poke2Skill[1][0],
+    ultimateName: poke2Skill[1][1].name,
+    ultimateType: poke2Skill[1][1].typeName,
+    currentSkillPower: poke2Skill[0][0],
+    currentSkillName: poke2Skill[0][1].name,
+    currentSkillType: poke2Skill[0][1].typeName,
+    crit: false,
+    block: false,
+    mana: 0,
+    hasUltimate: poke2Skill[0] !== poke2Skill[1],
+    manaBonus: poke2.manaBonus || 0,
+    lifeSteal: poke2.lifeSteal || 0,
+    critChance: poke2.critChance || 0,
+    blockChance: poke2.blockChance || 0,
   }
+
+  type RoundData = {
+    poke1Data: any
+    poke2Data: any
+  }
+
+  const duelMap = new Map<number, RoundData>([])
 
   let duelFinished = false
   let isDraw = false
-  let roundCount = 0
-  let winner: IPokemon | null = null
+  let roundCount = 1
+  let winner: any | null = null
+  let loser: any | null = null
+
+  const duelLogs = () => {
+    if (
+      (typeEffectivenessMap.get(poke1Data.skillType)?.effective.includes(poke2Data.type1) &&
+        poke1Data.skillType !== poke1Data.type1 &&
+        poke1Data.skillType !== poke2Data.type2) ||
+      (typeEffectivenessMap.get(poke1Data.skillType)?.effective.includes(poke2Data.type2 || 'null') &&
+        poke1Data.skillType !== poke1Data.type1 &&
+        poke1Data.skillType !== poke2Data.type2)
+    ) {
+      console.log(
+        `PREPARAÇÃO: ${poke1Data.name} utiliza seus talentos do tipo ${poke1Data.skillType} para conseguir utilizar ${poke1Data.skillName}. Efetivo contra ${poke2Data.name}`
+      )
+    }
+
+    if (
+      (typeEffectivenessMap.get(poke2Data.skillType)?.effective.includes(poke1Data.type1) &&
+        poke2Data.skillType !== poke2Data.type1 &&
+        poke2Data.skillType !== poke1Data.type2) ||
+      (typeEffectivenessMap.get(poke2Data.skillType)?.effective.includes(poke1Data.type2 || 'null') &&
+        poke2Data.skillType !== poke2Data.type1 &&
+        poke1Data.skillType !== poke1Data.type2)
+    ) {
+      console.log(
+        `PREPARAÇÃO: ${poke2Data.name} utiliza seus talentos do tipo ${poke2Data.skillType} para conseguir utilizar ${poke2Data.skillName}. Efetivo contra ${poke1Data.name}`
+      )
+    }
+
+    if (
+      typeEffectivenessMap.get(poke1Data.skillType)?.ineffective.includes(poke2Data.type1) ||
+      typeEffectivenessMap.get(poke1Data.skillType)?.ineffective.includes(poke2Data.type2 || 'null')
+    ) {
+      console.log(
+        `PREPARAÇÃO: ${poke1Data.name} entra em batalha com ${poke1Data.skillName} do tipo ${poke1Data.skillType}. Inefetivo contra ${poke2Data.name}`
+      )
+    }
+
+    if (
+      typeEffectivenessMap.get(poke2Data.skillType)?.ineffective.includes(poke1Data.type1) ||
+      typeEffectivenessMap.get(poke2Data.skillType)?.ineffective.includes(poke1Data.type2 || 'null')
+    ) {
+      console.log(
+        `PREPARAÇÃO: ${poke2Data.name} entra em batalha com ${poke2Data.skillName} do tipo ${poke2Data.skillType}. Inefetivo contra ${poke1Data.name}`
+      )
+    }
+
+    console.log(`---- 
+    ${poke1Data.name.toUpperCase()} com ${poke1Data.skillName} do tipo ${poke1Data.skillType} e ${
+      poke1Data.skillPower
+    } de poder
+    *** VERSUS ***
+    ${poke2Data.name.toUpperCase()} com ${poke2Data.skillName} do tipo ${poke2Data.skillType} e ${
+      poke2Data.skillPower
+    } de poder
+    ----`)
+
+    console.log(`---- INICIO DO DUELO ----`)
+  }
+  duelLogs()
+
+  duelMap.set(1, {
+    poke1Data: { ...poke1Data },
+    poke2Data: { ...poke2Data },
+  })
 
   while (duelFinished === false) {
     roundCount++
-    poke1Data.hp -= poke2Data.skillPower
-    if (poke1Data.hp < 0) {
-      winner = data.poke2
-      duelFinished = true
+    console.log(
+      `Início do round ${roundCount}: ${poke1Data.name} com ${poke1Data.hp}hp VS ${poke2Data.name} com ${poke2Data.hp}hp`
+    )
+    poke1Data.crit = false
+    poke2Data.crit = false
+    poke1Data.block = false
+    poke2Data.block = false
+    poke1Data.mana += 23 * (0.7 + Math.random() * 0.6) + poke1Data.manaBonus
+    poke2Data.mana += 23 * (0.7 + Math.random() * 0.6) + poke2Data.manaBonus
+
+    if (poke1Data.mana >= 100) {
+      poke1Data.mana = 0
+      poke1Data.currentSkillName = poke1Data.ultimateName
+      poke1Data.currentSkillPower = poke1Data.ultimatePower
+      poke1Data.currentSkillType = poke1Data.ultimateType
+    } else {
+      poke1Data.currentSkillName = poke1Data.skillName
+      poke1Data.currentSkillPower = poke1Data.skillPower
+      poke1Data.currentSkillType = poke1Data.skillType
     }
 
-    poke2Data.hp -= poke1Data.skillPower
-    if (poke2Data.hp < 0) {
-      winner = data.poke1
-      duelFinished = true
+    if (poke2Data.mana >= 100) {
+      poke2Data.mana = 0
+      poke2Data.currentSkillName = poke2Data.ultimateName
+      poke2Data.currentSkillPower = poke2Data.ultimatePower
+      poke2Data.currentSkillType = poke2Data.ultimateType
+    } else {
+      poke2Data.currentSkillName = poke2Data.skillName
+      poke2Data.currentSkillPower = poke2Data.skillPower
+      poke2Data.currentSkillType = poke2Data.skillType
     }
 
-    if (roundCount > 30) {
-      duelFinished = true
-      isDraw = true
+    const isCrit1 = Math.random() + poke1Data.critChance > 0.9
+    const isCrit2 = Math.random() + poke2Data.critChance > 0.9
+    const isBlock1 = Math.random() + poke1Data.blockChance > 0.9
+    const isBlock2 = Math.random() + poke1Data.blockChance > 0.9
+    if (isCrit1) poke1Data.crit = true
+    if (isCrit2) poke2Data.crit = true
+    if (isBlock1) poke1Data.block = true
+    if (isBlock2) poke2Data.block = true
+
+    if (poke1Data.speed < poke2Data.speed) {
+      if (!isBlock1) {
+        poke1Data.hp -= poke2Data.currentSkillPower * (0.9 + Math.random() * 0.2)
+        poke2Data.hp += poke2Data.currentSkillPower * poke2Data.lifeSteal
+      }
+      if (isCrit2) {
+        console.log(`${poke2Data.name} encaixa um ${poke2Data.currentSkillName} crítico!`)
+        if (!isBlock1) {
+          poke1Data.hp -= poke2Data.currentSkillPower * 0.5
+          poke2Data.hp += poke2Data.currentSkillPower * poke2Data.lifeSteal * 0.5
+        }
+      }
+      if (poke1Data.hp <= 0) {
+        winner = poke2Data
+        loser = poke1Data
+        duelFinished = true
+      }
+
+      if (!isBlock2) {
+        poke2Data.hp -= poke1Data.currentSkillPower * (0.9 + Math.random() * 0.2)
+        poke1Data.hp += poke1Data.currentSkillPower * poke1Data.lifeSteal
+      }
+      if (isCrit1) {
+        console.log(`${poke1Data.name} encaixa um ${poke1Data.currentSkillName} crítico!`)
+        if (!isBlock2) {
+          poke2Data.hp -= poke1Data.currentSkillPower * 0.5
+          poke1Data.hp += poke1Data.currentSkillPower * poke1Data.lifeSteal * 0.5
+        }
+      }
+      if (poke2Data.hp <= 0) {
+        winner = poke1Data
+        loser = poke2Data
+        duelFinished = true
+      }
+
+      if (roundCount > 30) {
+        duelFinished = true
+        isDraw = true
+      }
+    } else {
+      if (!isBlock2) {
+        poke2Data.hp -= poke1Data.currentSkillPower * (0.9 + Math.random() * 0.2)
+        poke1Data.hp += poke1Data.currentSkillPower * poke1Data.lifeSteal
+      }
+      if (isCrit1) {
+        console.log(`${poke1Data.name} encaixa um ${poke1Data.currentSkillName} crítico!`)
+        if (!isBlock2) {
+          poke2Data.hp -= poke1Data.currentSkillPower * 0.5
+          poke1Data.hp += poke1Data.currentSkillPower * poke1Data.lifeSteal * 0.5
+        }
+      }
+      if (poke2Data.hp <= 0) {
+        winner = poke1Data
+        loser = poke2Data
+        duelFinished = true
+      }
+      if (!isBlock1) {
+        poke1Data.hp -= poke2Data.currentSkillPower * (0.9 + Math.random() * 0.2)
+        poke2Data.hp += poke2Data.currentSkillPower * poke2Data.lifeSteal
+      }
+      if (isCrit2) {
+        console.log(`${poke2Data.name} encaixa um ${poke2Data.currentSkillName} crítico!`)
+        if (!isBlock1) {
+          poke1Data.hp -= poke2Data.currentSkillPower * 0.5
+          poke2Data.hp += poke2Data.currentSkillPower * poke2Data.lifeSteal
+        }
+      }
+      if (poke1Data.hp <= 0) {
+        winner = poke2Data
+        loser = poke1Data
+        duelFinished = true
+      }
+
+      if (roundCount > 30) {
+        duelFinished = true
+        isDraw = true
+      }
     }
+    console.log(
+      `Fim do round ${roundCount}: ${poke1Data.name} com ${poke1Data.hp}hp VS ${poke2Data.name} com ${poke2Data.hp}hp`
+    )
+    duelMap.set(roundCount, {
+      poke1Data: { ...poke1Data },
+      poke2Data: { ...poke2Data },
+    })
   }
 
+  const winnerPokemon =
+    poke1.id === winner.id
+      ? {
+          ...poke1,
+          skillName: poke1Data.skillName,
+          skillType: poke1Data.skillType,
+          ultimateType: poke1Data.ultimateType,
+        }
+      : {
+          ...poke2,
+          skillName: poke2Data.skillName,
+          skillType: poke2Data.skillType,
+          ultimateType: poke2Data.ultimateType,
+        }
+
+  const loserPokemon =
+    poke1.id === loser.id
+      ? {
+          ...poke1,
+          skillName: poke1Data.skillName,
+          skillType: poke1Data.skillType,
+          ultimateType: poke1Data.ultimateType,
+        }
+      : {
+          ...poke2,
+          skillName: poke2Data.skillName,
+          skillType: poke2Data.skillType,
+          ultimateType: poke2Data.ultimateType,
+        }
+
+  const imageUrl = await iGenDuelRound({
+    winnerPokemon,
+    loserPokemon,
+    roundCount,
+    duelMap,
+    winnerDataName: poke1.id === winner.id ? 'poke1Data' : 'poke2Data',
+    loserDataName: poke1.id === loser.id ? 'poke1Data' : 'poke2Data',
+  })
+
   return {
-    message: `${poke1Data.name} derrota ${poke2Data.name} no round ${roundCount} utilizando ${poke1Data.skillName}`,
+    message: `${winner.name} derrota ${loser.name} no round ${roundCount} utilizando ${winner.skillName}`,
     isDraw: isDraw,
     winner: winner,
-    loser: winner === data.poke1 ? data.poke2 : data.poke1,
+    loser: winner === poke1Data ? poke2Data : poke1Data,
+    imageUrl,
   }
 }
 
@@ -200,13 +480,13 @@ const getBestSkills = async ({ attacker, defender }: any) => {
   const finalSkillMap = new Map<number, any[]>([])
 
   for (const skill of skills) {
-    const isPermited = await verifyTalentPermission(attacker, skill)
-    if (!isPermited) {
+    const talentCheck = await verifyTalentPermission(attacker, skill)
+    if (!talentCheck.permit) {
       continue
     }
     const stab = () => {
-      if (attacker.type1Name === skill.typeName) return 1.15
-      if (attacker.type2Name === skill.typeName) return 1.15
+      if (attacker.type1Name === skill.typeName) return 1.1
+      if (attacker.type2Name === skill.typeName) return 1.1
       return 1
     }
     const adRatio = () => {
@@ -214,37 +494,43 @@ const getBestSkills = async ({ attacker, defender }: any) => {
       return attacker.spAtk / defender.spDef
     }
 
+    const talentBonus = 0.03 * talentCheck.count
+
     if (efData.best.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
-      const power = (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 2 * stab()
+      const power =
+        (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 2.5 * stab() * (1 + talentBonus)
       finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
       continue
     }
     if (efData.good.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
-      const power = (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 1.5 * stab()
+      const power =
+        (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 1.75 * stab() * (1 + talentBonus)
       finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
       continue
     }
     if (efData.neutral.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
-      const power = (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 1 * stab()
+      const power =
+        (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 1 * stab() * (1 + talentBonus)
       finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
     }
 
     if (efData.bad.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
-      const power = (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 0.5 * stab()
+      const power =
+        (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 0.5 * stab() * (1 + talentBonus)
       finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
     }
 
     if (efData.worse.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
-      const power = (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 0.25 * stab()
+      const power =
+        (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 0.25 * stab() * (1 + talentBonus)
       finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
     }
   }
 
-  return getPairWithHighestKey(finalSkillMap)
+  return getBestSkillPair(finalSkillMap)
 }
 
 const verifyTalentPermission = async (poke: IPokemon, skill: ISkill) => {
-  if (poke.baseData.type1Name === skill.typeName || poke.baseData.type2Name === skill.typeName) return true
   const talents = [
     poke.talentId1,
     poke.talentId2,
@@ -262,12 +548,20 @@ const verifyTalentPermission = async (poke: IPokemon, skill: ISkill) => {
   const count = talents.reduce((count, current) => count + (current === typeId ? 1 : 0), 0)
 
   if (
-    count >= 3 ||
+    count >= 2 ||
     (count >= 2 && skill.attackPower <= 75) ||
     (count === 1 && skill.attackPower <= 40) ||
-    (skill.typeName === 'normal' && skill.attackPower <= 40)
+    (skill.typeName === 'normal' && skill.attackPower <= 40) ||
+    poke.baseData.type1Name === skill.typeName ||
+    poke.baseData.type2Name === skill.typeName
   )
-    return true
+    return {
+      permit: true,
+      count,
+    }
 
-  return false
+  return {
+    permit: false,
+    count,
+  }
 }

@@ -5,3 +5,4 @@ dist
 .wwebjs_auth
 qrCodes
 .idea
+src/server/modules/imageGen/images/*
