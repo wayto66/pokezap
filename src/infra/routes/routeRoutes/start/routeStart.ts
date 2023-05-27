@@ -25,7 +25,7 @@ export const routeStart = async (data: TRouteParams): Promise<IResponse> => {
     data: {
       level: 1,
       experience: 0,
-      mode: 'route',
+      mode: 'private',
       phone: data.groupCode,
       players: {
         connect: {

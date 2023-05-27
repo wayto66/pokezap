@@ -3,6 +3,7 @@ import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { routeEnter } from './enter/routeEnter'
 import { routeInfo } from './info/routeInfo'
+import { routeExit } from './routeExit'
 import { routeStart } from './start/routeStart'
 
 const routesMap = new Map<string, any>([
@@ -11,11 +12,11 @@ const routesMap = new Map<string, any>([
   ['ENTER', routeEnter],
 
   // ROUTE LEAVE ROUTES
-  ['SAIR', undefined],
-  ['LEAVE', undefined],
-  ['QUIT', undefined],
-  ['EXIT', undefined],
-  ['UPGRADE', undefined],
+  ['SAIR', routeExit],
+  ['LEAVE', routeExit],
+  ['QUIT', routeExit],
+  ['EXIT', routeExit],
+  ['UPGRADE', routeExit],
 
   // ROUTE INFO ROUTES
   ['INFO', routeInfo],
