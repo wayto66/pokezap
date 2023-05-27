@@ -1,5 +1,6 @@
 import { AppError, RouteNotFoundError, RouteNotProvidedError, UnexpectedError } from '../../infra/errors/AppErrors'
 import { IResponse } from '../../server/models/IResponse'
+import { battleRoutes } from './battleRoutes'
 import { pokemonBreed1 } from './breedRoutes/pokemonBreed1'
 import { catchRoutes } from './catchRoutes'
 import { duelRoutes } from './duelRoutes'
@@ -68,6 +69,9 @@ const routeMap = new Map<string, TRouteType>([
   ['LOJA', shopRoutes],
   ['MART', shopRoutes],
   ['POKEMART', shopRoutes],
+
+  // BATTLE ROUTES
+  ['BATTLE', battleRoutes],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {

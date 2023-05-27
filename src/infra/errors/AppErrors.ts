@@ -87,6 +87,42 @@ export class MissingParametersDuelRouteError extends AppError {
   }
 }
 
+export class MissingParametersBattleRouteError extends AppError {
+  constructor() {
+    const message = 'Por favor, especifique o ID do pokemon selvagem à ser enfrentado.'
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonAlreadyDefeated extends AppError {
+  constructor(id: number, playerName: string) {
+    const message = `O Pokemon com id: ${id} já foi derrotado por ${playerName}.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonAlreadyRanAwayError extends AppError {
+  constructor(id: number, playerName: string) {
+    const message = `*${playerName}* já enfrentou o Pokemon ${id} e este fugiu.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PlayerDoesNotResideOnTheRoute extends AppError {
+  constructor(gameRoomId: number, playerName: string) {
+    const message = `*${playerName}* não reside na rota ${gameRoomId}, portanto não pode enfrentar os pokemons da rota.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class MissingParametersBuyAmountError extends AppError {
   constructor() {
     const message = 'Por favor, especifique a quantidade que deseja comprar ao enviar o comando de compra.'
@@ -213,15 +249,16 @@ export class PokemonDoesNotBelongsToTheUserError extends AppError {
 
 export class PokemonDoesNotHaveOwnerError extends AppError {
   constructor(pokemonId: number, pokemonName: string) {
-    const message = `ERRO: Pokemon #${pokemonId} ${pokemonName} não possui dono.`
+    const message = `Pokemon #${pokemonId} ${pokemonName} não possui dono.`
+    const statusCode = 300
 
-    super(message)
+    super(message, statusCode)
   }
 }
 
 export class PokemonAlreadyHasChildrenError extends AppError {
   constructor(pokemonId: number, pokemonName: string, amount = '4') {
-    const message = `ERRO: Pokemon: #${pokemonId} ${pokemonName} já possui ${amount} filhotes.`
+    const message = `Pokemon: #${pokemonId} ${pokemonName} já possui ${amount} filhotes.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -230,7 +267,7 @@ export class PokemonAlreadyHasChildrenError extends AppError {
 
 export class PlayerDoesNotHavePokeballsError extends AppError {
   constructor(pokemonId: number, pokemonName: string) {
-    const message = `ERRO: Pokemon: #${pokemonId} - ${pokemonName} já foi capturado por outro jogador.`
+    const message = `Pokemon: #${pokemonId} - ${pokemonName} já foi capturado por outro jogador.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -305,6 +342,15 @@ export class InsufficientFundsError extends AppError {
 export class SendEmptyMessageError extends AppError {
   constructor() {
     const message = ''
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PlayerDidNotDefeatPokemonError extends AppError {
+  constructor(playerName: string) {
+    const message = `*${playerName}* não derrotou o pokemon.`
     const statusCode = 300
 
     super(message, statusCode)

@@ -43,6 +43,7 @@ model Player {
   invitedSessions           Session[]  @relation(name: "session-invited")
   createdSessions           Session[]  @relation(name: "session-creator")
   defeatedWildPokemons      Pokemon[]  @relation(name: "defeatedBy")
+  ranAwayWildPokemons Pokemon[] @relation(name: "ranAwayFrom")
 }
 
 model Type {
@@ -128,6 +129,7 @@ model Pokemon {
   teamSlot5     Player?     @relation(name: "team-poke-5")
   teamSlot6     Player?     @relation(name: "team-poke-6")
   defeatedBy    Player[]    @relation(name: "defeatedBy")
+  ranAwayFrom   Player[]    @relation(name: "ranAwayFrom")
   skills        Skill[]     @relation(name: "activeSkills")
   talent1       Talent      @relation(name: "talent-1", fields: [talentId1], references: [id])
   talent2       Talent      @relation(name: "talent-2", fields: [talentId2], references: [id])
