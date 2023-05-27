@@ -6,6 +6,7 @@ import { getRandomBetween3 } from '../../../server/helpers/getRandomBetween3'
 import { IPokemon } from '../../../server/models/IPokemon'
 import { generateGeneralStats } from './generateGeneralStats'
 import { generateHpStat } from './generateHpStat'
+import { FailedToFindXinYError } from '../../../infra/errors/AppErrors'
 
 type TParams = {
   poke1: IPokemon
@@ -23,7 +24,7 @@ export const breed = async (data: TParams): Promise<IPokemon | string> => {
     obj2: [babyId2, 0.5],
   })
 
-  if (!babyBaseDataId) return 'ERROR: Failed to find babyBaseDataId.'
+  if (!babyBaseDataId) throw new FailedToFindXinYError('babyBaseDataId', 'breed-module')
 
   const babyBaseData = await prismaClient.basePokemon.findFirst({
     where: {
@@ -31,7 +32,7 @@ export const breed = async (data: TParams): Promise<IPokemon | string> => {
     },
   })
 
-  if (!babyBaseData) return 'ERROR: Failed to find babyBaseData.'
+  if (!babyBaseData) throw new FailedToFindXinYError('babyBaseData', 'breed-module')
 
   const babyPoke = await prismaClient.pokemon.create({
     data: {
@@ -108,8 +109,6 @@ export const breed = async (data: TParams): Promise<IPokemon | string> => {
       talent9: true,
     },
   })
-
-  if (!babyPoke) return 'ERROR: Failed to create babyPoke.'
 
   return babyPoke
 }
