@@ -52,10 +52,10 @@ export const iGenDuelRound = async (data: TDuelRoundData) => {
     encoder.createReadStream().pipe(fs.createWriteStream(filepath))
 
     // draw poke1 sprite
-    const rightPokeSprite = await loadImage(rightPokemon.baseData.shinySpriteUrl)
+    const rightPokeSprite = await loadImage(rightPokemon.spriteUrl)
 
     // draw poke2 sprite
-    const leftPokeSprite = await loadImage(leftPokemon.baseData.defaultSpriteUrl)
+    const leftPokeSprite = await loadImage(leftPokemon.spriteUrl)
 
     const winnerPokeSkillTypeSprite = await loadImage(
       './src/assets/sprites/UI/types/' + data.winnerPokemon.skillType + '.png'

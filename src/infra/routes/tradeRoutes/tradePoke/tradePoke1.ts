@@ -110,8 +110,11 @@ export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
     pokemon2: invitedPokemon,
   })
 
+  const creatorPokemonDisplayName = creatorPokemon.isAdult ? creatorPokemon.baseData.name : ''
+  const invitedPokemonDisplayName = invitedPokemon.isAdult ? invitedPokemon.baseData.name : ''
+
   return {
-    message: `${requesterPlayer.name} deseja trocar seu #${creatorPokemon.id}-${creatorPokemon.baseData.name} com o #${invitedPokemon.id}-${invitedPokemon.baseData.name} de ${invitedPlayer.name}.
+    message: `${requesterPlayer.name} deseja trocar seu #${creatorPokemon.id} ${creatorPokemonDisplayName} com o #${invitedPokemon.id} ${invitedPokemonDisplayName} de ${invitedPlayer.name}.
     👍 - Aceitar`,
     status: 200,
     data: null,

@@ -40,6 +40,14 @@ export const pokemonInfo1 = async (data: TRouteParams): Promise<IResponse> => {
     pokemonData: pokemon,
   })
 
+  if (!pokemon.isAdult && pokemon.owner)
+    return {
+      message: `#${pokemon.id} de *${pokemon.owner.name}* ! `,
+      status: 200,
+      data: null,
+      imageUrl: imageUrl,
+    }
+
   if (pokemon.owner) {
     return {
       message: `#${pokemon.id} ${pokemon.baseData.name.toUpperCase()} de *${pokemon.owner.name}* ! `,

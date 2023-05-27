@@ -75,7 +75,14 @@ export const iGenInvetoryPokemons = async (data: TParams) => {
     ctx.fillStyle = circleColor
     ctx.fill()
 
-    const sprite = await loadImage(data.playerData.ownedPokemons[i + page * 19].baseData.defaultSpriteUrl)
+    const spriteUrl = data.playerData.ownedPokemons[i + page * 19].spriteUrl
+
+    if (!spriteUrl) {
+      console.error('Could not find sprite for: ' + data.playerData.ownedPokemons[i + page * 19].id)
+      return
+    }
+
+    const sprite = await loadImage(spriteUrl)
     ctx.drawImage(sprite, x - 12, y - 12, 75, 75)
 
     ctx.font = ' 14px Pokemon'

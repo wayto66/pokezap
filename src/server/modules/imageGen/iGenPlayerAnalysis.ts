@@ -69,8 +69,6 @@ export const iGenPlayerAnalysis = async (data: TParams) => {
   let j = 0
   let k = 0
 
-  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
-
   const pokeTeam = [
     data.playerData.teamPoke1,
     data.playerData.teamPoke2,
@@ -101,7 +99,7 @@ export const iGenPlayerAnalysis = async (data: TParams) => {
     ctx.fillStyle = circleColor
     ctx.fill()
 
-    const sprite = await loadImage(pokeTeam[i].baseData.defaultSpriteUrl)
+    const sprite = await loadImage(pokeTeam[i].spriteUrl)
     ctx.drawImage(sprite, x - 12, y - 12, 75, 75)
 
     ctx.font = ' 14px Pokemon'

@@ -52,7 +52,7 @@ export const iGenDuelX1 = async (data: TParams) => {
   ctx.fillText(`RANK: ${data.player1.elo}`, 51, 75)
 
   // draw poke sprite
-  const pokeSprite1 = await loadImage(data.player1.teamPoke1.baseData.defaultSpriteUrl)
+  const pokeSprite1 = await loadImage(data.player1.teamPoke1.spriteUrl)
   ctx.drawImage(pokeSprite1, 0, 275, 200, 200)
 
   // write poke id
@@ -118,7 +118,7 @@ export const iGenDuelX1 = async (data: TParams) => {
   ctx.fillText(`RANK: ${data.player2.elo}`, 450, 75)
 
   // draw poke sprite
-  const pokeSprite2 = await loadImage(data.player2.teamPoke1.baseData.defaultSpriteUrl)
+  const pokeSprite2 = await loadImage(data.player2.teamPoke1.spriteUrl)
   ctx.drawImage(pokeSprite2, 300, 275, 200, 200)
 
   // write poke id
