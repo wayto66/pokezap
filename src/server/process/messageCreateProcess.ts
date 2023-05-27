@@ -37,7 +37,7 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
         playerPhone: playerPhone(),
         routeParams: msg.body.toUpperCase().split(' '),
         playerName: contact.pushname ? contact.pushname : 'Nome indefinido',
-        groupCode: msg.to,
+        groupCode: msg.id.remote,
       })
 
       if (response.react) {
