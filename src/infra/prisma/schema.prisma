@@ -18,6 +18,7 @@ model Player {
   spriteUrl                 String     @default("")
   elo                       Int        @default(1200)
   cash                      Int        @default(500)
+  pokeShards                Int        @default(0)
   energy                    Int        @default(20)
   teamPokeId1               Int?       @unique
   teamPokeId2               Int?       @unique
