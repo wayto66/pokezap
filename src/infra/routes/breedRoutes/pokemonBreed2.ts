@@ -20,7 +20,7 @@ import { breed } from '../../../server/modules/pokemon/breed'
 import { TRouteParams } from '../router'
 
 export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , , pokemonId1String, pokemonId2String, desiredChildrenAmountString, confirm] = data.routeParams
+  const [, , pokemonId1String, pokemonId2String, desiredChildrenAmountString, confirm] = data.routeParams
   const desiredChildrenAmount = Number(desiredChildrenAmountString)
   if (!pokemonId1String || !pokemonId2String) throw new MissingParametersBreedRouteError()
   if (isNaN(desiredChildrenAmount) || desiredChildrenAmount > 4) throw new InvalidChildrenAmountError()
@@ -188,7 +188,7 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
 
       const media = MessageMedia.fromFilePath(imageUrl as string)
       await zapClient.sendMessage(data.groupCode, media, {
-        caption: `#${newBaby.id}-${newBaby.baseData.name} foi gerado por breed de #${pokemon1.id} ${pokemon1.baseData.name} e #${pokemon2.id} ${pokemon2.baseData.name}`,
+        caption: `#${newBaby.id} foi gerado por breed de #${pokemon1.id} ${pokemon1.baseData.name} e #${pokemon2.id} ${pokemon2.baseData.name}`,
       })
 
       updatedPoke1ChildrenCount++

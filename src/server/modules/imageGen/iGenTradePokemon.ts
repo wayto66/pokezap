@@ -2,11 +2,15 @@ import { createCanvas, loadImage, registerFont } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
-import { IPokemon } from '../../models/IPokemon'
+import { BasePokemon, Pokemon } from '@prisma/client'
 
 type TParams = {
-  pokemon1: IPokemon
-  pokemon2: IPokemon
+  pokemon1: Pokemon & {
+    baseData: BasePokemon
+  }
+  pokemon2: Pokemon & {
+    baseData: BasePokemon
+  }
 }
 
 export const iGenTradePokemon = async (data: TParams) => {
@@ -34,7 +38,7 @@ export const iGenTradePokemon = async (data: TParams) => {
 
   const generatePoke1 = async () => {
     // Load the sprite image
-    const sprite = await loadImage(data.pokemon1.baseData.defaultSpriteUrl)
+    const sprite = await loadImage(data.pokemon1.spriteUrl)
     // Calculate the position of the sprite in the middle of the canvas
     const spriteWidth = 275 // replace with the actual width of the sprite
     const spriteHeight = 275 // replace with the actual height of the sprite
@@ -126,7 +130,7 @@ export const iGenTradePokemon = async (data: TParams) => {
 
   const generatePoke2 = async () => {
     // Load the sprite image
-    const sprite = await loadImage(data.pokemon2.baseData.defaultSpriteUrl)
+    const sprite = await loadImage(data.pokemon2.spriteUrl)
     // Calculate the position of the sprite in the middle of the canvas
     const spriteWidth = 275 // replace with the actual width of the sprite
     const spriteHeight = 275 // replace with the actual height of the sprite

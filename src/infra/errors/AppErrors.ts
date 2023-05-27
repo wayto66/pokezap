@@ -233,6 +233,15 @@ export class PokemonNotFoundError extends AppError {
   }
 }
 
+export class PlayerDoestNotOwnThePokemon extends AppError {
+  constructor(id: number, playerName: string) {
+    const message = `O pokemon #${id} não pertence à ${playerName}.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class NoItemsFoundError extends AppError {
   constructor() {
     const message = `ERRO: Nenhum item encontrado.`
@@ -428,6 +437,24 @@ export class CouldNotUpdatePlayerError extends AppError {
 export class NoEnergyError extends AppError {
   constructor(playerName: string) {
     const message = `*${playerName}* não possui energia suficiente.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonHasNotBornYetError extends AppError {
+  constructor(id: number) {
+    const message = `Pokemon #${id} ainda não nasceu.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class EggIsNotReadyToBeHatch extends AppError {
+  constructor(id: number) {
+    const message = `O ovo #${id} ainda não está pronto para ser chocado.`
     const statusCode = 300
 
     super(message, statusCode)

@@ -35,7 +35,7 @@ export const iGenWildPokemon = async (data: TParams) => {
   const background = await loadImage(backgroundUrl)
 
   // Load the sprite image
-  const sprite = await loadImage(data.pokemonData.baseData.defaultSpriteUrl)
+  const sprite = await loadImage(data.pokemonData.spriteUrl)
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)

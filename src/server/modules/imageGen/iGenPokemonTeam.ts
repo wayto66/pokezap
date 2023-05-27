@@ -73,7 +73,7 @@ export const iGenPokemonTeam = async (data: TParams) => {
     ctx.fill()
 
     // draw the pokemon sprite
-    const sprite = await loadImage(pokeTeam[i].baseData.defaultSpriteUrl)
+    const sprite = await loadImage(pokeTeam[i].spriteUrl)
     ctx.drawImage(sprite, x, y, 160, 160)
 
     // draw the pokemon types

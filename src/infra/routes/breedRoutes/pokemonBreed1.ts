@@ -76,8 +76,8 @@ export const pokemonBreed1 = async (data: TRouteParams): Promise<IResponse> => {
     pokemon2: pokemon2,
   })
 
-  if (pokemon1.childrenId4) throw new PokemonAlreadyHasChildrenError(pokemon1.id, pokemon1.baseData.name)
-  if (pokemon2.childrenId4) throw new PokemonAlreadyHasChildrenError(pokemon2.id, pokemon1.baseData.name)
+  if (pokemon1.childrenId4) throw new PokemonAlreadyHasChildrenError(pokemon1.id, pokemon1.baseData.name, 4)
+  if (pokemon2.childrenId4) throw new PokemonAlreadyHasChildrenError(pokemon2.id, pokemon1.baseData.name, 4)
 
   return {
     message: `*${player1.name}* inicou o processo de breed entre:

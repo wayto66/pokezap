@@ -2,6 +2,7 @@ import { AppError, RouteNotFoundError, RouteNotProvidedError, UnexpectedError } 
 import { IResponse } from '../../server/models/IResponse'
 import { battleRoutes } from './battleRoutes'
 import { pokemonBreed1 } from './breedRoutes/pokemonBreed1'
+import { pokemonHatch } from './breedRoutes/pokemonHatch'
 import { catchRoutes } from './catchRoutes'
 import { duelRoutes } from './duelRoutes'
 import { inventoryRoutes } from './inventoryRoutes'
@@ -62,7 +63,6 @@ const routeMap = new Map<string, TRouteType>([
   ['TRADE', tradeRoutes],
   ['TROCA', tradeRoutes],
   ['TROCAR', tradeRoutes],
-  ['BREED', pokemonBreed1],
 
   // SHOP ROUTES
   ['SHOP', shopRoutes],
@@ -77,6 +77,11 @@ const routeMap = new Map<string, TRouteType>([
   // RANK ROUTES
   ['RANK', rankRoutes],
   ['RANKING', rankRoutes],
+
+  // BREED ROUTES
+  ['BREED', pokemonBreed1],
+  ['HATCH', pokemonHatch],
+  ['CHOCAR', pokemonHatch],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {

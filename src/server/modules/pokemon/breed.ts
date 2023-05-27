@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { evoDataIdMap } from '../../../server/constants/evoDataIdMap'
 import { getRandomBetween2 } from '../../../server/helpers/getRandomBetween2'
@@ -13,7 +13,7 @@ type TParams = {
   poke2: IPokemon
 }
 
-export const breed = async (data: TParams): Promise<IPokemon | string> => {
+export const breed = async (data: TParams): Promise<Pokemon & { baseData: BasePokemon }> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const babyId1 = evoDataIdMap.get(data.poke1.baseData.id)
@@ -37,6 +37,7 @@ export const breed = async (data: TParams): Promise<IPokemon | string> => {
   const babyPoke = await prismaClient.pokemon.create({
     data: {
       basePokemonId: babyBaseDataId,
+      spriteUrl: './src/assets/sprites/eggs/default.png',
       hp: generateHpStat(babyBaseData.BaseHp, 1),
       atk: generateGeneralStats(babyBaseData.BaseAtk, 1),
       def: generateGeneralStats(babyBaseData.BaseDef, 1),

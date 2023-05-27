@@ -91,7 +91,7 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
     },
   })
   if (!pokemon) throw new PokemonNotFoundError(pokemonId)
-  if (!pokemon?.savage) throw new PokemonAlreadyHasOwnerError(pokemonId, data.playerName)
+  if (!pokemon.savage || pokemon.ownerId) throw new PokemonAlreadyHasOwnerError(pokemonId, data.playerName)
   if (!pokemon.defeatedBy.map(player => player.id).includes(player.id))
     throw new PlayerDidNotDefeatPokemonError(player.name)
   if (pokemon.ranAwayFrom.map(player => player.id).includes(player.id))

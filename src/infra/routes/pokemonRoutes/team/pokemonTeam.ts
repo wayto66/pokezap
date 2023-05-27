@@ -1,6 +1,12 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { PlayerNotFoundError, PokemonNotFoundError, TypeMissmatchError } from '../../../../infra/errors/AppErrors'
+import {
+  PlayerDoestNotOwnThePokemon,
+  PlayerNotFoundError,
+  PokemonHasNotBornYetError,
+  PokemonNotFoundError,
+  TypeMissmatchError,
+} from '../../../../infra/errors/AppErrors'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokemonTeam } from '../../../../server/modules/imageGen/iGenPokemonTeam'
 import { TRouteParams } from '../../router'
@@ -79,7 +85,9 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
         id: id,
       },
     })
-    if (!pokemon || pokemon.ownerId !== player.id) throw new PokemonNotFoundError(id)
+    if (!pokemon) throw new PokemonNotFoundError(id)
+    if (pokemon.ownerId !== player.id) throw new PlayerDoestNotOwnThePokemon(id, player.name)
+    if (!pokemon.isAdult) throw new PokemonHasNotBornYetError(pokemon.id)
   }
 
   for (let i = 0; i < 6; i++) {

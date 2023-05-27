@@ -144,6 +144,7 @@ model Pokemon {
   owner         Player?     @relation(fields: [ownerId], references: [id])
   gameRoom      GameRoom?   @relation(fields: [gameRoomId], references: [id])
   baseData      BasePokemon @relation(fields: [basePokemonId], references: [id])
+
 }
 
 model Skill {
