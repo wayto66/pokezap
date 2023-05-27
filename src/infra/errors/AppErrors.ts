@@ -125,6 +125,14 @@ export class PokemonAlreadyRanAwayError extends AppError {
   }
 }
 
+export class CatchFailedPokemonRanAwayError extends AppError {
+  constructor(id: number, playerName: string) {
+    const message = `*${playerName}* já tentou capturar o Pokemon ${id} e este fugiu.`
+    const statusCode = 300
+    super(message, statusCode)
+  }
+}
+
 export class PlayerDoesNotResideOnTheRoute extends AppError {
   constructor(gameRoomId: number, playerName: string) {
     const message = `*${playerName}* não reside na rota ${gameRoomId}, portanto não pode enfrentar os pokemons da rota.`
