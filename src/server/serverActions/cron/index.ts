@@ -3,6 +3,7 @@ import { container } from 'tsyringe'
 import { Client, MessageMedia } from 'whatsapp-web.js'
 import { iGenWildPokemon } from '../../../server/modules/imageGen/iGenWildPokemon'
 import { generateWildPokemon } from '../../../server/modules/pokemon/generate/generateWildPokemon'
+import { metaValues } from '../../../constants/metaValues'
 
 type TParams = {
   prismaClient: PrismaClient
@@ -73,5 +74,26 @@ Ações:
           },
         })
       })
+
+    setTimeout(() => {
+      pokemonRanAwayWarning({ prismaClient, newWildPokemon, data, gameRoom })
+    }, metaValues.wildPokemonFleeTimeInSeconds * 1000)
+  }
+}
+
+const pokemonRanAwayWarning = async ({ prismaClient, newWildPokemon, data, gameRoom }: any) => {
+  const pokemon = await prismaClient.pokemon.findFirst({
+    where: {
+      id: newWildPokemon.id,
+    },
+    include: {
+      defeatedBy: true,
+      baseData: true,
+    },
+  })
+
+  if (!pokemon) return
+  if (pokemon.defeatedBy.length === 0) {
+    data.zapClient.sendMessage(gameRoom.phone, `#${pokemon.id} - ${pokemon.baseData.name} fugiu.`)
   }
 }
