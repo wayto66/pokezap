@@ -279,7 +279,7 @@ export class PokemonDoesNotHaveOwnerError extends AppError {
 }
 
 export class PokemonAlreadyHasChildrenError extends AppError {
-  constructor(pokemonId: number, pokemonName: string, amount = '4') {
+  constructor(pokemonId: number, pokemonName: string, amount: number) {
     const message = `Pokemon: #${pokemonId} ${pokemonName} já possui ${amount} filhotes.`
     const statusCode = 300
 
@@ -410,6 +410,15 @@ export class NoEnergyError extends AppError {
   constructor(playerName: string) {
     const message = `*${playerName}* não possui energia suficiente.`
     const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class FailedToFindXinYError extends AppError {
+  constructor(x: string, y: string) {
+    const message = `ERRO: houve uma falha ao encontrar ${x} em ${y}.`
+    const statusCode = 400
 
     super(message, statusCode)
   }
