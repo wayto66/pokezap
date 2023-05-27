@@ -12,11 +12,12 @@ type TParams = {
   savage: boolean
   isAdult: boolean
   talentIds?: number[]
+  gameRoomId?: number
 }
 
 export const generateWildPokemon = async (data: TParams) => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
-  const { baseData, level, shinyChance, savage, isAdult } = data
+  const { baseData, level, shinyChance, savage, isAdult, gameRoomId } = data
 
   const isShiny = Math.random() < shinyChance
   const talentIds = data.talentIds
@@ -39,6 +40,7 @@ export const generateWildPokemon = async (data: TParams) => {
     return await prismaClient.pokemon.create({
       data: {
         basePokemonId: baseData.id,
+        gameRoomId,
         savage: savage,
         level: level,
         isMale: Math.random() > 0.5,
@@ -79,6 +81,7 @@ export const generateWildPokemon = async (data: TParams) => {
   return await prismaClient.pokemon.create({
     data: {
       basePokemonId: baseData.id,
+      gameRoomId,
       savage: savage,
       level: level,
       isMale: Math.random() > 0.5,

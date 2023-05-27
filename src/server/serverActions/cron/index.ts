@@ -25,8 +25,9 @@ export const CronActions = async (data: TParams) => {
       console.error('No phone available for gameRoom: ' + gameRoom.id)
       continue
     }
-    const baseExperienceTreshold = Math.floor(64 + (gameRoom.level / 100) * 276)
+    if (gameRoom.mode !== 'route') continue
 
+    const baseExperienceTreshold = Math.floor(64 + (gameRoom.level / 100) * 276)
     const basePokemons = await prismaClient.basePokemon.findMany({
       where: {
         BaseExperience: {
@@ -34,9 +35,7 @@ export const CronActions = async (data: TParams) => {
         },
       },
     })
-
     const baseData = basePokemons[Math.floor(Math.random() * basePokemons.length)]
-
     const level = Math.floor(Math.min(1 + Math.random() * gameRoom.level, 100))
 
     const newWildPokemon = await generateWildPokemon({
@@ -45,12 +44,12 @@ export const CronActions = async (data: TParams) => {
       shinyChance: 0.05,
       savage: true,
       isAdult: true,
+      gameRoomId: gameRoom.id,
     })
 
     const imageUrl = await iGenWildPokemon({
       pokemonData: newWildPokemon,
     })
-
     const media = MessageMedia.fromFilePath(imageUrl!)
 
     const displayName = newWildPokemon.isShiny
