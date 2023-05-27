@@ -136,10 +136,21 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
 
     if (response.afterMessage) {
       const msgBody = response.afterMessage
+      const afterActions = response.afterMessageActions
       console.log({ msgBody })
       const chatId = msg.id.remote
       setTimeout(async () => {
-        await zapClient.sendMessage(chatId, msgBody)
+        const result = await zapClient.sendMessage(chatId, msgBody)
+        if (afterActions) {
+          await prismaClient.message.create({
+            data: {
+              msgId: result.id.id,
+              type: 'default',
+              body: result.body,
+              actions: afterActions,
+            },
+          })
+        }
       }, 5000)
     }
   } catch (e: any) {

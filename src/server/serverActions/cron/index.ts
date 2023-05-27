@@ -61,9 +61,7 @@ export const CronActions = async (data: TParams) => {
       .sendMessage(gameRoom.phone, media, {
         caption: `Um *${displayName}* selvagem de nível ${newWildPokemon.level} acaba de aparecer!
 Ações:
-
-👍 - Lançar pokeball
-
+👍 - Batalhar
 `,
       })
       .then(async result => {
@@ -72,7 +70,7 @@ Ações:
             msgId: result.id.id,
             type: '?',
             body: '',
-            actions: [`pokezap. catch pokeball ${newWildPokemon.id}`, `pokezap. catch greatball ${newWildPokemon.id}`],
+            actions: [`pokezap. battle ${newWildPokemon.id}`],
           },
         })
       })

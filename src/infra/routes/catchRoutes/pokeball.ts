@@ -2,10 +2,12 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import {
   MissingParametersCatchRouteError,
+  PlayerDidNotDefeatPokemonError,
   PlayerDoesNotHaveItemError,
   PlayerNotFoundError,
   PokemonAlreadyHasOwnerError,
   PokemonNotFoundError,
+  SendEmptyMessageError,
 } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
@@ -41,6 +43,8 @@ export const pokeballCatch = async (data: TRouteParams): Promise<IResponse> => {
   })
   if (!pokemon) throw new PokemonNotFoundError(pokemonId)
   if (!pokemon?.savage) throw new PokemonAlreadyHasOwnerError(pokemonId, data.playerName)
+  if (!pokemon.defeatedBy.map(player => player.id).includes(player.id))
+    throw new PlayerDidNotDefeatPokemonError(player.name)
 
   const pokeball = await prismaClient.item.findFirst({
     where: {

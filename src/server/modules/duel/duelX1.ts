@@ -8,6 +8,7 @@ import { ISkill } from '../../../server/models/ISkill'
 import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
 import { iGenDuelRound } from '../imageGen/iGenDuelRound'
 import { getTeamBonuses } from './getTeamBonuses'
+import { iGenWildPokemonBattle } from '../imageGen/iGenWildPokemonBattle'
 
 type TParams = {
   poke1: Pokemon & {
@@ -16,6 +17,7 @@ type TParams = {
   poke2: Pokemon & {
     baseData: BasePokemon
   }
+  againstWildPokemon?: boolean
 }
 
 type TResponse = {
@@ -351,14 +353,23 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
           ultimateType: poke2Data.ultimateType,
         }
 
-  const imageUrl = await iGenDuelRound({
-    winnerPokemon,
-    loserPokemon,
-    roundCount,
-    duelMap,
-    winnerDataName: poke1.id === winner.id ? 'poke1Data' : 'poke2Data',
-    loserDataName: poke1.id === loser.id ? 'poke1Data' : 'poke2Data',
-  })
+  const imageUrl = data.againstWildPokemon
+    ? await iGenWildPokemonBattle({
+        winnerPokemon,
+        loserPokemon,
+        roundCount,
+        duelMap,
+        winnerDataName: poke1.id === winner.id ? 'poke1Data' : 'poke2Data',
+        loserDataName: poke1.id === loser.id ? 'poke1Data' : 'poke2Data',
+      })
+    : await iGenDuelRound({
+        winnerPokemon,
+        loserPokemon,
+        roundCount,
+        duelMap,
+        winnerDataName: poke1.id === winner.id ? 'poke1Data' : 'poke2Data',
+        loserDataName: poke1.id === loser.id ? 'poke1Data' : 'poke2Data',
+      })
 
   return {
     message: `${winner.name} derrota ${loser.name} no round ${roundCount} utilizando ${winner.skillName}`,
