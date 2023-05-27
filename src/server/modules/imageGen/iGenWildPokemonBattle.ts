@@ -1,7 +1,6 @@
 import { BasePokemon, Pokemon } from '@prisma/client'
 import { createCanvas, loadImage, registerFont } from 'canvas'
 import fs from 'fs'
-import path from 'path'
 import GIFEncoder from 'gifencoder'
 import { talentIdMap } from '../../constants/talentIdMap'
 
@@ -34,7 +33,6 @@ export const iGenWildPokemonBattle = async (data: TDuelRoundData) => {
     const canvasWidth = 500
     const canvasHeight = 500
     const backgroundUrl = './src/assets/sprites/UI/hud/duel_x1_round.png'
-    const resultBackgroundUrl = './src/assets/sprites/UI/hud/duel_x1_result.png'
 
     // Load the font file and register it with the canvas
     registerFont('./src/assets/font/JosefinSans-Bold.ttf', { family: 'Pokemon' })
