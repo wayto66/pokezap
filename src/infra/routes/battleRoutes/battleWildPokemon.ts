@@ -19,7 +19,7 @@ import { IResponse } from '../../../server/models/IResponse'
 import { duelX1 } from '../../../server/modules/duel/duelX1'
 import { TRouteParams } from '../router'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
-import { handleRouteExperienceGain } from 'server/modules/route/handleRouteExperienceGain'
+import { handleRouteExperienceGain } from '../../../server/modules/route/handleRouteExperienceGain'
 
 export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> => {
   const [, , wildPokemonIdString] = data.routeParams
