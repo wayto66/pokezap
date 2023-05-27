@@ -20,7 +20,7 @@ export const handleRouteExperienceGain = async (data: TParams): Promise<TRespons
   console.log('start hecpg')
   const { pokemon, targetPokemon, route } = data
   const expGain = getExperienceGain(data)
-  const newExp = route.experience + expGain / 5
+  const newExp = Math.round(route.experience + expGain / 5)
   const newLevel = Math.floor(Math.cbrt(newExp))
 
   const prisma = container.resolve<PrismaClient>('PrismaClient')

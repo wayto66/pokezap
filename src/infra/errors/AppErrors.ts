@@ -80,6 +80,15 @@ export class MissingParametersCatchRouteError extends AppError {
   }
 }
 
+export class InvalidPokeBallName extends AppError {
+  constructor(ballName: string) {
+    const message = `*${ballName}* não é um nome válido de pokebola.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class MissingParametersDuelRouteError extends AppError {
   constructor() {
     const message = 'DUMMY: This is the duel route, specify a sub route.'

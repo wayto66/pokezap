@@ -190,15 +190,15 @@ ${winnerLevelUpMessage}
     enfrentam 
     ${displayName} level ${wildPokemon.level}.`,
     status: 200,
-    actions: [
+    actions: [``],
+    data: null,
+    imageUrl: duel.imageUrl,
+    afterMessage,
+    afterMessageActions: [
       `pz. catch pokeball ${wildPokemon.id}`,
       `pz. catch greatball ${wildPokemon.id}`,
       `pz. catch ultraball ${wildPokemon.id}`,
     ],
-    data: null,
-    imageUrl: duel.imageUrl,
-    afterMessage,
-    afterMessageActions: [`pz. catch pokeball ${wildPokemon.id}`],
     isAnimated: true,
   }
 }
