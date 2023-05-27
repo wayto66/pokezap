@@ -3,6 +3,7 @@ import { container } from 'tsyringe'
 import { Client, MessageMedia } from 'whatsapp-web.js'
 import {
   InsufficientFundsError,
+  InsufficientShardsError,
   InvalidChildrenAmountError,
   MissingParametersBreedRouteError,
   PlayerNotFoundError,
@@ -100,7 +101,7 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
     let updatedChildrenCount = childrenCount + 1
 
     for (let i = 0; i < desiredChildrenAmount; i++) {
-      finalCost += (420 + (poke.baseData.BaseExperience ** 2 / 231) * updatedChildrenCount ** 2.73) / 1.8
+      finalCost += (220 + (poke.baseData.BaseExperience ** 2 / 231) * updatedChildrenCount ** 2.73) / 1.5
       updatedChildrenCount++
     }
     return finalCost
@@ -108,7 +109,10 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
   const totalCost = Math.round(
     getBreedingCosts(pokemon1, poke1ChildrenCount) + getBreedingCosts(pokemon2, poke2ChildrenCount)
   )
+
+  const shardCost = Math.round(totalCost / 10)
   if (player.cash < totalCost) throw new InsufficientFundsError(player.name, player.cash, totalCost)
+  if (player.pokeShards < shardCost) throw new InsufficientShardsError(player.name, player.pokeShards, shardCost)
 
   if (confirm === 'CONFIRM') {
     await prismaClient.player.update({
@@ -118,6 +122,9 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
       data: {
         cash: {
           decrement: totalCost,
+        },
+        pokeShards: {
+          decrement: shardCost,
         },
       },
     })

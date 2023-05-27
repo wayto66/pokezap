@@ -361,6 +361,17 @@ export class InsufficientFundsError extends AppError {
   }
 }
 
+export class InsufficientShardsError extends AppError {
+  constructor(playerName: string, playerFunds: number, requiredFunds: number) {
+    const message = `${playerName} não possui POKESHARDS suficientes. São necessários ${requiredFunds}, ainda faltam ${
+      requiredFunds - playerFunds
+    } `
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class SendEmptyMessageError extends AppError {
   constructor() {
     const message = ''
