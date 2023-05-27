@@ -2,11 +2,13 @@ export class AppError {
   readonly message: string
   readonly data: string | null
   readonly statusCode: number
+  readonly actions?: string[]
 
-  constructor(message: string, statusCode = 400, data = null) {
+  constructor(message: string, statusCode = 400, data = null, actions?: string[]) {
     this.message = message
     this.statusCode = statusCode
     this.data = data
+    this.actions = actions
   }
 }
 
@@ -164,6 +166,17 @@ export class MissingParametersBreedRouteError extends AppError {
     const message = `ERROR: you must provide the ids for the pokemon pair to be breeded. The correct syntax would be something like:
       pokemon breed 123 456`
     const statusCode = 400
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingParametersRankRouteError extends AppError {
+  constructor() {
+    const message = `Esta é a rota de ranking. Você deve especificar qual ranking deseja ver.
+    `
+    const statusCode = 300
+    const actions = ['pz. rank elo', 'pz. rank catch']
 
     super(message, statusCode)
   }

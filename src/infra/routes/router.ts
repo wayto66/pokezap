@@ -6,6 +6,7 @@ import { catchRoutes } from './catchRoutes'
 import { duelRoutes } from './duelRoutes'
 import { inventoryRoutes } from './inventoryRoutes'
 import { pokemonRoutes } from './pokemonRoutes'
+import { rankRoutes } from './rankingRoutes'
 import { routeRoutes } from './routeRoutes'
 import { shopRoutes } from './shopRoutes'
 import { tradeRoutes } from './tradeRoutes'
@@ -72,6 +73,10 @@ const routeMap = new Map<string, TRouteType>([
 
   // BATTLE ROUTES
   ['BATTLE', battleRoutes],
+
+  // RANK ROUTES
+  ['RANK', rankRoutes],
+  ['RANKING', rankRoutes],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {
