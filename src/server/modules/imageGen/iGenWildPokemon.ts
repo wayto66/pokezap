@@ -217,7 +217,7 @@ export const iGenWildPokemon = async (data: TParams) => {
         console.log('File deleted successfully.')
       }
     })
-  }, 15000)
+  }, 60000)
 
   return filepath
 }

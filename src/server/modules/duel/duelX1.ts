@@ -9,6 +9,7 @@ import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
 import { iGenDuelRound } from '../imageGen/iGenDuelRound'
 import { getTeamBonuses } from './getTeamBonuses'
 import { iGenWildPokemonBattle } from '../imageGen/iGenWildPokemonBattle'
+import { UnexpectedError } from '../../../infra/errors/AppErrors'
 
 type TParams = {
   poke1: Pokemon & {
@@ -48,16 +49,6 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
     defender: poke1,
   })
 
-  if (!poke1Skill || !poke1Skill[1] || !poke1Skill[0]) {
-    console.error('no pokeskill1')
-    return
-  }
-
-  if (!poke2Skill || !poke2Skill[1] || !poke2Skill[0]) {
-    console.error('no pokeskill2')
-    return
-  }
-
   const poke1Data = {
     name: poke1.baseData.name,
     id: poke1.id,
@@ -68,15 +59,15 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
     maxHp: 4 * poke1.hp,
     hp: 4 * poke1.hp,
     speed: poke1.speed,
-    skillPower: poke1Skill[0][0],
-    skillName: poke1Skill[0][1].name,
-    skillType: poke1Skill[0][1].typeName,
-    ultimatePower: poke1Skill[1][0],
-    ultimateName: poke1Skill[1][1].name,
-    ultimateType: poke1Skill[1][1].typeName,
-    currentSkillPower: poke1Skill[0][0],
-    currentSkillName: poke1Skill[0][1].name,
-    currentSkillType: poke1Skill[0][1].typeName,
+    skillPower: poke1Skill[0] ? poke1Skill[0][0] : 2,
+    skillName: poke1Skill[0] ? poke1Skill[0][1].name : 'basic-attack',
+    skillType: poke1Skill[0] ? poke1Skill[0][1].typeName : 'normal',
+    ultimatePower: poke1Skill[1] ? poke1Skill[1][0] : 2,
+    ultimateName: poke1Skill[1] ? poke1Skill[1][1].name : 'basic-attack',
+    ultimateType: poke1Skill[1] ? poke1Skill[1][1].typeName : 'normal',
+    currentSkillPower: poke1Skill[0] ? poke1Skill[0][0] : 2,
+    currentSkillName: poke1Skill[0] ? poke1Skill[0][1].name : 'basic-attack',
+    currentSkillType: poke1Skill[0] ? poke1Skill[0][1].typeName : 'normal',
     crit: false,
     block: false,
     mana: 0,
@@ -97,15 +88,15 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
     maxHp: 4 * poke2.hp,
     hp: 4 * poke2.hp,
     speed: poke2.speed,
-    skillPower: poke2Skill[0][0],
-    skillName: poke2Skill[0][1].name,
-    skillType: poke2Skill[0][1].typeName,
-    ultimatePower: poke2Skill[1][0],
-    ultimateName: poke2Skill[1][1].name,
-    ultimateType: poke2Skill[1][1].typeName,
-    currentSkillPower: poke2Skill[0][0],
-    currentSkillName: poke2Skill[0][1].name,
-    currentSkillType: poke2Skill[0][1].typeName,
+    skillPower: poke2Skill[0] ? poke2Skill[0][0] : 2,
+    skillName: poke2Skill[0] ? poke2Skill[0][1].name : 'basic-attack',
+    skillType: poke2Skill[0] ? poke2Skill[0][1].typeName : 'normal',
+    ultimatePower: poke2Skill[1] ? poke2Skill[1][0] : 2,
+    ultimateName: poke2Skill[1] ? poke2Skill[1][1].name : 'basic-attack',
+    ultimateType: poke2Skill[1] ? poke2Skill[1][1].typeName : 'normal',
+    currentSkillPower: poke2Skill[0] ? poke2Skill[0][0] : 2,
+    currentSkillName: poke2Skill[0] ? poke2Skill[0][1].name : 'basic-attack',
+    currentSkillType: poke2Skill[0] ? poke2Skill[0][1].typeName : 'normal',
     crit: false,
     block: false,
     mana: 0,
@@ -271,9 +262,8 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
         duelFinished = true
       }
 
-      if (roundCount > 30) {
-        duelFinished = true
-        isDraw = true
+      if (roundCount > 60) {
+        throw new UnexpectedError('O duelo passou do limite de 60 rounds.')
       }
     } else {
       if (!isBlock2) {
@@ -309,9 +299,8 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
         duelFinished = true
       }
 
-      if (roundCount > 30) {
-        duelFinished = true
-        isDraw = true
+      if (roundCount > 60) {
+        throw new UnexpectedError('Duelo passou do limite de 60 rounds.')
       }
     }
     console.log(
@@ -559,10 +548,10 @@ const verifyTalentPermission = async (poke: IPokemon, skill: ISkill) => {
   const count = talents.reduce((count, current) => count + (current === typeId ? 1 : 0), 0)
 
   if (
-    count >= 2 ||
+    count >= 3 ||
     (count >= 2 && skill.attackPower <= 75) ||
     (count === 1 && skill.attackPower <= 40) ||
-    (skill.typeName === 'normal' && skill.attackPower <= 40) ||
+    (skill.typeName === 'normal' && skill.attackPower <= 50) ||
     poke.baseData.type1Name === skill.typeName ||
     poke.baseData.type2Name === skill.typeName
   )

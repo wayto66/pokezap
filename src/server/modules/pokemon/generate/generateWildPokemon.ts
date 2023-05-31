@@ -13,6 +13,7 @@ type TParams = {
   isAdult: boolean
   talentIds?: number[]
   gameRoomId?: number
+  fromIncense?: boolean
 }
 
 export const generateWildPokemon = async (data: TParams) => {
@@ -43,6 +44,7 @@ export const generateWildPokemon = async (data: TParams) => {
         gameRoomId,
         savage: savage,
         level: level,
+        experience: level ** 3,
         isMale: Math.random() > 0.5,
         isShiny: true,
         spriteUrl: baseData.shinySpriteUrl,
@@ -84,6 +86,7 @@ export const generateWildPokemon = async (data: TParams) => {
       gameRoomId,
       savage: savage,
       level: level,
+      experience: level ** 3,
       isMale: Math.random() > 0.5,
       spriteUrl: baseData.defaultSpriteUrl,
       hp: generateHpStat(baseData.BaseHp, level),

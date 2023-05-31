@@ -1,6 +1,8 @@
 import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
-import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { PokemonNotFoundError, UnexpectedError } from '../../../infra/errors/AppErrors'
 import { container } from 'tsyringe'
+import { generateHpStat } from './generateHpStat'
+import { generateGeneralStats } from './generateGeneralStats'
 
 type TParams = {
   pokemon: Pokemon
@@ -18,13 +20,22 @@ type TResponse = {
 }
 
 export const handleExperienceGain = async (data: TParams): Promise<TResponse> => {
-  console.log('start hecpg')
-  const { pokemon, targetPokemon } = data
   const expGain = getExperienceGain(data)
-  const newExp = pokemon.experience + expGain
+  const newExp = data.pokemon.experience + expGain
   const newLevel = Math.floor(Math.cbrt(newExp))
 
   const prisma = container.resolve<PrismaClient>('PrismaClient')
+
+  const pokemon = await prisma.pokemon.findFirst({
+    where: {
+      id: data.pokemon.id,
+    },
+    include: {
+      baseData: true,
+    },
+  })
+
+  if (!pokemon) throw new PokemonNotFoundError(data.pokemon.id)
 
   console.log('trying to update exp')
   console.log({ newExp, newLevel, id: pokemon.id })
@@ -37,6 +48,12 @@ export const handleExperienceGain = async (data: TParams): Promise<TResponse> =>
       data: {
         experience: newExp,
         level: newLevel,
+        hp: generateHpStat(pokemon.baseData.BaseHp, newLevel),
+        atk: generateGeneralStats(pokemon.baseData.BaseAtk, newLevel),
+        def: generateGeneralStats(pokemon.baseData.BaseDef, newLevel),
+        spAtk: generateGeneralStats(pokemon.baseData.BaseSpAtk, newLevel),
+        spDef: generateGeneralStats(pokemon.baseData.BaseSpDef, newLevel),
+        speed: generateGeneralStats(pokemon.baseData.BaseSpeed, newLevel),
       },
       include: {
         baseData: true,

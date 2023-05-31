@@ -5,12 +5,9 @@ import path from 'path'
 
 type TParams = {
   route: GameRoom & {
-    upgrades: RoomUpgrades[] &
-      [
-        {
-          baseData: BaseRoomUpgrades
-        }
-      ]
+    upgrades: (RoomUpgrades & {
+      base: BaseRoomUpgrades
+    })[]
   }
 }
 
@@ -37,24 +34,12 @@ export const iGenRouteInfo = async (data: TParams) => {
   ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
 
   for (const upgrade of data.route.upgrades) {
-    const sprite1 = await loadImage(`./src/assets/sprites/route/${upgrade.baseData.name}.png`)
+    const sprite1 = await loadImage(`./src/assets/sprites/route/${upgrade.base.name}.png`)
     ctx.drawImage(sprite1, 0, 0, canvasWidth, canvasHeight)
   }
 
-  const sprite1 = await loadImage('./src/assets/sprites/route/roads.png')
-  ctx.drawImage(sprite1, 0, 0, canvasWidth, canvasHeight)
-
   const sprite2 = await loadImage('./src/assets/sprites/route/trees.png')
   ctx.drawImage(sprite2, 0, 0, canvasWidth, canvasHeight)
-
-  const sprite3 = await loadImage('./src/assets/sprites/route/gym.png')
-  ctx.drawImage(sprite3, 0, 0, canvasWidth, canvasHeight)
-
-  const sprite4 = await loadImage('./src/assets/sprites/route/bridge.png')
-  ctx.drawImage(sprite4, 0, 0, canvasWidth, canvasHeight)
-
-  const sprite5 = await loadImage('./src/assets/sprites/route/ship.png')
-  ctx.drawImage(sprite5, 0, 0, canvasWidth, canvasHeight)
 
   const filepath: string = await new Promise((resolve, reject) => {
     // Save the canvas to disk

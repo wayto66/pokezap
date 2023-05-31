@@ -1,4 +1,4 @@
-import { PrismaClient, prisma } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import {
   InsufficientFundsError,
@@ -17,9 +17,10 @@ export const shopBuy = async (data: TRouteParams): Promise<IResponse> => {
   if (!itemAmountString) throw new MissingParametersBuyAmountError()
 
   const itemId = Number(itemIdString)
+  const itemName = itemIdString.toLowerCase()
   const itemAmount = Number(itemAmountString)
 
-  if (isNaN(itemId)) throw new TypeMissmatchError('id do item', 'número')
+  const itemIdIsNumber = !isNaN(itemId)
   if (isNaN(itemAmount)) throw new TypeMissmatchError('quantidade do item', 'número')
 
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
@@ -34,27 +35,45 @@ export const shopBuy = async (data: TRouteParams): Promise<IResponse> => {
 
   const items = await prismaClient.baseItem.findMany({
     where: {
-      OR: [{ name: 'poke-ball' }, { name: 'great-ball' }, { name: 'ultra-ball' }],
+      OR: [
+        { name: 'poke-ball' },
+        { name: 'great-ball' },
+        { name: 'ultra-ball' },
+        { name: 'full-incense' },
+        { name: 'thunder-stone' },
+        { name: 'water-stone' },
+        { name: 'fire-stone' },
+        { name: 'leaf-stone' },
+      ],
     },
   })
 
   if (!items) throw new NoItemsFoundError()
 
-  const requestedItem = items[itemId - 1]
+  const requestedItem = itemIdIsNumber ? items[itemId - 1] : items.find(item => item.name === itemName)
 
-  if (!requestedItem) throw new RequestedShopItemDoesNotExists(itemId)
+  if (!requestedItem) throw new RequestedShopItemDoesNotExists(itemIdIsNumber ? itemId : itemName)
 
   if (requestedItem.npcPrice * itemAmount > player.cash)
     throw new InsufficientFundsError(player.name, player.cash, requestedItem.npcPrice * itemAmount)
 
-  let item = await prismaClient.item.findFirst({
-    where: {
-      baseItem: {
-        id: requestedItem.id,
-      },
-      ownerId: player.id,
-    },
-  })
+  let item = itemIdIsNumber
+    ? await prismaClient.item.findFirst({
+        where: {
+          baseItem: {
+            id: requestedItem.id,
+          },
+          ownerId: player.id,
+        },
+      })
+    : await prismaClient.item.findFirst({
+        where: {
+          baseItem: {
+            name: requestedItem.name,
+          },
+          ownerId: player.id,
+        },
+      })
 
   if (!item) {
     item = await prismaClient.item.create({

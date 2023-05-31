@@ -14,7 +14,13 @@ export class AppError {
 
 export class RouteNotProvidedError extends AppError {
   constructor() {
-    const message = 'Please specify a route.'
+    const message = `Por favor especifique uma rota. Exemplos:
+    - jogador
+    - pokemon
+    - inventario
+    - rota
+    - breed
+    - loja`
     const statusCode = 300
 
     super(message, statusCode)
@@ -48,7 +54,7 @@ export class RouteAlreadyRegisteredError extends AppError {
 
 export class InvalidRouteError extends AppError {
   constructor() {
-    const message = `ERROR: It seems that you are not on a valid route.`
+    const message = `ERRO: não foi possível detectar a rota atual.`
 
     super(message)
   }
@@ -151,9 +157,18 @@ export class MissingParametersBuyAmountError extends AppError {
   }
 }
 
+export class MissingParametersSellPokemonError extends AppError {
+  constructor() {
+    const message = 'Por favor, especifique o id do pokemon à ser vendido.'
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class MissingParametersInventoryRouteError extends AppError {
   constructor() {
-    const message = 'DUMMY: This is the inventory route, specify a sub route.'
+    const message = 'Especifique se deseja ver ITEM ou POKEMON.'
     const statusCode = 300
 
     super(message, statusCode)
@@ -216,6 +231,15 @@ export class MissingParametersTradeRouteError extends AppError {
   }
 }
 
+export class MissingParameterError extends AppError {
+  constructor(parameterName: string) {
+    const message = `Por favor, informe o(a): ${parameterName}`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class PlayerNotFoundError extends AppError {
   constructor(playerPhone: string) {
     const message = `ERRO: Jogador não encontrado com o código ${playerPhone}`
@@ -225,7 +249,7 @@ export class PlayerNotFoundError extends AppError {
 }
 
 export class PokemonNotFoundError extends AppError {
-  constructor(pokemonId: number) {
+  constructor(pokemonId: number | string) {
     const message = `ERRO: Pokemon não encontrado com o id ${pokemonId}`
     const statusCode = 300
 
@@ -233,9 +257,54 @@ export class PokemonNotFoundError extends AppError {
   }
 }
 
-export class PlayerDoestNotOwnThePokemon extends AppError {
-  constructor(id: number, playerName: string) {
+export class InvasionNotFoundError extends AppError {
+  constructor(invasionId: number) {
+    const message = `ERRO: Invasão não encontrada com o id ${invasionId}`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PlayerDoestNotOwnThePokemonError extends AppError {
+  constructor(id: number | string, playerName: string) {
     const message = `O pokemon #${id} não pertence à ${playerName}.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class CantDuelItselfError extends AppError {
+  constructor() {
+    const message = 'Você deve informar o id jogador a ser desafiado no duelo, não o seu.'
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PlayerOnlyHasOnePokemonError extends AppError {
+  constructor(playerName: string) {
+    const message = `${playerName} não pode vender seu único pokemon.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class CantSellPokemonInTeamError extends AppError {
+  constructor(id: number, playerName: string) {
+    const message = `O pokemon #${id} faz parte do seu time e não pode ser vendido. Retire-o do seu time primeiro.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class CantTradePokemonInTeamError extends AppError {
+  constructor(id: number, playerName: string) {
+    const message = `O pokemon #${id} faz parte do seu time e não pode ser trocado. Retire-o do seu time primeiro.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -398,6 +467,15 @@ export class SendEmptyMessageError extends AppError {
   }
 }
 
+export class InvasionAlreadyFinishedError extends AppError {
+  constructor() {
+    const message = `A invasão já se encerrou.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class PlayerDidNotDefeatPokemonError extends AppError {
   constructor(playerName: string) {
     const message = `*${playerName}* não derrotou o pokemon.`
@@ -453,10 +531,36 @@ export class PokemonHasNotBornYetError extends AppError {
 }
 
 export class EggIsNotReadyToBeHatch extends AppError {
-  constructor(id: number) {
-    const message = `O ovo #${id} ainda não está pronto para ser chocado.`
+  constructor(id: number, hoursLeft: number) {
+    const message = `O ovo #${id} ainda não está pronto para ser chocado. Faltam ${hoursLeft} horas ainda.`
     const statusCode = 300
 
+    super(message, statusCode)
+  }
+}
+
+export class InsufficientLevelToEvolveError extends AppError {
+  constructor(pokemonId: number, pokemonName: string, neededLevel: number) {
+    const message = `#${pokemonId} ${pokemonName} precisa estar no mínimo nível ${neededLevel} para evoluir.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class UnknownEvolutionMethodError extends AppError {
+  constructor(pokemonId: number, pokemonName: string) {
+    const message = `#${pokemonId} ${pokemonName} parece evoluir apenas sob certas condições especiais...`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonAlreadyOnLastEvolution extends AppError {
+  constructor(pokemonId: number, pokemonName: string) {
+    const message = `#${pokemonId} ${pokemonName} já está na última evolução.`
+    const statusCode = 300
     super(message, statusCode)
   }
 }
@@ -472,7 +576,7 @@ export class FailedToFindXinYError extends AppError {
 
 export class UnexpectedError extends AppError {
   constructor(routeName: string) {
-    const message = `ERRO: ouve um erro inesperado no ${routeName}.`
+    const message = `ERRO: ouve um erro inesperado: ${routeName}.`
     const statusCode = 300
 
     super(message, statusCode)

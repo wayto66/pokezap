@@ -101,7 +101,7 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
     let updatedChildrenCount = childrenCount + 1
 
     for (let i = 0; i < desiredChildrenAmount; i++) {
-      finalCost += (220 + (poke.baseData.BaseExperience ** 2 / 231) * updatedChildrenCount ** 2.73) / 1.5
+      finalCost += (220 + (poke.baseData.BaseExperience ** 2 / 231) * updatedChildrenCount ** 3.23) / 2.7
       updatedChildrenCount++
     }
     return finalCost
