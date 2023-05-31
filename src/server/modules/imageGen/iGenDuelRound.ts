@@ -1,5 +1,5 @@
 import { BasePokemon, Pokemon } from '@prisma/client'
-import { loadImage } from 'canvas'
+import { Image, loadImage } from 'canvas'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import {
   TCanvas2D,
@@ -44,7 +44,6 @@ export const iGenDuelRound = async ({
   const canvas2d = await createCanvas2d(1)
 
   const backgroundImageUrl = './src/assets/sprites/UI/hud/duel_x1_round.png'
-  drawBackground(canvas2d, backgroundImageUrl)
 
   const filepath = path.join(__dirname, `/images/animation-${Math.random()}.gif`)
 
@@ -61,16 +60,40 @@ export const iGenDuelRound = async ({
   const winnerHpBarXOffset = random >= 0.5 ? 365 : 55
   const loserHpBarXOffset = random >= 0.5 ? 55 : 365
 
+  const backgroundImage = await loadImage(backgroundImageUrl)
+  const rightPokemonImage = await loadImage(rightPokemon.spriteUrl)
+  const leftPokemonImage = await loadImage(leftPokemon.spriteUrl)
+
+  const winnerPokeSkillTypeSprite = await loadImage(`./src/assets/sprites/UI/types/${winnerPokemon.skillType}.png`)
+  const loserPokeSkillTypeSprite = await loadImage(`./src/assets/sprites/UI/types/${loserPokemon.skillType}.png`)
+  const winnerPokeUltimateTypeSprite = await loadImage(
+    `./src/assets/sprites/UI/types/${winnerPokemon.ultimateType}.png`
+  )
+  const loserPokeUltimateTypeSprite = await loadImage(`./src/assets/sprites/UI/types/${loserPokemon.ultimateType}.png`)
+
+  const talentImageMap = new Map<string, Image>([])
+
+  for (const talent of [pokemonRightSideTalents, pokemonleftSideTalents].flat()) {
+    if (!talent) continue
+    talentImageMap.set(talent, await loadImage(`./src/assets/sprites/UI/types/circle/${talent}.png`))
+  }
+
   for (let i = 0; i < roundCount * framesPerRound + 40; i++) {
+    console.log({ roundCount })
     if (i > round * framesPerRound && isDuelInProgress) {
       round++
       roundInfo = duelMap.get(round)
     }
+    if (!roundInfo) continue
 
     canvas2d.clearArea()
+    drawBackground(canvas2d, backgroundImage)
 
-    await drawTalents(canvas2d, pokemonRightSideTalents, 305)
-    await drawTalents(canvas2d, pokemonleftSideTalents, 5)
+    drawTalents(canvas2d, talentImageMap, pokemonRightSideTalents, 305)
+    drawTalents(canvas2d, talentImageMap, pokemonleftSideTalents, 5)
+
+    drawPokemons(canvas2d, rightPokemonImage, 285, 165)
+    drawPokemons(canvas2d, leftPokemonImage, 0, 165)
 
     drawHpBars(canvas2d, winnerHpBarXOffset, roundInfo[winnerDataName].hp, roundInfo[winnerDataName].maxHp)
     drawHpBars(canvas2d, loserHpBarXOffset, roundInfo[loserDataName].hp, roundInfo[loserDataName].maxHp)
@@ -78,27 +101,35 @@ export const iGenDuelRound = async ({
     drawManaBars(canvas2d, loserHpBarXOffset, roundInfo[loserDataName].mana)
     drawManaBars(canvas2d, winnerHpBarXOffset, roundInfo[winnerDataName].mana)
 
-    await drawPokemons(canvas2d, rightPokemon.spriteUrl, 285, 165)
-    await drawPokemons(canvas2d, leftPokemon.spriteUrl, 0, 165)
-
-    const positionX = rightPokemon === winnerPokemon ? 15 : 315
-
     if (i % 6 !== 0) {
       writeSkills({
         canvas2d,
         value: roundInfo[loserDataName].currentSkillName,
-        positionX,
+        positionX: rightPokemon === winnerPokemon ? 305 : 15,
+        positionY: 480,
       })
 
       writeSkills({
         canvas2d,
         value: roundInfo[winnerDataName].currentSkillName,
-        positionX,
+        positionX: rightPokemon === winnerPokemon ? 15 : 305,
+        positionY: 480,
       })
     }
 
-    await drawSkillTypeFlags(canvas2d, roundInfo, winnerDataName, loserDataName, rightPokemon, winnerPokemon)
-    drawTexts(canvas2d, roundInfo, winnerDataName, loserDataName, rightPokemon, leftPokemon, winnerPokemon, round)
+    drawSkillTypeFlags(
+      canvas2d,
+      roundInfo,
+      winnerDataName,
+      loserDataName,
+      rightPokemon,
+      winnerPokemon,
+      winnerPokeSkillTypeSprite,
+      loserPokeSkillTypeSprite,
+      winnerPokeUltimateTypeSprite,
+      loserPokeUltimateTypeSprite
+    )
+    drawTexts(canvas2d, rightPokemon, leftPokemon, round)
 
     if (roundInfo[winnerDataName].crit && (isDuelInProgress || i < roundCount * framesPerRound)) {
       drawCriticalText(canvas2d, winnerHpBarXOffset)
@@ -147,6 +178,8 @@ export const iGenDuelRound = async ({
 
   removeFileFromDisk(filepath)
 
+  console.log({ filepath })
+
   return filepath
 }
 
@@ -162,9 +195,9 @@ const drawManaBars = (canvas2d: TCanvas2D, xOffset: number, mana: number) => {
   canvas2d.drawBar({ type: 'mana', xOffset, value: mana / 100 })
 }
 
-const drawPokemons = async (canvas2d: TCanvas2D, imageUrl: string, positionX: number, positionY: number) => {
+const drawPokemons = (canvas2d: TCanvas2D, image: Image, positionX: number, positionY: number) => {
   canvas2d.draw({
-    image: await loadImage(imageUrl),
+    image,
     positionX,
     positionY,
     width: 250,
@@ -172,13 +205,17 @@ const drawPokemons = async (canvas2d: TCanvas2D, imageUrl: string, positionX: nu
   })
 }
 
-const drawSkillTypeFlags = async (
+const drawSkillTypeFlags = (
   canvas2d: TCanvas2D,
   roundInfo: number,
   winnerDataName: string,
   loserDataName: string,
   rightPokemon: duelPokemon,
-  winnerPokemon: duelPokemon
+  winnerPokemon: duelPokemon,
+  winnerPokeSkillTypeSprite: Image,
+  loserPokeSkillTypeSprite: Image,
+  winnerPokeUltimateTypeSprite: Image,
+  loserPokeUltimateTypeSprite: Image
 ) => {
   const getSkillTypeFlag = (pokeData: any, who: 'winner' | 'loser') => {
     if (pokeData.pokecurrentSkillName === pokeData.pokeskillName) {
@@ -190,67 +227,23 @@ const drawSkillTypeFlags = async (
     return loserPokeUltimateTypeSprite
   }
 
-  const winnerPokeSkillTypeSprite = await loadImage(
-    `./src/assets/sprites/UI/types/${roundInfo[winnerDataName].skillType}.png`
-  )
-  const loserPokeSkillTypeSprite = await loadImage(
-    `./src/assets/sprites/UI/types/${roundInfo[loserDataName].skillType}.png`
-  )
-  const winnerPokeUltimateTypeSprite = await loadImage(
-    `./src/assets/sprites/UI/types/${roundInfo[winnerDataName].ultimateType}.png`
-  )
-  const loserPokeUltimateTypeSprite = await loadImage(
-    `./src/assets/sprites/UI/types/${roundInfo[loserDataName].ultimateType}.png`
-  )
-
-  const positionX = rightPokemon === winnerPokemon ? 421 : 131
-
   canvas2d.draw({
     image: getSkillTypeFlag(roundInfo[winnerDataName], 'winner'),
-    positionX,
+    positionX: rightPokemon === winnerPokemon ? 421 : 131,
     positionY: 460,
     width: 75,
     height: 25,
   })
   canvas2d.draw({
     image: getSkillTypeFlag(roundInfo[loserDataName], 'loser'),
-    positionX: rightPokemon === winnerPokemon ? 421 : 131,
+    positionX: rightPokemon === winnerPokemon ? 131 : 421,
     positionY: 460,
     width: 75,
     height: 25,
   })
 }
 
-const drawTexts = (
-  canvas2d: TCanvas2D,
-  roundInfo: number,
-  winnerDataName: string,
-  loserDataName: string,
-  rightPokemon: duelPokemon,
-  leftPokemon: duelPokemon,
-  winnerPokemon: duelPokemon,
-  round: number
-) => {
-  const positionXWinner = rightPokemon === winnerPokemon ? 365 : 105
-
-  canvas2d.write({
-    font: '14px Righteous',
-    fillStyle: 'white',
-    text: roundInfo[winnerDataName].currentSkillName,
-    textAlign: 'start',
-    positionX: positionXWinner,
-    positionY: 180,
-  })
-
-  canvas2d.write({
-    font: '14px Righteous',
-    fillStyle: 'white',
-    text: roundInfo[loserDataName].currentSkillName,
-    textAlign: 'start',
-    positionX: positionXWinner,
-    positionY: 180,
-  })
-
+const drawTexts = (canvas2d: TCanvas2D, rightPokemon: duelPokemon, leftPokemon: duelPokemon, round: number) => {
   canvas2d.write({
     font: '14px Righteous',
     fillStyle: 'white',

@@ -46,6 +46,7 @@ export type TCanvas2D = {
   createStream: () => PNGStream
   clearArea: () => void
   addFrameToEncoder: (encoder: GIFEncoder) => void
+  buffer: Buffer
 }
 
 type TDrawPlayerData = {
@@ -59,6 +60,7 @@ type TDrawPlayerData = {
   elo: string
   eloPositionX: number
   eloPositionY: number
+  textAlign: CanvasTextAlign
 }
 
 type TDrawPokemonData = {
@@ -69,13 +71,14 @@ type TDrawPokemonData = {
   id: string
   idPositionX: number
   idPositionY: number
+  textAlign: CanvasTextAlign
 }
 
 type TWriteSkills = {
   canvas2d: TCanvas2D
   value: string
   positionX: number
-  positionY?: number
+  positionY: number
 }
 
 export const createCanvas2d = async (globalAlpha: number, isSmoothing = false): Promise<TCanvas2D> => {
@@ -137,7 +140,10 @@ export const createCanvas2d = async (globalAlpha: number, isSmoothing = false): 
     encoder.addFrame(context as any)
   }
 
+  const buffer = canvas.toBuffer('image/png')
+
   return {
+    buffer,
     draw,
     drawBar,
     drawCircle,
@@ -148,8 +154,7 @@ export const createCanvas2d = async (globalAlpha: number, isSmoothing = false): 
   }
 }
 
-export const drawBackground = async (canvas2d: TCanvas2D, backgroundImageUrl: string) => {
-  const backgroundImage = await loadImage(backgroundImageUrl)
+export const drawBackground = (canvas2d: TCanvas2D, backgroundImage: Image) => {
   const backgroundPositionX = 0
   const backgroundPositionY = 0
 
@@ -173,6 +178,7 @@ export const drawAvatarPlayer = async ({
   elo,
   eloPositionX,
   eloPositionY,
+  textAlign,
 }: TDrawPlayerData) => {
   const player1ImageUrl = `./src/assets/sprites/avatars/${spriteUrl}`
   const player1AvatarImage = await loadImage(player1ImageUrl)
@@ -187,7 +193,7 @@ export const drawAvatarPlayer = async ({
   canvas2d.write({
     font: '21px Righteous',
     fillStyle: 'white',
-    textAlign: 'start',
+    textAlign,
     text: `${name.toUpperCase()}`,
     positionX: namePositionX,
     positionY: namePositionY,
@@ -195,7 +201,7 @@ export const drawAvatarPlayer = async ({
   canvas2d.write({
     font: '14px Righteous',
     fillStyle: 'white',
-    textAlign: 'start',
+    textAlign,
     text: `RANK: ${elo}`,
     positionX: eloPositionX,
     positionY: eloPositionY,
@@ -210,6 +216,7 @@ export const drawPokemon = async ({
   id,
   idPositionX,
   idPositionY,
+  textAlign,
 }: TDrawPokemonData) => {
   const pokemonPlayer1Image = await loadImage(imageUrl)
 
@@ -223,20 +230,28 @@ export const drawPokemon = async ({
   canvas2d.write({
     font: '16px Righteous',
     fillStyle: 'white',
-    textAlign: 'start',
+    textAlign,
     text: `#${id}`,
     positionX: idPositionX,
     positionY: idPositionY,
   })
 }
 
-export const drawTalents = async (canvas2d: TCanvas2D, talents: (string | undefined)[], xOffset: number) => {
+export const drawTalents = (
+  canvas2d: TCanvas2D,
+  talentImageMap: Map<string, Image>,
+  talents: (string | undefined)[],
+  xOffset: number
+) => {
   if (!talents) return
 
   const NUM_TALENTS = 9
   for (let i = 0; i < NUM_TALENTS; i++) {
     const talent = talents[i]
     if (!talent) return
+
+    const image = talentImageMap.get(talent)
+    if (!image) return
 
     const positionX = xOffset + i * 22
     const positionY = 400
@@ -249,7 +264,7 @@ export const drawTalents = async (canvas2d: TCanvas2D, talents: (string | undefi
     })
 
     canvas2d.draw({
-      image: await getTalent(talent),
+      image,
       positionX,
       positionY,
       width: 21,
@@ -264,7 +279,7 @@ export const getTalent = async (name: string) => {
   return await loadImage(talentImageUrl)
 }
 
-export const writeSkills = ({ canvas2d, value, positionX, positionY = 480 }: TWriteSkills) => {
+export const writeSkills = ({ canvas2d, value, positionX, positionY }: TWriteSkills) => {
   canvas2d.write({
     font: '18px Righteous',
     fillStyle: 'white',

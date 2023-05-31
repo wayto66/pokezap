@@ -1,3 +1,4 @@
+import { loadImage } from 'canvas'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import {
   createCanvas2d,
@@ -19,10 +20,10 @@ export const iGenDuelX1 = async (data: TParams) => {
 
   const canvas2d = await createCanvas2d(1)
 
-  const backgroundImageUrl = './src/assets/sprites/UI/hud/duel_x1.png'
-  drawBackground(canvas2d, backgroundImageUrl)
+  const backgroundImage = await loadImage('./src/assets/sprites/UI/hud/duel_x1.png')
+  drawBackground(canvas2d, backgroundImage)
 
-  drawAvatarPlayer({
+  await drawAvatarPlayer({
     canvas2d,
     avatarPositionX: 0,
     avatarPositionY: 90,
@@ -33,8 +34,9 @@ export const iGenDuelX1 = async (data: TParams) => {
     namePositionY: 55,
     eloPositionX: 51,
     eloPositionY: 75,
+    textAlign: 'start',
   })
-  drawAvatarPlayer({
+  await drawAvatarPlayer({
     canvas2d,
     avatarPositionX: 300,
     avatarPositionY: 90,
@@ -45,8 +47,9 @@ export const iGenDuelX1 = async (data: TParams) => {
     elo: elo2,
     eloPositionX: 450,
     eloPositionY: 75,
+    textAlign: 'end',
   })
-  drawPokemon({
+  await drawPokemon({
     canvas2d,
     positionX: 0,
     positionY: 275,
@@ -54,8 +57,9 @@ export const iGenDuelX1 = async (data: TParams) => {
     id: data.player1.teamPoke1.id,
     idPositionX: 5,
     idPositionY: 340,
+    textAlign: 'start',
   })
-  drawPokemon({
+  await drawPokemon({
     canvas2d,
     positionX: 300,
     positionY: 275,
@@ -63,6 +67,7 @@ export const iGenDuelX1 = async (data: TParams) => {
     id: data.player2.teamPoke1.id,
     idPositionX: 495,
     idPositionY: 340,
+    textAlign: 'end',
   })
 
   const talentsPokemonPlayer1 = getTalents(data.player1)

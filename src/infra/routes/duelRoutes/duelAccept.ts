@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { BasePokemon, Player, Pokemon, PrismaClient, Skill } from '@prisma/client'
 import { container } from 'tsyringe'
 import {
   CouldNotUpdatePlayerError,
@@ -17,6 +17,16 @@ import { IResponse } from '../../../server/models/IResponse'
 import { duelX1 } from '../../../server/modules/duel/duelX1'
 import { TRouteParams } from '../router'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
+
+type DuelPokemon = Pokemon & {
+  baseData: BasePokemon & {
+    skills: Skill[]
+  }
+}
+
+type DuelPlayer = Player & {
+  teamPoke1: DuelPokemon | null
+}
 
 export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , sessionIdString] = data.routeParams
@@ -70,11 +80,14 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
   if (!session.invited.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(session.invited.name)
 
   if (session.invitedId !== player2.id) throw new SendEmptyMessageError()
+  console.log('starting duelx1')
 
   const duel = await duelX1({
     poke1: session.creator.teamPoke1,
     poke2: session.invited.teamPoke1,
   })
+
+  console.log('after duelX1')
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
 
@@ -90,17 +103,12 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
   if (isNaN(winnerId)) throw new TypeMissmatchError(winnerId, 'number')
   if (isNaN(loserId)) throw new TypeMissmatchError(loserId, 'number')
 
-  const winner = await prismaClient.player.findFirstOrThrow({
-    where: {
-      id: winnerId,
-    },
-  })
-
-  const loser = await prismaClient.player.findFirstOrThrow({
-    where: {
-      id: loserId,
-    },
-  })
+  const players = new Map<number, DuelPlayer>([
+    [session.creator.id, session.creator],
+    [session.invited.id, session.invited],
+  ])
+  const winner = players.get(winnerId)
+  const loser = players.get(loserId)
 
   if (!winner) throw new PlayerNotFoundError(winnerId.toString())
   if (!loser) throw new PlayerNotFoundError(loserId.toString())
@@ -167,23 +175,16 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
   if (!updatedLoserPlayer) throw new CouldNotUpdatePlayerError('id', loser.id)
   if (!updatedWinnerPlayer) throw new CouldNotUpdatePlayerError('id', winner.id)
 
-  const loserPokemon = await prismaClient.pokemon.findFirst({
-    where: {
-      id: duel.loser.id,
-    },
-    include: {
-      baseData: true,
-    },
-  })
+  if (!winner.teamPoke1) throw new UnexpectedError('NOTEAMPOKE1')
+  if (!loser.teamPoke1) throw new UnexpectedError('NOTEAMPOKE1')
 
-  const winnerPokemon = await prismaClient.pokemon.findFirst({
-    where: {
-      id: duel.winner.id,
-    },
-    include: {
-      baseData: true,
-    },
-  })
+  const pokemons = new Map<number, DuelPokemon>([
+    [winner.teamPoke1.id, winner.teamPoke1],
+    [loser.teamPoke1.id, loser.teamPoke1],
+  ])
+
+  const loserPokemon = pokemons.get(duel.loser.id)
+  const winnerPokemon = pokemons.get(duel.winner.id)
 
   if (!loserPokemon) throw new PokemonNotFoundError(duel.loser.id)
   if (!winnerPokemon) throw new PokemonNotFoundError(duel.winner.id)
@@ -209,6 +210,8 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
 
 ${winnerLevelUpMessage}
 ${loserLevelUpMessage}`
+
+  console.log('returning duelaceppt response')
 
   return {
     message: `${session.creator.name} e seu ${session.creator.teamPoke1.baseData.name} enfrenta o ${session.invited.teamPoke1.baseData.name} de ${session.invited.name}.`,

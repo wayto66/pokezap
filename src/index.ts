@@ -36,9 +36,17 @@ app.get('/', async () => {
 
 app.listen(4000, async () => {
   console.log('pokezap is online!')
+  await prismaClient.player.updateMany({
+    where: {
+      OR: [{ id: 24 }, { id: 26 }],
+    },
+    data: {
+      energy: 20,
+    },
+  })
 })
 
-const enableZap = false
+const enableZap = true
 if (enableZap) {
   const client = new Client({
     authStrategy: new LocalAuth({ clientId: 'ZapClientInstance1' }),

@@ -18,16 +18,12 @@ type TResponse = {
 }
 
 export const handleExperienceGain = async (data: TParams): Promise<TResponse> => {
-  console.log('start hecpg')
-  const { pokemon, targetPokemon } = data
+  const { pokemon } = data
   const expGain = getExperienceGain(data)
   const newExp = pokemon.experience + expGain
   const newLevel = Math.floor(Math.cbrt(newExp))
 
   const prisma = container.resolve<PrismaClient>('PrismaClient')
-
-  console.log('trying to update exp')
-  console.log({ newExp, newLevel, id: pokemon.id })
 
   const updatedPokemon = await prisma.pokemon
     .update({
@@ -54,7 +50,7 @@ export const handleExperienceGain = async (data: TParams): Promise<TResponse> =>
 }
 
 const getExperienceGain = (data: TParams) => {
-  const { pokemon, targetPokemon, bonusExp } = data
+  const { targetPokemon, bonusExp } = data
 
   const b = targetPokemon.baseData.BaseExperience
   const L = targetPokemon.level

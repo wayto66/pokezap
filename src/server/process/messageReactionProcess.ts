@@ -84,7 +84,7 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
       return
     }
 
-    console.log({ response })
+    console.log('before mp4 convertion')
 
     const filePath = await new Promise<string>((resolve, reject) => {
       if (!response.isAnimated) resolve(response.imageUrl!)
