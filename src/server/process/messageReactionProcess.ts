@@ -84,8 +84,6 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
       return
     }
 
-    console.log('before mp4 convertion')
-
     const filePath = await new Promise<string>((resolve, reject) => {
       if (!response.isAnimated) resolve(response.imageUrl!)
       const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg')
@@ -114,8 +112,6 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
       console.log(err)
       return ''
     })
-
-    console.log({ filePath })
 
     const media = MessageMedia.fromFilePath(filePath)
     const result = await zapClient.sendMessage(msg.id.remote, response.message, {
