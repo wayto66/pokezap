@@ -6,6 +6,7 @@ import { router } from '../../infra/routes/router'
 import { reactions } from '../../server/constants/reactions'
 import { verifyTargetChat } from '../../server/helpers/verifyTargetChat'
 import { IResponse } from '../../server/models/IResponse'
+import { metaValues } from '../../constants/metaValues'
 
 export const messageReactionProcess = async (msg: Reaction, instanceName: string) => {
   try {
@@ -27,7 +28,7 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
     const difference: number = moment
       .duration(currentTimestamp - Math.floor(new Date(message.createdAt).getTime() / 1000), 'seconds')
       .asMinutes()
-    if (difference >= 5) {
+    if (difference >= 30) {
       console.log('ignoring old msg. difference: ' + difference)
       return
     }

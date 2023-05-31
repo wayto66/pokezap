@@ -42,6 +42,8 @@ export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
       isAdult: true,
       isMale: Math.random() > 0.5,
       ownerId: newPlayer.id,
+      spriteUrl: basePoke.defaultSpriteUrl,
+      isShiny: false,
       level: 1,
       hp: generateHpStat(basePoke.BaseHp, 1),
       atk: generateGeneralStats(basePoke.BaseAtk, 1),

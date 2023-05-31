@@ -3,6 +3,7 @@ import { container } from 'tsyringe'
 import { InvalidRouteError, SubRouteNotFoundError, TypeMissmatchError } from '../../../../infra/errors/AppErrors'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
+import { iGenRouteInfo } from '../../../../server/modules/imageGen/iGenRouteInfo'
 
 export const routeInfo = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , routeId] = data.routeParams
@@ -14,20 +15,30 @@ export const routeInfo = async (data: TRouteParams): Promise<IResponse> => {
         phone: data.groupCode,
       },
       include: {
-        upgrades: true,
+        upgrades: {
+          include: {
+            base: true,
+          },
+        },
         players: true,
       },
     })
     if (!route) throw new InvalidRouteError()
 
+    const imageUrl = await iGenRouteInfo({
+      route,
+    })
+
     return {
-      message: `DUMMY: route found:
-      Rota ${route.id}
-      level: ${route.level}
-      players: ${route.players.length}
-      upgrades: ${route.upgrades.length}`,
+      message: `Rota ${route.id}
+Nível: ${route.level}
+Residentes: ${route.players.length}
+Upgrades: ${route.upgrades.length}
+Visitantes: 0
+Cargas de incenso: ${route.incenseCharges || 0}`,
       status: 200,
       data: null,
+      imageUrl,
     }
   }
   if (typeof Number(routeId) !== 'number') throw new TypeMissmatchError(routeId, 'number')

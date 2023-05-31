@@ -75,10 +75,6 @@ export const iGenDuelRound = async (data: TDuelRoundData) => {
 
     // draw talents
 
-    const getTalent = async (name: string) => {
-      return await loadImage('./src/assets/sprites/UI/types/circle/' + name + '.png')
-    }
-
     const rightPokemonTalents = [
       talentIdMap.get(rightPokemon.talentId1),
       talentIdMap.get(rightPokemon.talentId2),
@@ -103,6 +99,18 @@ export const iGenDuelRound = async (data: TDuelRoundData) => {
       talentIdMap.get(leftPokemon.talentId9),
     ]
 
+    const talentSprites: any = {}
+    for (const talent of leftPokemonTalents) {
+      if (talent && !talentSprites[talent]) {
+        talentSprites[talent] = await loadImage('./src/assets/sprites/UI/types/circle/' + talent + '.png')
+      }
+    }
+    for (const talent of rightPokemonTalents) {
+      if (talent && !talentSprites[talent]) {
+        talentSprites[talent] = await loadImage('./src/assets/sprites/UI/types/circle/' + talent + '.png')
+      }
+    }
+
     const drawTalents = async (talents: (string | undefined)[], xOffset: number) => {
       if (!talents) return
       for (let j = 0; j < 9; j++) {
@@ -125,17 +133,46 @@ export const iGenDuelRound = async (data: TDuelRoundData) => {
 
         if (!talent) return
 
-        ctx.drawImage(await getTalent(talent), x, y, 21, 21)
+        ctx.drawImage(talentSprites[talent], x, y, 21, 21)
       }
     }
+
+    // Draw the still part of the animation:
+
+    ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
+
+    ctx.drawImage(rightPokeSprite, 285, 165, 250, 250)
+    ctx.drawImage(leftPokeSprite, 0, 165, 250, 250)
+
+    // write pokenames
+    ctx.font = '14px Righteous'
+    ctx.fillText(rightPokemon.baseData.name, 350, 135)
+    ctx.fillText(leftPokemon.baseData.name, 65, 135)
+
+    // write pokemon levels
+
+    ctx.font = '14px Righteous'
+    ctx.textAlign = 'start'
+    ctx.fillText(rightPokemon.level.toString(), 470, 135)
+    ctx.fillText(leftPokemon.level.toString(), 200, 135)
+
+    await drawTalents(rightPokemonTalents, 305)
+    await drawTalents(leftPokemonTalents, 5)
+
+    ///////////////////////////////////////////////////////////////
+
+    // Convert the canvas to a buffer
+    const canvasBuffer = canvas.toBuffer('image/png') // Specify the desired image format ('image/png' in this example)
+
+    const duelStillImage = await loadImage(canvasBuffer)
 
     // Configure the GIFEncoder
     encoder.start()
     encoder.setRepeat(0) // 0 for repeat, -1 for no-repeat
-    encoder.setDelay(120) // Delay between frames in milliseconds
-    encoder.setQuality(10) // Image quality (lower is better)
+    encoder.setDelay(300) // Delay between frames in milliseconds
+    encoder.setQuality(60) // Image quality (lower is better)
 
-    const framesPerRound = 4
+    const framesPerRound = 1
     let round = 1
     let roundInfo = data.duelMap.get(round)
     let isDuelInProgress = true
@@ -148,11 +185,9 @@ export const iGenDuelRound = async (data: TDuelRoundData) => {
         round++
         roundInfo = data.duelMap.get(round)
       }
+      if (!roundInfo) continue
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
-
-      await drawTalents(rightPokemonTalents, 305)
-      await drawTalents(leftPokemonTalents, 5)
+      ctx.drawImage(duelStillImage, 0, 0, canvasWidth, canvasHeight)
 
       ctx.fillStyle = `rgb(160,40,40)`
       ctx.fillRect(
@@ -177,9 +212,6 @@ export const iGenDuelRound = async (data: TDuelRoundData) => {
 
       ctx.fillStyle = `rgb(50,121,211)`
       ctx.fillRect(winnerHpBarXOffset - 55, 145, Math.max(0, (roundInfo[winnerDataName].mana / 100) * 175), 3)
-
-      ctx.drawImage(rightPokeSprite, 285, 165, 250, 250)
-      ctx.drawImage(leftPokeSprite, 0, 165, 250, 250)
 
       // write skills
       ctx.font = '18px Righteous'
@@ -217,18 +249,6 @@ export const iGenDuelRound = async (data: TDuelRoundData) => {
           25
         )
       }
-
-      // write pokenames
-      ctx.font = '14px Righteous'
-      ctx.fillText(rightPokemon.baseData.name, 350, 135)
-      ctx.fillText(leftPokemon.baseData.name, 65, 135)
-
-      // write pokemon levels
-
-      ctx.font = '14px Righteous'
-      ctx.textAlign = 'start'
-      ctx.fillText(rightPokemon.level.toString(), 470, 135)
-      ctx.fillText(leftPokemon.level.toString(), 200, 135)
 
       ctx.font = '32px Righteous'
       ctx.textAlign = 'center'

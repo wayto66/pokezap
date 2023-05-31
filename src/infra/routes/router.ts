@@ -5,10 +5,12 @@ import { pokemonBreed1 } from './breedRoutes/pokemonBreed1'
 import { pokemonHatch } from './breedRoutes/pokemonHatch'
 import { catchRoutes } from './catchRoutes'
 import { duelRoutes } from './duelRoutes'
+import { helpRoutes } from './helpRoutes'
 import { inventoryRoutes } from './inventoryRoutes'
 import { pokemonRoutes } from './pokemonRoutes'
 import { rankRoutes } from './rankingRoutes'
 import { routeRoutes } from './routeRoutes'
+import { sendRoutes } from './sendRoutes'
 import { shopRoutes } from './shopRoutes'
 import { tradeRoutes } from './tradeRoutes'
 import { playerInfo1 } from './userRoutes/info/playerInfo1'
@@ -70,6 +72,8 @@ const routeMap = new Map<string, TRouteType>([
   ['LOJA', shopRoutes],
   ['MART', shopRoutes],
   ['POKEMART', shopRoutes],
+  ['COMPRAR', shopRoutes],
+  ['BUY', shopRoutes],
 
   // BATTLE ROUTES
   ['BATTLE', battleRoutes],
@@ -82,6 +86,15 @@ const routeMap = new Map<string, TRouteType>([
   ['BREED', pokemonBreed1],
   ['HATCH', pokemonHatch],
   ['CHOCAR', pokemonHatch],
+
+  // HELP ROUTES
+  ['HELP', helpRoutes],
+  ['WIKI', helpRoutes],
+  ['AJUDA', helpRoutes],
+
+  // SEND ROUTES
+  ['SEND', sendRoutes],
+  ['ENVIAR', sendRoutes],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {

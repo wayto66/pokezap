@@ -1,32 +1,60 @@
 import { PrismaClient } from '@prisma/client'
+import {
+  InsufficientLevelToEvolveError,
+  PlayerDoesNotHaveItemError,
+  PlayerDoestNotOwnThePokemonError,
+  PlayerNotFoundError,
+  PokemonAlreadyOnLastEvolution,
+  PokemonNotFoundError,
+  UnexpectedError,
+  UnknownEvolutionMethodError,
+} from '../../../infra/errors/AppErrors'
 import { container } from 'tsyringe'
+import { generateHpStat } from './generateHpStat'
+import { generateGeneralStats } from './generateGeneralStats'
 
 type TParams = {
   pokemonId: number
-  playerPhone: string
+  playerId: number
+  fromTrade?: boolean
 }
 
-export const checkEvolutionPermition = async (data: TParams) => {
+export const checkEvolutionPermition = async (
+  data: TParams
+): Promise<{
+  message: string
+  status: string
+}> => {
   const client = container.resolve<PrismaClient>('PrismaClient')
 
   const poke = await client.pokemon.findFirst({
     where: {
       id: data.pokemonId,
-      owner: {
-        phone: data.playerPhone,
-      },
+      ownerId: data.playerId,
     },
     include: {
       baseData: true,
     },
   })
 
-  if (!poke) return null
+  const player = await client.player.findFirst({
+    where: {
+      id: data.playerId,
+    },
+  })
+
+  if (!player) throw new PlayerNotFoundError(data.playerId.toString())
+  if (!poke) throw new PokemonNotFoundError(data.pokemonId)
+  if (poke.ownerId !== player.id) throw new PlayerDoestNotOwnThePokemonError(poke.id, player.name)
 
   const fullData: any = poke.baseData.evolutionData
   const evData = fullData.evolutionChain[0]
 
-  if (!evData) return
+  if (!evData)
+    return {
+      message: '',
+      status: 'no-evdata',
+    }
 
   const getCurrentPosition = () => {
     if (poke.baseData.isFirstEvolution) return 0
@@ -38,15 +66,10 @@ export const checkEvolutionPermition = async (data: TParams) => {
 
   const currentPosition = getCurrentPosition()
 
-  if (currentPosition === 2) return
+  if (currentPosition === 2) throw new PokemonAlreadyOnLastEvolution(poke.id, poke.baseData.name)
 
-  if (currentPosition === -1) {
-    return {
-      message: 'ERROR: Could not get the current position of your pokemon in the evolution chain.',
-      status: 400,
-      data: null,
-    }
-  }
+  if (currentPosition === -1)
+    throw new UnexpectedError('Não foi possível localizar a posição do pokemon na cadeia evolutiva.')
 
   let evoData: any = null
 
@@ -54,25 +77,52 @@ export const checkEvolutionPermition = async (data: TParams) => {
   if (currentPosition === 1) evoData = evData.evolves_to[0]
 
   if (evoData === null) {
-    console.log('evoData is null. currentPosition out of [-1,0,1,2]')
-    return
-  }
-
-  const evoTrigger = evoData.evolution_details[0].trigger
-  if (evoTrigger.name !== 'level-up') {
     return {
-      message: 'ERROR: Only evolution method allowed at this moment is level-up.',
-      status: 400,
-      data: null,
+      message: '',
+      status: 'evodata-null',
     }
   }
 
-  if (poke.level < evoData.evolution_details[0].min_level)
+  const evoTrigger = evoData?.evolution_details[0]?.trigger
+
+  if (!evoTrigger) throw new PokemonAlreadyOnLastEvolution(poke.id, poke.baseData.name)
+  if (evoTrigger.name !== 'level-up' && evoTrigger.name !== 'use-item' && evoTrigger.name !== 'trade') {
     return {
-      message: `DUMMY: Insufficient level. Necessary: ${evoData.evolution_details[0].min_level}, current: ${poke.level}`,
-      status: 300,
-      data: null,
+      message: 'Infelizmente o modo de evolução do seu Pokemon ainda não foi implementado.',
+      status: 'evo-trigger-unsupported',
     }
+  }
+
+  if (evoTrigger.name === 'trade' && !data.fromTrade) throw new UnknownEvolutionMethodError(poke.id, poke.baseData.name)
+
+  if (evoTrigger.name === 'level-up' && poke.level < (evoData.evolution_details[0].min_level || 15))
+    throw new InsufficientLevelToEvolveError(poke.id, poke.baseData.name, evoData.evolution_details[0].min_level || 15)
+
+  if (evoTrigger.name === 'use-item') {
+    const requiredItemName = evoData.evolution_details[0].item.name
+    if (!requiredItemName) throw new UnexpectedError('Não foi possível obter o nome do item requirido para evolução.')
+    const requiredItem = await client.item.findFirst({
+      where: {
+        ownerId: poke.ownerId,
+        baseItem: {
+          name: requiredItemName,
+        },
+      },
+    })
+
+    if (!requiredItem || requiredItem.amount <= 0) throw new PlayerDoesNotHaveItemError(player.name, requiredItemName)
+
+    await client.item.update({
+      where: {
+        id: requiredItem.id,
+      },
+      data: {
+        amount: {
+          decrement: 1,
+        },
+      },
+    })
+  }
 
   const evoToPoke = await client.basePokemon.findFirst({
     where: {
@@ -80,27 +130,56 @@ export const checkEvolutionPermition = async (data: TParams) => {
     },
   })
 
-  if (!evoToPoke)
-    return {
-      message: `ERROR: No BasePokemon found with name '${evoData.species.name}`,
-      status: 400,
-      data: null,
-    }
+  if (!evoToPoke) throw new UnexpectedError('Não foi possível encontrar basePokemon: ' + evoData.species.name)
 
-  const evolvedPoke = await client.pokemon.update({
-    where: {
-      id: data.pokemonId,
-    },
-    data: {
-      baseData: {
-        connect: {
-          id: evoToPoke.id,
+  const evolvedPoke = poke.isShiny
+    ? await client.pokemon.update({
+        where: {
+          id: data.pokemonId,
         },
-      },
-    },
-    include: {
-      baseData: true,
-    },
-  })
-  console.log(`${poke.baseData.name} evolved to ${evolvedPoke.baseData.name}`)
+        data: {
+          baseData: {
+            connect: {
+              id: evoToPoke.id,
+            },
+          },
+          spriteUrl: evoToPoke.shinySpriteUrl,
+          hp: Math.round(generateHpStat(evoToPoke.BaseHp, poke.level) * 1.1),
+          atk: Math.round(generateGeneralStats(evoToPoke.BaseAtk, poke.level) * 1.1),
+          def: Math.round(generateGeneralStats(evoToPoke.BaseDef, poke.level) * 1.1),
+          spAtk: Math.round(generateGeneralStats(evoToPoke.BaseSpAtk, poke.level) * 1.1),
+          spDef: Math.round(generateGeneralStats(evoToPoke.BaseSpDef, poke.level) * 1.1),
+          speed: Math.round(generateGeneralStats(evoToPoke.BaseSpeed, poke.level) * 1.1),
+        },
+        include: {
+          baseData: true,
+        },
+      })
+    : await client.pokemon.update({
+        where: {
+          id: data.pokemonId,
+        },
+        data: {
+          baseData: {
+            connect: {
+              id: evoToPoke.id,
+            },
+          },
+          spriteUrl: evoToPoke.defaultSpriteUrl,
+          hp: generateHpStat(evoToPoke.BaseHp, poke.level),
+          atk: generateGeneralStats(evoToPoke.BaseAtk, poke.level),
+          def: generateGeneralStats(evoToPoke.BaseDef, poke.level),
+          spAtk: generateGeneralStats(evoToPoke.BaseSpAtk, poke.level),
+          spDef: generateGeneralStats(evoToPoke.BaseSpDef, poke.level),
+          speed: generateGeneralStats(evoToPoke.BaseSpeed, poke.level),
+        },
+        include: {
+          baseData: true,
+        },
+      })
+
+  return {
+    message: `${poke.baseData.name} evoluiu para ${evolvedPoke.baseData.name}!`,
+    status: 'evolved',
+  }
 }

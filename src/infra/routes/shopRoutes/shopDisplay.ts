@@ -9,7 +9,16 @@ export const shopDisplay = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const items = await prismaClient.baseItem.findMany({
     where: {
-      OR: [{ name: 'poke-ball' }, { name: 'great-ball' }, { name: 'ultra-ball' }],
+      OR: [
+        { name: 'poke-ball' },
+        { name: 'great-ball' },
+        { name: 'ultra-ball' },
+        { name: 'full-incense' },
+        { name: 'thunder-stone' },
+        { name: 'water-stone' },
+        { name: 'fire-stone' },
+        { name: 'leaf-stone' },
+      ],
     },
   })
 

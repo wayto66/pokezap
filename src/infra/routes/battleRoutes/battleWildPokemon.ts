@@ -102,6 +102,10 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
 
   const displayName = wildPokemon.isShiny ? `shiny ${wildPokemon.baseData.name}` : wildPokemon.baseData.name
 
+  const cashGain = Math.round(
+    25 + Math.random() * 15 + (((wildPokemon.baseData.BaseExperience / 340) * wildPokemon.level) / 20) * 220
+  )
+
   if (duel.loser.id === player.teamPoke1.id) {
     await prismaClient.pokemon.update({
       where: {
@@ -115,6 +119,18 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
         },
       },
     })
+
+    await prismaClient.player.update({
+      where: {
+        id: player.id,
+      },
+      data: {
+        cash: {
+          decrement: cashGain,
+        },
+      },
+    })
+
     return {
       message: `*${player.name}* e seu *${playerPokemon.baseData.name}*
       enfrentam 
@@ -123,15 +139,11 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
       actions: [`pz. catch pokeball ${wildPokemon.id}`],
       data: null,
       imageUrl: duel.imageUrl,
-      afterMessage: `*${player.name}* foi derrotado por ${wildPokemon.baseData.name}.`,
+      afterMessage: `*${player.name}* foi derrotado por ${wildPokemon.baseData.name} e perdeu ${cashGain} POKECOINS.`,
       afterMessageActions: [`pz. catch pokeball ${wildPokemon.id}`],
       isAnimated: true,
     }
   }
-
-  const cashGain = Math.round(
-    40 + Math.random() * 20 + (((wildPokemon.baseData.BaseExperience / 340) * wildPokemon.level) / 50) * 300
-  )
 
   const updatedPlayer = await prismaClient.player.update({
     where: {
@@ -163,13 +175,9 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
 
   const afterMessage = `*${player.name}* vence o duelo e recebe +${cashGain} POKECOINS.
 ${winnerLevelUpMessage}
-
 👍 - Jogar poke-ball
 ❤ - Jogar great-ball
 😂 - Jogar ultra-ball
-
-[Para outras pokeballs, utilize:
-**. capturar nome-da-pokeball ${wildPokemon.id}]
 `
 
   await prismaClient.pokemon.update({
@@ -186,11 +194,8 @@ ${winnerLevelUpMessage}
   })
 
   return {
-    message: `*${player.name}* e seu *${playerPokemon.baseData.name}*
-    enfrentam 
-    ${displayName} level ${wildPokemon.level}.`,
+    message: `*${player.name}* e *${playerPokemon.baseData.name}* VS *${displayName}*!`,
     status: 200,
-    actions: [``],
     data: null,
     imageUrl: duel.imageUrl,
     afterMessage,
