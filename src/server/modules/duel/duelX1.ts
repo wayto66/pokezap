@@ -342,6 +342,8 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
           ultimateType: poke2Data.ultimateType,
         }
 
+  console.log('will start to creat gif')
+
   const imageUrl = data.againstWildPokemon
     ? await iGenWildPokemonBattle({
         winnerPokemon,

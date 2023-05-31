@@ -5,11 +5,14 @@ import { container } from 'tsyringe'
 import { Client, LocalAuth } from 'whatsapp-web.js'
 import { handleAllProcess } from './server/process'
 import { iGenPokemonAnalysis } from './server/modules/imageGen/iGenPokemonAnalysis'
+import { registerFonts } from './server/helpers/registerFonts'
 import { router } from './infra/routes/router'
 
 process.on('uncaughtException', error => {
   console.error(error)
 })
+
+registerFonts()
 
 const prismaClient = new PrismaClient()
 container.registerInstance<PrismaClient>('PrismaClient', prismaClient)
@@ -26,6 +29,7 @@ app.get('/', async () => {
   })
   console.log({ response })
 })
+
 app.listen(4000, async () => {
   const clearDB = false
   if (clearDB) {
@@ -37,6 +41,14 @@ app.listen(4000, async () => {
   }
 
   console.log('pokezap is online!')
+  await prismaClient.player.updateMany({
+    where: {
+      OR: [{ id: 24 }, { id: 26 }],
+    },
+    data: {
+      energy: 20,
+    },
+  })
 })
 
 const enableZap = true

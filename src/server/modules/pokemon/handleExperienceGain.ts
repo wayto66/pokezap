@@ -20,6 +20,7 @@ type TResponse = {
 }
 
 export const handleExperienceGain = async (data: TParams): Promise<TResponse> => {
+
   const expGain = getExperienceGain(data)
   const newExp = data.pokemon.experience + expGain
   const newLevel = Math.floor(Math.cbrt(newExp))
@@ -37,7 +38,6 @@ export const handleExperienceGain = async (data: TParams): Promise<TResponse> =>
 
   if (!pokemon) throw new PokemonNotFoundError(data.pokemon.id)
 
-  console.log('trying to update exp')
   console.log({ newExp, newLevel, id: pokemon.id })
 
   const updatedPokemon = await prisma.pokemon
@@ -71,7 +71,7 @@ export const handleExperienceGain = async (data: TParams): Promise<TResponse> =>
 }
 
 const getExperienceGain = (data: TParams) => {
-  const { pokemon, targetPokemon, bonusExp } = data
+  const { targetPokemon, bonusExp } = data
 
   const b = targetPokemon.baseData.BaseExperience
   const L = targetPokemon.level

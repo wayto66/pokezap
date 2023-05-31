@@ -11,6 +11,7 @@ export const readyProcess = (zapIstanceName: string) => {
   const zapClient = container.resolve<Client>(zapIstanceName)
   console.log('READY')
 
+
   cron.schedule(`*/${metaValues.wildPokemonFleeTimeInMinutes} * * * *`, () => {
     console.log(`Running a task every ${metaValues.wildPokemonFleeTimeInMinutes} minutes`)
     wildPokeSpawn({

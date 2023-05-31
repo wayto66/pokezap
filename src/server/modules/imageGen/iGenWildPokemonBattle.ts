@@ -1,8 +1,9 @@
 import { BasePokemon, Pokemon } from '@prisma/client'
-import { createCanvas, loadImage, registerFont } from 'canvas'
+import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import GIFEncoder from 'gifencoder'
 import { talentIdMap } from '../../constants/talentIdMap'
+import path from 'path'
 
 type duelPokemon = Pokemon & {
   baseData: BasePokemon
@@ -22,7 +23,7 @@ type TDuelRoundData = {
 
 export const iGenWildPokemonBattle = async (data: TDuelRoundData) => {
   console.log('igenwildPokemonBattle')
-  const filepath = await new Promise<string>(async (resolve, reject) => {
+  const filepath = await new Promise<string>(async resolve => {
     const { winnerDataName, loserDataName } = data
     const random = Math.random()
 
@@ -34,17 +35,12 @@ export const iGenWildPokemonBattle = async (data: TDuelRoundData) => {
     const canvasHeight = 500
     const backgroundUrl = './src/assets/sprites/UI/hud/duel_x1_round.png'
 
-    // Load the font file and register it with the canvas
-    registerFont('./src/assets/font/JosefinSans-Bold.ttf', { family: 'Pokemon' })
-
-    registerFont('./src/assets/font/Righteous.ttf', { family: 'Righteous' })
-
     // Create a canvas with the defined dimensions
     const canvas = createCanvas(canvasWidth, canvasHeight)
     const ctx = canvas.getContext('2d')
     ctx.imageSmoothingEnabled = false
 
-    const filepath = __dirname + `/images/animation-${Math.random()}.gif`
+    const filepath = path.join(__dirname, `/images/animation-${Math.random()}.gif`)
 
     // Create a new GIFEncoder instance
     const encoder = new GIFEncoder(500, 500)

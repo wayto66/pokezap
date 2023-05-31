@@ -1,9 +1,16 @@
 import { BasePokemon, Pokemon } from '@prisma/client'
-import { createCanvas, loadImage, registerFont } from 'canvas'
-import fs from 'fs'
-import path from 'path'
-import GIFEncoder from 'gifencoder'
+import { Image, loadImage } from 'canvas'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
+import {
+  TCanvas2D,
+  createCanvas2d,
+  drawBackground,
+  drawTalents,
+  writeSkills,
+} from '../../../server/helpers/canvasHelper'
+import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
+import path from 'path'
+import { initEncoder } from '../../../server/helpers/encoderHelper'
 
 type duelPokemon = Pokemon & {
   baseData: BasePokemon
@@ -21,317 +28,325 @@ type TDuelRoundData = {
   loserDataName: string
 }
 
-export const iGenDuelRound = async (data: TDuelRoundData) => {
-  const filepath = await new Promise<string>(async (resolve, reject) => {
-    const { winnerDataName, loserDataName } = data
-    const random = Math.random()
+export const iGenDuelRound = async ({
+  winnerPokemon,
+  loserPokemon,
+  winnerDataName,
+  loserDataName,
+  roundCount,
+  duelMap,
+}: TDuelRoundData) => {
+  const random = Math.random()
 
-    const rightPokemon = random >= 0.5 ? data.winnerPokemon : data.loserPokemon
-    const leftPokemon = random >= 0.5 ? data.loserPokemon : data.winnerPokemon
+  const rightPokemon = random >= 0.5 ? winnerPokemon : loserPokemon
+  const leftPokemon = random >= 0.5 ? loserPokemon : winnerPokemon
 
-    // Define the dimensions of the canvas and the background
-    const canvasWidth = 500
-    const canvasHeight = 500
-    const backgroundUrl = './src/assets/sprites/UI/hud/duel_x1_round.png'
-    const resultBackgroundUrl = './src/assets/sprites/UI/hud/duel_x1_result.png'
+  const canvas2d = await createCanvas2d(1)
 
-    // Load the font file and register it with the canvas
-    registerFont('./src/assets/font/JosefinSans-Bold.ttf', { family: 'Pokemon' })
+  const backgroundImageUrl = './src/assets/sprites/UI/hud/duel_x1_round.png'
 
-    registerFont('./src/assets/font/Righteous.ttf', { family: 'Righteous' })
+  const filepath = path.join(__dirname, `/images/animation-${Math.random()}.gif`)
 
-    // Create a canvas with the defined dimensions
-    const canvas = createCanvas(canvasWidth, canvasHeight)
-    const ctx = canvas.getContext('2d')
-    ctx.imageSmoothingEnabled = false
+  const encoder = initEncoder(filepath)
 
-    const filepath = __dirname + `/images/animation-${Math.random()}.gif`
+  const pokemonRightSideTalents = getTalents(rightPokemon)
+  const pokemonleftSideTalents = getTalents(leftPokemon)
 
-    // Create a new GIFEncoder instance
-    const encoder = new GIFEncoder(500, 500)
-    encoder.createReadStream().pipe(fs.createWriteStream(filepath))
+  const framesPerRound = 4
+  let round = 1
+  let roundInfo = duelMap.get(round)
+  let isDuelInProgress = true
 
-    // draw poke1 sprite
-    const rightPokeSprite = await loadImage(rightPokemon.spriteUrl)
+  const winnerHpBarXOffset = random >= 0.5 ? 365 : 55
+  const loserHpBarXOffset = random >= 0.5 ? 55 : 365
 
-    // draw poke2 sprite
-    const leftPokeSprite = await loadImage(leftPokemon.spriteUrl)
+  const backgroundImage = await loadImage(backgroundImageUrl)
+  const rightPokemonImage = await loadImage(rightPokemon.spriteUrl)
+  const leftPokemonImage = await loadImage(leftPokemon.spriteUrl)
 
-    const winnerPokeSkillTypeSprite = await loadImage(
-      './src/assets/sprites/UI/types/' + data.winnerPokemon.skillType + '.png'
-    )
-    const loserPokeSkillTypeSprite = await loadImage(
-      './src/assets/sprites/UI/types/' + data.loserPokemon.skillType + '.png'
-    )
-    const winnerPokeUltimateTypeSprite = await loadImage(
-      './src/assets/sprites/UI/types/' + data.winnerPokemon.ultimateType + '.png'
-    )
-    const loserPokeUltimateTypeSprite = await loadImage(
-      './src/assets/sprites/UI/types/' + data.loserPokemon.ultimateType + '.png'
-    )
+  const winnerPokeSkillTypeSprite = await loadImage(`./src/assets/sprites/UI/types/${winnerPokemon.skillType}.png`)
+  const loserPokeSkillTypeSprite = await loadImage(`./src/assets/sprites/UI/types/${loserPokemon.skillType}.png`)
+  const winnerPokeUltimateTypeSprite = await loadImage(
+    `./src/assets/sprites/UI/types/${winnerPokemon.ultimateType}.png`
+  )
+  const loserPokeUltimateTypeSprite = await loadImage(`./src/assets/sprites/UI/types/${loserPokemon.ultimateType}.png`)
 
-    // Load the background image
-    const background = await loadImage(backgroundUrl)
+  const talentImageMap = new Map<string, Image>([])
 
-    // draw talents
+  for (const talent of [pokemonRightSideTalents, pokemonleftSideTalents].flat()) {
+    if (!talent) continue
+    talentImageMap.set(talent, await loadImage(`./src/assets/sprites/UI/types/circle/${talent}.png`))
+  }
 
-    const rightPokemonTalents = [
-      talentIdMap.get(rightPokemon.talentId1),
-      talentIdMap.get(rightPokemon.talentId2),
-      talentIdMap.get(rightPokemon.talentId3),
-      talentIdMap.get(rightPokemon.talentId4),
-      talentIdMap.get(rightPokemon.talentId5),
-      talentIdMap.get(rightPokemon.talentId6),
-      talentIdMap.get(rightPokemon.talentId7),
-      talentIdMap.get(rightPokemon.talentId8),
-      talentIdMap.get(rightPokemon.talentId9),
-    ]
-
-    const leftPokemonTalents = [
-      talentIdMap.get(leftPokemon.talentId1),
-      talentIdMap.get(leftPokemon.talentId2),
-      talentIdMap.get(leftPokemon.talentId3),
-      talentIdMap.get(leftPokemon.talentId4),
-      talentIdMap.get(leftPokemon.talentId5),
-      talentIdMap.get(leftPokemon.talentId6),
-      talentIdMap.get(leftPokemon.talentId7),
-      talentIdMap.get(leftPokemon.talentId8),
-      talentIdMap.get(leftPokemon.talentId9),
-    ]
-
-    const talentSprites: any = {}
-    for (const talent of leftPokemonTalents) {
-      if (talent && !talentSprites[talent]) {
-        talentSprites[talent] = await loadImage('./src/assets/sprites/UI/types/circle/' + talent + '.png')
-      }
+  for (let i = 0; i < roundCount * framesPerRound + 40; i++) {
+    console.log({ roundCount })
+    if (i > round * framesPerRound && isDuelInProgress) {
+      round++
+      roundInfo = duelMap.get(round)
     }
-    for (const talent of rightPokemonTalents) {
-      if (talent && !talentSprites[talent]) {
-        talentSprites[talent] = await loadImage('./src/assets/sprites/UI/types/circle/' + talent + '.png')
-      }
-    }
+    if (!roundInfo) continue
 
-    const drawTalents = async (talents: (string | undefined)[], xOffset: number) => {
-      if (!talents) return
-      for (let j = 0; j < 9; j++) {
-        const x = xOffset + j * 22
-        const y = 400
+    canvas2d.clearArea()
+    drawBackground(canvas2d, backgroundImage)
 
-        // set up the circle style
-        const circleRadius = 10
-        const circleColor = 'rgba(0,0,0,0.5)'
+    drawTalents(canvas2d, talentImageMap, pokemonRightSideTalents, 305)
+    drawTalents(canvas2d, talentImageMap, pokemonleftSideTalents, 5)
 
-        // draw the circle path
-        ctx.beginPath()
-        ctx.arc(x + 21, y + 21, circleRadius, 0, Math.PI * 2)
+    drawPokemons(canvas2d, rightPokemonImage, 285, 165)
+    drawPokemons(canvas2d, leftPokemonImage, 0, 165)
 
-        // fill the circle path with black color
-        ctx.fillStyle = circleColor
-        ctx.fill()
+    drawHpBars(canvas2d, winnerHpBarXOffset, roundInfo[winnerDataName].hp, roundInfo[winnerDataName].maxHp)
+    drawHpBars(canvas2d, loserHpBarXOffset, roundInfo[loserDataName].hp, roundInfo[loserDataName].maxHp)
 
-        const talent = talents[j]
+    drawManaBars(canvas2d, loserHpBarXOffset, roundInfo[loserDataName].mana)
+    drawManaBars(canvas2d, winnerHpBarXOffset, roundInfo[winnerDataName].mana)
 
-        if (!talent) return
+    if (i % 6 !== 0) {
+      writeSkills({
+        canvas2d,
+        value: roundInfo[loserDataName].currentSkillName,
+        positionX: rightPokemon === winnerPokemon ? 305 : 15,
+        positionY: 480,
+      })
 
-        ctx.drawImage(talentSprites[talent], x, y, 21, 21)
-      }
+      writeSkills({
+        canvas2d,
+        value: roundInfo[winnerDataName].currentSkillName,
+        positionX: rightPokemon === winnerPokemon ? 15 : 305,
+        positionY: 480,
+      })
     }
 
-    // Draw the still part of the animation:
+    drawSkillTypeFlags(
+      canvas2d,
+      roundInfo,
+      winnerDataName,
+      loserDataName,
+      rightPokemon,
+      winnerPokemon,
+      winnerPokeSkillTypeSprite,
+      loserPokeSkillTypeSprite,
+      winnerPokeUltimateTypeSprite,
+      loserPokeUltimateTypeSprite
+    )
+    drawTexts(canvas2d, rightPokemon, leftPokemon, round)
 
-    ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
-
-    ctx.drawImage(rightPokeSprite, 285, 165, 250, 250)
-    ctx.drawImage(leftPokeSprite, 0, 165, 250, 250)
-
-    // write pokenames
-    ctx.font = '14px Righteous'
-    ctx.fillText(rightPokemon.baseData.name, 350, 135)
-    ctx.fillText(leftPokemon.baseData.name, 65, 135)
-
-    // write pokemon levels
-
-    ctx.font = '14px Righteous'
-    ctx.textAlign = 'start'
-    ctx.fillText(rightPokemon.level.toString(), 470, 135)
-    ctx.fillText(leftPokemon.level.toString(), 200, 135)
-
-    await drawTalents(rightPokemonTalents, 305)
-    await drawTalents(leftPokemonTalents, 5)
-
-    ///////////////////////////////////////////////////////////////
-
-    // Convert the canvas to a buffer
-    const canvasBuffer = canvas.toBuffer('image/png') // Specify the desired image format ('image/png' in this example)
-
-    const duelStillImage = await loadImage(canvasBuffer)
-
-    // Configure the GIFEncoder
-    encoder.start()
-    encoder.setRepeat(0) // 0 for repeat, -1 for no-repeat
-    encoder.setDelay(300) // Delay between frames in milliseconds
-    encoder.setQuality(60) // Image quality (lower is better)
-
-    const framesPerRound = 1
-    let round = 1
-    let roundInfo = data.duelMap.get(round)
-    let isDuelInProgress = true
-
-    const winnerHpBarXOffset = random >= 0.5 ? 365 : 55
-    const loserHpBarXOffset = random >= 0.5 ? 55 : 365
-
-    for (let i = 0; i < data.roundCount * framesPerRound + 40; i++) {
-      if (i > round * framesPerRound && isDuelInProgress) {
-        round++
-        roundInfo = data.duelMap.get(round)
-      }
-      if (!roundInfo) continue
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      ctx.drawImage(duelStillImage, 0, 0, canvasWidth, canvasHeight)
-
-      ctx.fillStyle = `rgb(160,40,40)`
-      ctx.fillRect(
-        winnerHpBarXOffset,
-        108,
-        Math.max(0, (roundInfo[winnerDataName].hp / roundInfo[winnerDataName].maxHp) * 125),
-        7
-      )
-
-      ctx.fillStyle = `rgb(160,40,40)`
-      ctx.fillRect(
-        loserHpBarXOffset,
-        108,
-        Math.max(0, (roundInfo[loserDataName].hp / roundInfo[loserDataName].maxHp) * 125),
-        7
-      )
-
-      // draw mana
-
-      ctx.fillStyle = `rgb(50,121,211)`
-      ctx.fillRect(loserHpBarXOffset - 55, 145, Math.max(0, (roundInfo[loserDataName].mana / 100) * 175), 3)
-
-      ctx.fillStyle = `rgb(50,121,211)`
-      ctx.fillRect(winnerHpBarXOffset - 55, 145, Math.max(0, (roundInfo[winnerDataName].mana / 100) * 175), 3)
-
-      // write skills
-      ctx.font = '18px Righteous'
-      ctx.fillStyle = 'white'
-      ctx.textAlign = 'start'
-      if (i % 6 !== 0) {
-        ctx.fillText(roundInfo[loserDataName].currentSkillName, rightPokemon === data.winnerPokemon ? 15 : 315, 480)
-        ctx.fillText(roundInfo[winnerDataName].currentSkillName, rightPokemon === data.winnerPokemon ? 315 : 15, 480)
-      }
-
-      const getSkillTypeFlag = (pokeData: any, who: 'winner' | 'loser') => {
-        if (pokeData.currentSkillName === pokeData.skillName) {
-          if (who === 'winner') return winnerPokeSkillTypeSprite
-          return loserPokeSkillTypeSprite
-        }
-
-        if (who === 'winner') return winnerPokeUltimateTypeSprite
-        return loserPokeUltimateTypeSprite
-      }
-
-      // draw skill types
-      if (i % 6 !== 0) {
-        ctx.drawImage(
-          getSkillTypeFlag(roundInfo[winnerDataName], 'winner'),
-          rightPokemon === data.winnerPokemon ? 421 : 131,
-          460,
-          75,
-          25
-        )
-        ctx.drawImage(
-          getSkillTypeFlag(roundInfo[loserDataName], 'loser'),
-          rightPokemon === data.winnerPokemon ? 131 : 421,
-          460,
-          75,
-          25
-        )
-      }
-
-      ctx.font = '32px Righteous'
-      ctx.textAlign = 'center'
-      ctx.fillText(`Round ${round}`, 250, 52)
-
-      // write crits
-      ctx.font = '32px Righteous'
-      ctx.fillStyle = 'yellow'
-      ctx.strokeStyle = 'black'
-      ctx.textAlign = 'start'
-
-      if (roundInfo[winnerDataName].crit && (isDuelInProgress || i < data.roundCount * framesPerRound)) {
-        ctx.fillText(`CRITICAL!`, winnerHpBarXOffset, 180)
-        ctx.strokeText(`CRITICAL!`, winnerHpBarXOffset, 180)
-      }
-
-      if (roundInfo[loserDataName].crit && (isDuelInProgress || i < data.roundCount * framesPerRound)) {
-        ctx.fillText(`CRITICAL!`, loserHpBarXOffset, 180)
-        ctx.strokeText(`CRITICAL!`, loserHpBarXOffset, 180)
-      }
-
-      ctx.fillStyle = 'blue'
-
-      if (roundInfo[winnerDataName].block && (isDuelInProgress || i < data.roundCount * framesPerRound)) {
-        ctx.fillText(`BLOCK!`, winnerHpBarXOffset, 215)
-        ctx.strokeText(`BLOCK!`, winnerHpBarXOffset, 215)
-      }
-
-      if (roundInfo[loserDataName].block && (isDuelInProgress || i < data.roundCount * framesPerRound)) {
-        ctx.fillText(`BLOCK!`, loserHpBarXOffset, 215)
-        ctx.strokeText(`BLOCK!`, loserHpBarXOffset, 215)
-      }
-
-      ctx.fillStyle = 'white'
-      ctx.font = '24px Righteous'
-
-      if (
-        roundInfo[winnerDataName].hasUltimate &&
-        roundInfo[winnerDataName].currentSkillName === roundInfo[winnerDataName].ultimateName &&
-        (isDuelInProgress || i < data.roundCount * framesPerRound)
-      ) {
-        ctx.fillText(roundInfo[winnerDataName].currentSkillName, winnerHpBarXOffset, 235)
-        ctx.strokeText(roundInfo[winnerDataName].currentSkillName, winnerHpBarXOffset, 235)
-      }
-
-      if (
-        roundInfo[loserDataName].hasUltimate &&
-        roundInfo[loserDataName].currentSkillName === roundInfo[loserDataName].ultimateName &&
-        (isDuelInProgress || i < data.roundCount * framesPerRound)
-      ) {
-        ctx.fillText(roundInfo[loserDataName].currentSkillName, loserHpBarXOffset, 235)
-        ctx.strokeText(roundInfo[loserDataName].currentSkillName, loserHpBarXOffset, 235)
-      }
-
-      if (!isDuelInProgress && i > data.roundCount * framesPerRound) {
-        ctx.font = '32px Righteous'
-        ctx.fillStyle = 'green'
-        ctx.strokeStyle = 'black'
-        ctx.textAlign = 'center'
-        ctx.fillText(`VENCEDOR!`, rightPokemon === data.winnerPokemon ? 365 : 105, 180)
-        ctx.strokeText(`VENCEDOR!`, rightPokemon === data.winnerPokemon ? 365 : 105, 180)
-      }
-
-      encoder.addFrame(ctx as any)
-      if (roundInfo.poke1Data.hp <= 0 || roundInfo.poke2Data.hp <= 0) isDuelInProgress = false
+    if (roundInfo[winnerDataName].crit && (isDuelInProgress || i < roundCount * framesPerRound)) {
+      drawCriticalText(canvas2d, winnerHpBarXOffset)
     }
 
-    // Finish encoding the GIF
-    encoder.finish()
+    if (roundInfo[loserDataName].crit && (isDuelInProgress || i < roundCount * framesPerRound)) {
+      drawCriticalText(canvas2d, loserHpBarXOffset)
+    }
 
-    resolve(filepath)
-  })
+    if (roundInfo[winnerDataName].block && (isDuelInProgress || i < roundCount * framesPerRound)) {
+      drawBlockText(canvas2d, winnerHpBarXOffset)
+    }
 
-  // Delete the file after 30 seconds
-  setTimeout(() => {
-    fs.unlink(filepath, error => {
-      if (error) {
-        console.error(`Failed to delete file: ${error}`)
-      } else {
-        console.log('File deleted successfully.')
-      }
-    })
-  }, 30000)
+    if (roundInfo[loserDataName].block && (isDuelInProgress || i < roundCount * framesPerRound)) {
+      drawBlockText(canvas2d, loserHpBarXOffset)
+    }
+
+    if (
+      roundInfo[winnerDataName].hasUltimate &&
+      roundInfo[winnerDataName].currentSkillName === roundInfo[winnerDataName].ultimateName &&
+      (isDuelInProgress || i < roundCount * framesPerRound)
+    ) {
+      drawUltimateText(canvas2d, winnerHpBarXOffset, roundInfo[winnerDataName].currentSkillName)
+    }
+
+    if (
+      roundInfo[loserDataName].hasUltimate &&
+      roundInfo[loserDataName].currentSkillName === roundInfo[loserDataName].ultimateName &&
+      (isDuelInProgress || i < roundCount * framesPerRound)
+    ) {
+      drawUltimateText(canvas2d, loserHpBarXOffset, roundInfo[loserDataName].currentSkillName)
+    }
+
+    const positionXWinner = rightPokemon === winnerPokemon ? 365 : 105
+
+    if (!isDuelInProgress && i > roundCount * framesPerRound) {
+      drawWinnerText(canvas2d, positionXWinner)
+    }
+
+    canvas2d.addFrameToEncoder(encoder)
+
+    if (roundInfo.poke1hp <= 0 || roundInfo.poke2hp <= 0) isDuelInProgress = false
+  }
+
+  encoder.finish()
+
+  removeFileFromDisk(filepath)
+
+  console.log({ filepath })
 
   return filepath
+}
+
+const drawHpBars = (canvas2d: TCanvas2D, xOffset: number, hp: number, maxHp: number) => {
+  canvas2d.drawBar({
+    type: 'hp',
+    xOffset: xOffset,
+    value: hp / maxHp,
+  })
+}
+
+const drawManaBars = (canvas2d: TCanvas2D, xOffset: number, mana: number) => {
+  canvas2d.drawBar({ type: 'mana', xOffset, value: mana / 100 })
+}
+
+const drawPokemons = (canvas2d: TCanvas2D, image: Image, positionX: number, positionY: number) => {
+  canvas2d.draw({
+    image,
+    positionX,
+    positionY,
+    width: 250,
+    height: 250,
+  })
+}
+
+const drawSkillTypeFlags = (
+  canvas2d: TCanvas2D,
+  roundInfo: number,
+  winnerDataName: string,
+  loserDataName: string,
+  rightPokemon: duelPokemon,
+  winnerPokemon: duelPokemon,
+  winnerPokeSkillTypeSprite: Image,
+  loserPokeSkillTypeSprite: Image,
+  winnerPokeUltimateTypeSprite: Image,
+  loserPokeUltimateTypeSprite: Image
+) => {
+  const getSkillTypeFlag = (pokeData: any, who: 'winner' | 'loser') => {
+    if (pokeData.pokecurrentSkillName === pokeData.pokeskillName) {
+      if (who === 'winner') return winnerPokeSkillTypeSprite
+      return loserPokeSkillTypeSprite
+    }
+
+    if (who === 'winner') return winnerPokeUltimateTypeSprite
+    return loserPokeUltimateTypeSprite
+  }
+
+  canvas2d.draw({
+    image: getSkillTypeFlag(roundInfo[winnerDataName], 'winner'),
+    positionX: rightPokemon === winnerPokemon ? 421 : 131,
+    positionY: 460,
+    width: 75,
+    height: 25,
+  })
+  canvas2d.draw({
+    image: getSkillTypeFlag(roundInfo[loserDataName], 'loser'),
+    positionX: rightPokemon === winnerPokemon ? 131 : 421,
+    positionY: 460,
+    width: 75,
+    height: 25,
+  })
+}
+
+const drawTexts = (canvas2d: TCanvas2D, rightPokemon: duelPokemon, leftPokemon: duelPokemon, round: number) => {
+  canvas2d.write({
+    font: '14px Righteous',
+    fillStyle: 'white',
+    text: rightPokemon.baseData.name,
+    textAlign: 'start',
+    positionX: 350,
+    positionY: 135,
+  })
+
+  canvas2d.write({
+    font: '14px Righteous',
+    fillStyle: 'white',
+    text: leftPokemon.baseData.name,
+    textAlign: 'start',
+    positionX: 65,
+    positionY: 135,
+  })
+
+  canvas2d.write({
+    font: '14px Righteous',
+    fillStyle: 'white',
+    text: rightPokemon.level.toString(),
+    textAlign: 'start',
+    positionX: 470,
+    positionY: 135,
+  })
+
+  canvas2d.write({
+    font: '14px Righteous',
+    fillStyle: 'white',
+    text: leftPokemon.level.toString(),
+    textAlign: 'start',
+    positionX: 200,
+    positionY: 135,
+  })
+
+  canvas2d.write({
+    font: '32px Righteous',
+    fillStyle: 'white',
+    text: `Round ${round}`,
+    textAlign: 'center',
+    positionX: 250,
+    positionY: 52,
+  })
+}
+
+const drawCriticalText = (canvas2d: TCanvas2D, xOffset: number) => {
+  canvas2d.write({
+    font: '32px Righteous',
+    fillStyle: 'yellow',
+    strokeStyle: 'black',
+    text: `CRITICAL!`,
+    textAlign: 'start',
+    positionX: xOffset,
+    positionY: 180,
+    strokeText: true,
+  })
+}
+
+const drawBlockText = (canvas2d: TCanvas2D, xOffset: number) => {
+  canvas2d.write({
+    font: '32px Righteous',
+    fillStyle: 'blue',
+    strokeStyle: 'black',
+    text: `BLOCK!`,
+    textAlign: 'start',
+    positionX: xOffset,
+    positionY: 215,
+    strokeText: true,
+  })
+}
+
+const drawUltimateText = (canvas2d: TCanvas2D, xOffset: number, text: string) => {
+  canvas2d.write({
+    font: '24px Righteous',
+    fillStyle: 'white',
+    strokeStyle: 'black',
+    text,
+    textAlign: 'start',
+    positionX: xOffset,
+    positionY: 235,
+    strokeText: true,
+  })
+}
+
+const drawWinnerText = (canvas2d: TCanvas2D, xOffset: number) => {
+  canvas2d.write({
+    font: '32px Righteous',
+    fillStyle: 'green',
+    strokeStyle: 'black',
+    text: 'VENCEDOR!',
+    textAlign: 'center',
+    positionX: xOffset,
+    positionY: 180,
+    strokeText: true,
+  })
+}
+
+const getTalents = (playerData: any) => {
+  const talents: (string | undefined)[] = []
+  for (let i = 1; i <= 9; i++) {
+    const talent = talentIdMap.get(playerData[`talentId${i}`])
+    talents.push(talent)
+  }
+  return talents
 }

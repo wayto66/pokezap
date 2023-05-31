@@ -1,5 +1,5 @@
 import { BaseRoomUpgrades, GameRoom, RoomUpgrades } from '@prisma/client'
-import { createCanvas, loadImage, registerFont } from 'canvas'
+import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 
@@ -16,11 +16,6 @@ export const iGenRouteInfo = async (data: TParams) => {
   const canvasWidth = 500
   const canvasHeight = 500
   const backgroundUrl = './src/assets/sprites/route/base.png'
-
-  // Load the font file and register it with the canvas
-  registerFont('./src/assets/font/JosefinSans-Bold.ttf', { family: 'Pokemon' })
-
-  registerFont('./src/assets/font/Righteous.ttf', { family: 'Righteous' })
 
   // Load the background image
   const background = await loadImage(backgroundUrl)
@@ -42,6 +37,7 @@ export const iGenRouteInfo = async (data: TParams) => {
   ctx.drawImage(sprite2, 0, 0, canvasWidth, canvasHeight)
 
   const filepath: string = await new Promise((resolve, reject) => {
+
     // Save the canvas to disk
     const filename = `images/image-${Math.random()}.png`
     const filepath = path.join(__dirname, filename)

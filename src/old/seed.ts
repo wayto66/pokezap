@@ -44,8 +44,8 @@ export async function thiefTime() {
               }
 
               const moves = data.moves.filter(move => {
-                return move['version_group_details'].some(detail => {
-                  return !detail['move_learn_method']['name'].includes('egg')
+                return move.version_group_details.some(detail => {
+                  return !detail.move_learn_method.name.includes('egg')
                 })
               })
 
@@ -63,7 +63,7 @@ export async function thiefTime() {
               })
 
               pokemon.types = data.types.map(type => type.type.name)
-              pokemon.isDualType = pokemon.types.length === 1 ? false : true
+              pokemon.isDualType = pokemon.types.length !== 1
               pokemon.sprites = {
                 normal: data.sprites.front_default,
                 shiny: data.sprites.front_shiny,
@@ -77,7 +77,7 @@ export async function thiefTime() {
 
               pokemon.evolutionData = {}
 
-              pokemon.evolutionData.isFirstEvolution = evolutionData.chain.species.name === pokemon.name ? true : false
+              pokemon.evolutionData.isFirstEvolution = evolutionData.chain.species.name === pokemon.name
               const evoto = evolutionData.chain.evolves_to
               pokemon.evolutionData.evolutionChain = evoto
 
@@ -245,8 +245,8 @@ export async function populate() {
         data: {
           attackPower: skill.power ? skill.power : 0,
           name: skill.name,
-          isPhysical: skill.class === 'physical' ? true : false,
-          isSpecial: skill.class === 'special' ? true : false,
+          isPhysical: skill.class === 'physical',
+          isSpecial: skill.class === 'special',
           requiredLevel: 0,
           typeName: skill.type,
         },
