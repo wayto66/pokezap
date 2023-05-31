@@ -17,10 +17,8 @@ export const getTeamBonuses = async (data: TParams): Promise<duelPokemon> => {
   const { poke, team } = data
 
   const updatedPoke = { ...poke }
-  updatedPoke.critChance = 0.1
+  updatedPoke.critChance = 0
   updatedPoke.lifeSteal = 0.1
-  updatedPoke.spDef = updatedPoke.spDef * 1
-  updatedPoke.def = updatedPoke.def * 1
 
   return updatedPoke
 }

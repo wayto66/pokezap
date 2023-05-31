@@ -27,8 +27,11 @@ model Player {
   teamPokeId5               Int?       @unique
   teamPokeId6               Int?       @unique
   statusTrashed             Boolean    @default(false)
+  statusLocked              Boolean    @default(false) 
   createdAt                 DateTime   @default(now())
   updatedAt                 DateTime   @default(now())
+  caughtDbIds               Int[]      
+  caughtDexIds              Int[]
   ownedPokemons             Pokemon[]
   ownedItems                Item[]
   ownedHeldItems            HeldItem[]
@@ -38,13 +41,14 @@ model Player {
   teamPoke3                 Pokemon?   @relation(name: "team-poke-3", fields: [teamPokeId3], references: [id])
   teamPoke4                 Pokemon?   @relation(name: "team-poke-4", fields: [teamPokeId4], references: [id])
   teamPoke5                 Pokemon?   @relation(name: "team-poke-5", fields: [teamPokeId5], references: [id])
-  teamPoke6                 Pokemon?   @relation(name: "team-poke-6", fields: [teamPokeId6], references: [id])
-  targetedPendentMessages   Message[]  @relation(name: "pendent")
-  targetedFullfiledMessages Message[]  @relation(name: "fullfiled")
+  teamPoke6                 Pokemon?   @relation(name: "team-poke-6", fields: [teamPokeId6], references: [id])  
   invitedSessions           Session[]  @relation(name: "session-invited")
   createdSessions           Session[]  @relation(name: "session-creator")
   defeatedWildPokemons      Pokemon[]  @relation(name: "defeatedBy")
-  ranAwayWildPokemons Pokemon[] @relation(name: "ranAwayFrom")
+  ranAwayWildPokemons       Pokemon[] @relation(name: "ranAwayFrom")
+  defeatedInvasions         InvasionSession[] @relation(name:"invasion-defeated-players")
+  winnedInvasions           InvasionSession[] @relation(name:"invasion-winner-players")
+  lobbdyInvasions           InvasionSession[] @relation(name:"invasion-lobby-players")
 }
 
 model Type {
@@ -90,6 +94,7 @@ model Pokemon {
   ownerId       Int?
   basePokemonId Int
   gameRoomId    Int?
+  invasionSessionId Int?
   nickName      String? 
   savage        Boolean
   level         Int
@@ -143,6 +148,7 @@ model Pokemon {
   talent9       Talent      @relation(name: "talent-9", fields: [talentId9], references: [id])
   owner         Player?     @relation(fields: [ownerId], references: [id])
   gameRoom      GameRoom?   @relation(fields: [gameRoomId], references: [id])
+  invasionSession InvasionSession? @relation(fields: [invasionSessionId], references: [id])
   baseData      BasePokemon @relation(fields: [basePokemonId], references: [id])
 
 }
@@ -243,11 +249,43 @@ model Session {
   invited       Player   @relation(name: "session-invited", fields: [invitedId], references: [id])
 }
 
+model InvasionSession{
+  id                    Int      @id @default(autoincrement())
+  mode                  String
+  gameRoomId            Int
+  creatorId             Int
+  invitedId             Int[]
+  enemiesIds            Int[]
+  defeatedPlayersIds    Int[]
+  winnerPlayersIds      Int[]
+  lootItemsDropRate     Json[]
+
+  forfeitCost           Int?
+  cashReward            Int?
+  imageUrl              String?
+  announcementText      String  
+  
+  enemyPokemons   Pokemon[] 
+  lobbyPlayers    Player[] @relation(name: "invasion-lobby-players")
+  defeatedPlayers Player[] @relation(name: "invasion-defeated-players")
+  winnerPlayers   Player[] @relation(name: "invasion-winner-players")
+  gameRoom        GameRoom?
+
+  inInLobby     Boolean  @default(true)
+  isInProgress  Boolean  @default(false)
+  isFinished    Boolean  @default(false)
+  statusTrashed Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())  
+}
+
 model GameRoom {
   id                Int            @id @default(autoincrement())
   mode              String
   phone             String         @unique
   level             Int
+  levelLock         Int?
+  invasorId         Int? @unique
   experience        Int
   activeIncense     String?
   incenseCharges    Int?
@@ -260,6 +298,7 @@ model GameRoom {
   activeWildPokemon Pokemon[]
   messages          Message[]
   upgrades          RoomUpgrades[]
+  invasor           InvasionSession? @relation(fields: [invasorId], references: [id])
 }
 
 model RoomUpgrades {
@@ -287,7 +326,5 @@ model Message {
   body             String?
   actions          String[]
   createdAt        DateTime  @default(now())
-  pendentTargets   Player[]  @relation(name: "pendent")
-  fullfiledTargets Player[]  @relation(name: "fullfiled")
   gameRoom         GameRoom? @relation(fields: [gameRoomId], references: [id])
 }

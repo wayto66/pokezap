@@ -17,6 +17,7 @@ import { IResponse } from '../../../server/models/IResponse'
 import { duelX1 } from '../../../server/modules/duel/duelX1'
 import { TRouteParams } from '../router'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
+import { duelX2 } from '../../../server/modules/duel/duelX2'
 
 type DuelPokemon = Pokemon & {
   baseData: BasePokemon & {
@@ -58,11 +59,29 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
               },
             },
           },
+          teamPoke2: {
+            include: {
+              baseData: {
+                include: {
+                  skills: true,
+                },
+              },
+            },
+          },
         },
       },
       invited: {
         include: {
           teamPoke1: {
+            include: {
+              baseData: {
+                include: {
+                  skills: true,
+                },
+              },
+            },
+          },
+          teamPoke2: {
             include: {
               baseData: {
                 include: {
@@ -78,7 +97,6 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
   if (!session || session.isFinished) throw new SessionIdNotFoundError(sessionId)
   if (!session.creator.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(session.creator.name)
   if (!session.invited.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(session.invited.name)
-
   if (session.invitedId !== player2.id) throw new SendEmptyMessageError()
   console.log('starting duelx1')
 
@@ -200,14 +218,13 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
 
   const winnerLevelUpMessage = handleWinExp.leveledUp
     ? `*${winnerPokemon.baseData.name}* subiu para o nível ${handleWinExp.pokemon.level}!`
-    : null
+    : ''
   const loserLevelUpMessage = handleLoseExp.leveledUp
     ? `*${loserPokemon.baseData.name}* subiu para o nível ${handleLoseExp.pokemon.level}!`
-    : null
+    : ''
 
   const afterMessage = `*${updatedWinnerPlayer.name}* vence o duelo e recebe +${eloGain} pontos de ranking e +${cashGain} POKECOINS.
 *${updatedLoserPlayer.name}* perdeu ${eloLose} pontos de ranking.
-
 ${winnerLevelUpMessage}
 ${loserLevelUpMessage}`
 

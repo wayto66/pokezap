@@ -20,3 +20,4 @@ upgrades:
 - ranch: increase pokemon appearance rates
 - bike: permit inter-route conection?
 - daycare: leveling poke afk
+- bridge: fishing

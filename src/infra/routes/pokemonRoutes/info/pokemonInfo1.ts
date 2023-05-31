@@ -3,8 +3,10 @@ import { TRouteParams } from 'infra/routes/router'
 import { container } from 'tsyringe'
 import {
   MissingParametersPokemonInformationError,
+  PlayerNotFoundError,
   PokemonNotFoundError,
   TypeMissmatchError,
+  UnexpectedError,
 } from '../../../../infra/errors/AppErrors'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
@@ -12,14 +14,46 @@ import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPok
 export const pokemonInfo1 = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
-  const [, , , pokemonId] = data.routeParams
-  if (!pokemonId) throw new MissingParametersPokemonInformationError()
+  const [, , , pokemonIdString] = data.routeParams
+  if (!pokemonIdString) throw new MissingParametersPokemonInformationError()
 
-  const pokemonIdFix = Number(pokemonId.slice(pokemonId.indexOf('#') + 1))
-  if (typeof Number(pokemonIdFix) !== 'number') throw new TypeMissmatchError(pokemonId, 'number')
+  let searchMode = 'string'
 
-  const pokemon = await prismaClient.pokemon.findUnique({
-    where: { id: Number(pokemonIdFix) },
+  const pokemonId = Number(pokemonIdString.slice(pokemonIdString.indexOf('#') + 1))
+  if (!isNaN(pokemonId)) searchMode = 'number'
+
+  const player = await prismaClient.player.findFirst({
+    where: {
+      phone: data.playerPhone,
+    },
+  })
+  if (!player) throw new PlayerNotFoundError(data.playerPhone)
+
+  const getPokemonRequestData = () => {
+    if (searchMode === 'number')
+      return {
+        identifier: pokemonId,
+        where: {
+          id: pokemonId,
+        },
+      }
+    if (searchMode === 'string')
+      return {
+        identifier: pokemonIdString.toLowerCase(),
+        where: {
+          baseData: {
+            name: pokemonIdString.toLowerCase(),
+          },
+          ownerId: player.id,
+        },
+      }
+  }
+
+  const pokemonRequestData = getPokemonRequestData()
+  if (!pokemonRequestData) throw new UnexpectedError('NO REQUEST DATA FOUND.')
+
+  const pokemon = await prismaClient.pokemon.findFirst({
+    where: pokemonRequestData.where,
     include: {
       baseData: true,
       talent1: true,
@@ -34,7 +68,7 @@ export const pokemonInfo1 = async (data: TRouteParams): Promise<IResponse> => {
       owner: true,
     },
   })
-  if (!pokemon) throw new PokemonNotFoundError(pokemonIdFix)
+  if (!pokemon) throw new PokemonNotFoundError(pokemonRequestData.identifier)
 
   const imageUrl = await iGenPokemonAnalysis({
     pokemonData: pokemon,

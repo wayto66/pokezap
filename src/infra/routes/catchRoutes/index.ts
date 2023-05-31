@@ -128,9 +128,9 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
   }
 
   const getBallRateMultiplier = () => {
-    if (ballName === 'poke-ball') return 0.25
-    if (ballName === 'great-ball') return 0.5
-    if (ballName === 'ultra-ball') return 1.5
+    if (ballName === 'poke-ball') return 0.45
+    if (ballName === 'great-ball') return 0.9
+    if (ballName === 'ultra-ball') return 2
     if (ballName === 'sora-ball') {
       if (
         ['ice', 'flying'].includes(pokemon.baseData.type1Name) ||
@@ -209,7 +209,7 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
     return 0.4
   }
 
-  const shinyMultiplier = pokemon.isShiny ? 0.25 : 1
+  const shinyMultiplier = pokemon.isShiny ? 0.05 : 1
 
   const catchRate = calculateCatchRate(pokemon.baseData.BaseExperience) * getBallRateMultiplier() * shinyMultiplier
   const random = Math.random()
@@ -225,6 +225,20 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
       data: {
         savage: false,
         ownerId: player.id,
+      },
+    })
+
+    await prismaClient.player.update({
+      where: {
+        id: player.id,
+      },
+      data: {
+        caughtDbIds: {
+          push: pokemon.id,
+        },
+        caughtDexIds: {
+          push: pokemon.baseData.pokedexId,
+        },
       },
     })
 
@@ -249,9 +263,8 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
   })
 
   return {
-    message: `Sinto muito ${data.playerName}, sua ${ballName} quebrou. Restam ${pokeball.amount - 1} pokebólas.`,
+    message: `Sinto muito ${data.playerName}, sua ${ballName} quebrou. Restam ${pokeball.amount - 1} ${ballName}.`,
     status: 200,
     data: null,
-    react: '😢',
   }
 }

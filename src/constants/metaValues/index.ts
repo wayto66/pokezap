@@ -1,4 +1,5 @@
 export const metaValues = {
-  wildPokemonFleeTimeInSeconds: 300,
-  eggHatchingTimeInHours: 0.1,
+  wildPokemonFleeTimeInSeconds: 1800,
+  wildPokemonFleeTimeInMinutes: 20,
+  eggHatchingTimeInHours: 24,
 }

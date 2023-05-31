@@ -5,15 +5,13 @@ import {
   MissingParametersBreedRouteError,
   PlayerNotFoundError,
   PlayersPokemonNotFoundError,
-  PokemonAlreadyHasChildrenError,
   TypeMissmatchError,
 } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
-import { iGenPokemonBreed } from '../../../server/modules/imageGen/iGenPokemonBreed'
 import { TRouteParams } from '../router'
-import { pokemonBreed2 } from './pokemonBreed2'
 import { metaValues } from '../../../constants/metaValues'
 import { getHoursDifference } from '../../../server/helpers/getHoursDifference'
+import { iGenPokemonAnalysis } from '../../../server/modules/imageGen/iGenPokemonAnalysis'
 
 export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
   const [, , pokemonIdString] = data.routeParams
@@ -51,7 +49,10 @@ export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
   if (!pokemon) throw new PlayersPokemonNotFoundError(pokemonId, player.name)
 
   if (getHoursDifference(pokemon.createdAt, new Date()) < metaValues.eggHatchingTimeInHours)
-    throw new EggIsNotReadyToBeHatch(pokemon.id)
+    throw new EggIsNotReadyToBeHatch(
+      pokemon.id,
+      metaValues.eggHatchingTimeInHours - getHoursDifference(pokemon.createdAt, new Date())
+    )
 
   await prismaClient.pokemon.update({
     where: {
@@ -63,15 +64,14 @@ export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
     },
   })
 
-  /* const imageUrl = await iGenPokemonBreed({
-    pokemon: pokemon,
-    pokemon2: pokemon2,
-  }) */
+  const imageUrl = await iGenPokemonAnalysis({
+    pokemonData: pokemon,
+  })
 
   return {
-    message: `DUMMY: pokemon nasceu.`,
+    message: `#${pokemon.id} ${pokemon.baseData.name} nasceu! `,
     status: 200,
     data: null,
-    /*     imageUrl: imageUrl, */
+    imageUrl: imageUrl,
   }
 }

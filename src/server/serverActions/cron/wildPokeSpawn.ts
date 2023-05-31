@@ -1,16 +1,17 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { Client, MessageMedia } from 'whatsapp-web.js'
-import { iGenWildPokemon } from '../../../server/modules/imageGen/iGenWildPokemon'
-import { generateWildPokemon } from '../../../server/modules/pokemon/generate/generateWildPokemon'
+import { iGenWildPokemon } from '../../modules/imageGen/iGenWildPokemon'
+import { generateWildPokemon } from '../../modules/pokemon/generate/generateWildPokemon'
 import { metaValues } from '../../../constants/metaValues'
 
 type TParams = {
   prismaClient: PrismaClient
   zapClient: Client
+  needIncense?: boolean
 }
 
-export const CronActions = async (data: TParams) => {
+export const wildPokeSpawn = async (data: TParams) => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const gameRooms = await prismaClient.gameRoom.findMany({
     where: {
@@ -27,6 +28,14 @@ export const CronActions = async (data: TParams) => {
       continue
     }
     if (gameRoom.mode !== 'route') continue
+    if (
+      data.needIncense &&
+      (!gameRoom.activeIncense ||
+        gameRoom.activeIncense === 'none' ||
+        !gameRoom.incenseCharges ||
+        gameRoom.incenseCharges <= 0)
+    )
+      continue
 
     const baseExperienceTreshold = Math.floor(64 + (gameRoom.level / 100) * 276)
     const basePokemons = await prismaClient.basePokemon.findMany({
@@ -37,16 +46,32 @@ export const CronActions = async (data: TParams) => {
       },
     })
     const baseData = basePokemons[Math.floor(Math.random() * basePokemons.length)]
-    const level = Math.floor(Math.min(1 + Math.random() * gameRoom.level, 100))
+    const level = gameRoom.levelLock
+      ? Math.floor(Math.min(1 + Math.random() * gameRoom.levelLock, 100))
+      : Math.floor(Math.min(1 + Math.random() * gameRoom.level, 100))
 
     const newWildPokemon = await generateWildPokemon({
       baseData,
       level,
-      shinyChance: 0.05,
+      shinyChance: data.needIncense ? 0.05 : 0.025,
       savage: true,
       isAdult: true,
       gameRoomId: gameRoom.id,
+      fromIncense: true,
     })
+
+    if (data.needIncense) {
+      await prismaClient.gameRoom.update({
+        where: {
+          id: gameRoom.id,
+        },
+        data: {
+          incenseCharges: {
+            decrement: 1,
+          },
+        },
+      })
+    }
 
     const imageUrl = await iGenWildPokemon({
       pokemonData: newWildPokemon,
@@ -59,7 +84,9 @@ export const CronActions = async (data: TParams) => {
 
     data.zapClient
       .sendMessage(gameRoom.phone, media, {
-        caption: `Um *${displayName}* selvagem de nível ${newWildPokemon.level} acaba de aparecer!
+        caption: `Um *${displayName}* selvagem de nível ${newWildPokemon.level} acaba de ${
+          data.needIncense ? 'ser atraído pelo incenso' : 'aparecer'
+        }!
 Ações:
 👍 - Batalhar
 `,

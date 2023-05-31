@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import {
+  CantDuelItselfError,
   NoEnergyError,
   PlayerDoesNotHaveThePokemonInTheTeamError,
   PlayerNotFoundError,
@@ -35,6 +36,7 @@ export const duelX1Route = async (data: TRouteParams): Promise<IResponse> => {
   if (!player1) throw new PlayerNotFoundError(data.playerPhone)
   if (!player1.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(player1.name)
   if (player1.energy <= 0) throw new NoEnergyError(player1.name)
+  if (player1.id === challengedPlayerId) throw new CantDuelItselfError()
 
   const player2 = await prismaClient.player.findFirst({
     where: {
@@ -74,6 +76,6 @@ export const duelX1Route = async (data: TRouteParams): Promise<IResponse> => {
     status: 200,
     data: null,
     imageUrl: imageUrl,
-    actions: [`pz. duel accept ${newSession.id}`],
+    actions: [`pz. duel acceptx1 ${newSession.id}`],
   }
 }
