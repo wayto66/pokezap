@@ -1,8 +1,7 @@
-import { createCanvas, loadImage, registerFont } from 'canvas'
+import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
-import { IPokemon } from '../../../server/models/IPokemon'
 import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 
@@ -16,17 +15,6 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
   const canvasWidth = 500
   const canvasHeight = 500
   const backgroundUrl = './src/assets/sprites/UI/hud/pokemon_analysis.png'
-
-  // Load the font file and register it with the canvas
-  registerFont(
-    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/JosefinSans-Bold.ttf',
-    { family: 'Pokemon' }
-  )
-
-  registerFont(
-    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf',
-    { family: 'Righteous' }
-  )
 
   // Load the background image
   const background = await loadImage(backgroundUrl)
@@ -253,7 +241,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     ctx.fillText('#' + parent2.id, 40, 260)
   }
 
-  const filepath: string = await new Promise((resolve, reject) => {
+  const filepath: string = await new Promise(resolve => {
     // Save the canvas to disk
     const filename = `images/image-${Math.random()}.png`
     const filepath = path.join(__dirname, filename)

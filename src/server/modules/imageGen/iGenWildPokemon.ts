@@ -1,4 +1,4 @@
-import { createCanvas, loadImage, registerFont } from 'canvas'
+import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
@@ -19,17 +19,6 @@ export const iGenWildPokemon = async (data: TParams) => {
   const canvasWidth = 500
   const canvasHeight = 500
   const backgroundUrl = bgs[Math.floor(Math.random() * bgs.length)]
-
-  // Load the font file and register it with the canvas
-  registerFont(
-    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/JosefinSans-Bold.ttf',
-    { family: 'Pokemon' }
-  )
-
-  registerFont(
-    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf',
-    { family: 'Righteous' }
-  )
 
   // Load the background image
   const background = await loadImage(backgroundUrl)
@@ -195,7 +184,7 @@ export const iGenWildPokemon = async (data: TParams) => {
     }
   }
 
-  const filepath: string = await new Promise((resolve, reject) => {
+  const filepath: string = await new Promise(resolve => {
     // Save the canvas to disk
     const filename = `images/image-${Math.random()}.png`
     const filepath = path.join(__dirname, filename)

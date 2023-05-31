@@ -5,10 +5,13 @@ import { container } from 'tsyringe'
 import { Client, LocalAuth } from 'whatsapp-web.js'
 import { handleAllProcess } from './server/process'
 import { iGenPokemonAnalysis } from './server/modules/imageGen/iGenPokemonAnalysis'
+import { registerFonts } from './server/helpers/registerFonts'
 
 process.on('uncaughtException', error => {
   console.error(error)
 })
+
+registerFonts()
 
 const prismaClient = new PrismaClient()
 container.registerInstance<PrismaClient>('PrismaClient', prismaClient)
@@ -30,11 +33,12 @@ app.get('/', async () => {
     })
   }
 })
+
 app.listen(4000, async () => {
   console.log('pokezap is online!')
 })
 
-const enableZap = true
+const enableZap = false
 if (enableZap) {
   const client = new Client({
     authStrategy: new LocalAuth({ clientId: 'ZapClientInstance1' }),

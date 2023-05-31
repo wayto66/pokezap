@@ -1,5 +1,5 @@
-import { BaseItem, BaseRoomUpgrades, GameRoom, RoomUpgrades } from '@prisma/client'
-import { createCanvas, loadImage, registerFont } from 'canvas'
+import { BaseItem } from '@prisma/client'
+import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 
@@ -12,11 +12,6 @@ export const iGenShop = async (data: TParams) => {
   const canvasWidth = 500
   const canvasHeight = 500
   const backgroundUrl = './src/assets/sprites/UI/hud/shop1.png'
-
-  // Load the font file and register it with the canvas
-  registerFont('./src/assets/font/JosefinSans-Bold.ttf', { family: 'Pokemon' })
-
-  registerFont('./src/assets/font/Righteous.ttf', { family: 'Righteous' })
 
   // Load the background image
   const background = await loadImage(backgroundUrl)
@@ -76,7 +71,7 @@ export const iGenShop = async (data: TParams) => {
     k++
   }
 
-  const filepath: string = await new Promise((resolve, reject) => {
+  const filepath: string = await new Promise(resolve => {
     // Save the canvas to disk
     const filename = `images/image-${Math.random()}.png`
     const filepath = path.join(__dirname, filename)

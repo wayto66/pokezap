@@ -1,4 +1,4 @@
-import { createCanvas, loadImage, registerFont } from 'canvas'
+import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 
@@ -12,11 +12,6 @@ export const iGenAvatarChoose = async (data: TParams) => {
   const canvasHeight = 500
   const backgroundUrl = './src/assets/sprites/UI/hud/player_choose_avatar.png'
   const avatarUrlBase = `./src/assets/sprites/avatars/${data.genre}/`
-
-  // Load the font file and register it with the canvas
-  registerFont('./src/assets/font/JosefinSans-Bold.ttf', { family: 'Pokemon' })
-
-  registerFont('./src/assets/font/Righteous.ttf', { family: 'Righteous' })
 
   // Load the background image
   const background = await loadImage(backgroundUrl)
@@ -42,7 +37,7 @@ export const iGenAvatarChoose = async (data: TParams) => {
     }
   }
 
-  const filepath: string = await new Promise((resolve, reject) => {
+  const filepath: string = await new Promise(resolve => {
     // Save the canvas to disk
     const filename = `images/image-${Math.random()}.png`
     const filepath = path.join(__dirname, filename)

@@ -1,4 +1,4 @@
-import { createCanvas, loadImage, registerFont } from 'canvas'
+import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { IPokemon } from '../../server/models/IPokemon'
@@ -19,12 +19,6 @@ export const generateImage1 = async (data: TParams) => {
   const canvasWidth = 800
   const canvasHeight = 600
   const backgroundUrl = bgs[Math.floor(Math.random() * bgs.length)]
-
-  // Load the font file and register it with the canvas
-  registerFont(
-    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap/src/assets/font/pokemon.ttf',
-    { family: 'Pokemon' }
-  )
 
   // Load the background image
   const background = await loadImage(backgroundUrl)

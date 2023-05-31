@@ -1,9 +1,6 @@
-import { BaseItem, BaseRoomUpgrades, GameRoom, Player, RoomUpgrades } from '@prisma/client'
-import { createCanvas, loadImage, registerFont } from 'canvas'
+import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import path from 'path'
-
-type TParams = {}
 
 export const iGenTest = async () => {
   // Define the dimensions of the canvas and the background
@@ -35,9 +32,6 @@ export const iGenTest = async () => {
 
   // Iterate through the pixels and set the inside of the sprite to white
   for (let i = 0; i < data.length; i += 4) {
-    const red = data[i]
-    const green = data[i + 1]
-    const blue = data[i + 2]
     const alpha = data[i + 3]
 
     // Check if the pixel is part of the sprite (non-transparent)
@@ -56,7 +50,7 @@ export const iGenTest = async () => {
   // Composite the silhouette canvas onto the background canvas
   ctx.drawImage(silhouetteCanvas, 0, 0, canvasWidth, canvasHeight)
 
-  const filepath: string = await new Promise((resolve, reject) => {
+  const filepath: string = await new Promise(resolve => {
     // Save the canvas to disk
     const filename = `images/image.png`
     const filepath = path.join(__dirname, filename)
