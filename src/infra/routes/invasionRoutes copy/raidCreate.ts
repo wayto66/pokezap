@@ -1,26 +1,16 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { raidsDataMap } from '../../../server/constants/raidsDataMap'
+import { IResponse } from '../../../server/models/IResponse'
+import { generateRaidPokemon } from '../../../server/modules/pokemon/generate/generateRaidPokemon'
 import {
-  InvasionAlreadyFinishedError,
-  InvasionNotFoundError,
   MissingParameterError,
-  MissingParametersBattleRouteError,
   PlayerDoesNotHaveThePokemonInTheTeamError,
   PlayerNotFoundError,
-  PokemonNotFoundError,
   RaidDataNotFoundError,
   RouteNotFoundError,
-  SendEmptyMessageError,
-  TypeMissmatchError,
 } from '../../errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
-import { battleInvasionX2 } from './invasionDefend/battleInvasionX2'
-import { bossInvasion } from './invasionDefend/bossInvasion'
-import { Client } from 'whatsapp-web.js'
-import { raidsDataMap } from 'server/constants/raidsDataMap'
-import { generateMegaPokemon } from 'server/modules/pokemon/generate/generateMegaPokemon'
-import { generateRaidPokemon } from 'server/modules/pokemon/generate/generateRaidPokemon'
 
 export const raidCreate = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , raidName, confirm] = data.routeParams
@@ -51,10 +41,11 @@ export const raidCreate = async (data: TRouteParams): Promise<IResponse> => {
 
   if (!gameRoom) throw new RouteNotFoundError(player.name, data.groupCode)
 
-  if (confirm && confirm == 'CONFIRM') {
+  if (confirm && confirm === 'CONFIRM') {
     const announcementText = `RAID: ${raidName}!`
 
-    const boss = await generateMegaPokemon({})
+    // TODO: MEGA
+    // const boss = await generateMegaPokemon({})
 
     const raid = await prismaClient.raid.create({
       data: {

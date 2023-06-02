@@ -1,6 +1,7 @@
 import fs from 'fs'
-import { TCanvas2D } from './canvasHelper'
 import path from 'path'
+import { logger } from '../../infra/logger'
+import { TCanvas2D } from './canvasHelper'
 
 export const saveFileOnDisk = async (canvas2d: TCanvas2D): Promise<string> => {
   const filepath: string = await new Promise(resolve => {
@@ -10,7 +11,7 @@ export const saveFileOnDisk = async (canvas2d: TCanvas2D): Promise<string> => {
     const stream = canvas2d.createStream()
     stream.pipe(out)
     out.on('finish', () => {
-      console.log('The PNG file was created.')
+      logger.info('The PNG file was created.')
       resolve(filepath)
     })
   })
@@ -18,14 +19,14 @@ export const saveFileOnDisk = async (canvas2d: TCanvas2D): Promise<string> => {
   return filepath
 }
 
-export const removeFileFromDisk = (filepath: string) => {
+export const removeFileFromDisk = (filepath: string, timestamp = 15000) => {
   setTimeout(() => {
     fs.unlink(filepath, error => {
       if (error) {
-        console.error(`Failed to delete file: ${error}`)
+        logger.error(`Failed to delete file: ${error}`)
       } else {
-        console.log('File deleted successfully.')
+        logger.info('File deleted successfully.')
       }
     })
-  }, 15000)
+  }, timestamp)
 }

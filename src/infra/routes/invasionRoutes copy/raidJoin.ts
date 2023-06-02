@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { Client } from 'whatsapp-web.js'
+import { IResponse } from '../../../server/models/IResponse'
 import {
   InvasionAlreadyFinishedError,
   InvasionNotFoundError,
@@ -10,9 +12,7 @@ import {
   SendEmptyMessageError,
   TypeMissmatchError,
 } from '../../errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
-import { Client } from 'whatsapp-web.js'
 import { raidProgress } from './raidProgress'
 
 export const raidJoin = async (data: TRouteParams): Promise<IResponse> => {

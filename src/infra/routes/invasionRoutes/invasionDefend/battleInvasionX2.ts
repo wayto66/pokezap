@@ -1,25 +1,19 @@
 import { InvasionSession, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { DuelPlayer } from '../../../../infra/routes/duelRoutes/duelAccept'
+import { IResponse } from '../../../../server/models/IResponse'
+import { TDuelX2Response, duelX2 } from '../../../../server/modules/duel/duelX2'
+import { handleExperienceGain } from '../../../../server/modules/pokemon/handleExperienceGain'
 import {
-  CouldNotUpdatePlayerError,
   InsufficentPlayersForInvasionError,
   NoDuelLoserFoundError,
   NoDuelWinnerFoundError,
-  NoEnergyError,
   PlayerDoesNotHaveThePokemonInTheTeamError,
-  PlayerNotFoundError,
-  PokemonNotFoundError,
-  SendEmptyMessageError,
   SessionIdNotFoundError,
   TypeMissmatchError,
   UnexpectedError,
 } from '../../../errors/AppErrors'
-import { IResponse } from '../../../../server/models/IResponse'
-import { duelX1 } from '../../../../server/modules/duel/duelX1'
 import { TRouteParams } from '../../router'
-import { handleExperienceGain } from '../../../../server/modules/pokemon/handleExperienceGain'
-import { TDuelX2Response, duelX2 } from '../../../../server/modules/duel/duelX2'
-import { DuelPlayer } from 'infra/routes/duelRoutes/duelAccept'
 
 export const battleInvasionX2 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , invasionSessionIdString] = data.routeParams
@@ -84,8 +78,6 @@ export const battleInvasionX2 = async (data: TRouteParams): Promise<IResponse> =
     team1: [player1.teamPoke1, player2.teamPoke1],
     team2: [invasionSession.enemyPokemons[0], invasionSession.enemyPokemons[1]],
   })
-
-  console.log({ duel })
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
   if (!duel.winnerTeam) throw new NoDuelWinnerFoundError()
@@ -175,7 +167,7 @@ type THandleInvasionLoseData = {
 }
 
 const handleInvasionLose = async (data: THandleInvasionLoseData) => {
-  const { player1, player2, duel, invasionSession } = data
+  const { player1, player2, invasionSession } = data
   const prisma = container.resolve<PrismaClient>('PrismaClient')
 
   const cashLose = (invasionSession.cashReward || 0) * 1.5

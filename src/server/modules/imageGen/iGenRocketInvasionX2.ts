@@ -1,9 +1,9 @@
-import { loadImage } from 'canvas'
-import { talentIdMap } from '../../constants/talentIdMap'
-import { createCanvas2d, drawAvatarPlayer, drawBackground, drawPokemon, getTalent } from '../../helpers/canvasHelper'
-import { removeFileFromDisk, saveFileOnDisk } from '../../helpers/fileHelper'
-import { DuelPokemon } from 'infra/routes/duelRoutes/duelAccept'
 import { InvasionSession } from '@prisma/client'
+import { loadImage } from 'canvas'
+import { DuelPokemon } from '../../../infra/routes/duelRoutes/duelAccept'
+import { talentIdMap } from '../../constants/talentIdMap'
+import { createCanvas2d, drawBackground, getTalent } from '../../helpers/canvasHelper'
+import { removeFileFromDisk, saveFileOnDisk } from '../../helpers/fileHelper'
 
 type TParams = {
   pokemon1: DuelPokemon
@@ -113,7 +113,7 @@ export const iGenRocketInvasionX2 = async (data: TParams) => {
   return filepath
 }
 
-const getTalents = (pokemon: DuelPokemon) => {
+const getTalents = (pokemon: any) => {
   const talents: (string | undefined)[] = []
   for (let i = 1; i <= 9; i++) {
     const talent = talentIdMap.get(pokemon[`talentId${i}`])

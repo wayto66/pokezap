@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { IResponse } from '../../../server/models/IResponse'
 import {
   InsufficientFundsError,
   MissingParametersBuyAmountError,
@@ -8,7 +9,6 @@ import {
   RequestedShopItemDoesNotExists,
   TypeMissmatchError,
 } from '../../errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 
 export const shopBuy = async (data: TRouteParams): Promise<IResponse> => {

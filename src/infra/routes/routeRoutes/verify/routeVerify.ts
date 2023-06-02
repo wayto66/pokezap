@@ -1,10 +1,10 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { InvasionNotFoundError, RouteNotFoundError, UnexpectedError } from '../../../errors/AppErrors'
-import { TRouteParams } from '../../router'
+import { MessageMedia } from 'whatsapp-web.js'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokeBossInvasion } from '../../../../server/modules/imageGen/iGenPokeBossInvasion'
-import { MessageMedia } from 'whatsapp-web.js'
+import { InvasionNotFoundError, RouteNotFoundError, UnexpectedError } from '../../../errors/AppErrors'
+import { TRouteParams } from '../../router'
 
 export const routeVerify = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
@@ -46,7 +46,8 @@ export const routeVerify = async (data: TRouteParams): Promise<IResponse> => {
       invasionSession,
       pokeBoss: invasionSession.enemyPokemons[0],
     })
-    const media = MessageMedia.fromFilePath(imageUrl)
+
+    MessageMedia.fromFilePath(imageUrl)
 
     return {
       message: `${invasionSession.announcementText}

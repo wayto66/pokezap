@@ -3,19 +3,20 @@ import express from 'express'
 import 'reflect-metadata'
 import { container } from 'tsyringe'
 import { Client, LocalAuth } from 'whatsapp-web.js'
-import { handleAllProcess } from './server/process'
-import { iGenPokemonAnalysis } from './server/modules/imageGen/iGenPokemonAnalysis'
-import { registerFonts } from './server/helpers/registerFonts'
+import { logger } from './infra/logger'
 import { router } from './infra/routes/router'
+import { registerFonts } from './server/helpers/registerFonts'
+import { handleAllProcess } from './server/process'
 
 process.on('uncaughtException', error => {
-  console.error(error)
+  logger.error(error)
 })
 
 registerFonts()
 
 const prismaClient = new PrismaClient()
 container.registerInstance<PrismaClient>('PrismaClient', prismaClient)
+
 prismaClient.message.deleteMany()
 
 const app = express()
@@ -27,11 +28,11 @@ app.get('/', async () => {
     fromReact: true,
     playerPhone: '5516988675837@c.us',
   })
-  console.log({ response })
+  logger.info(response)
 })
 
 app.listen(4000, async () => {
-  console.log('pokezap is online!')
+  logger.info('pokezap is online!')
 })
 
 const enableZap = true
@@ -46,5 +47,5 @@ if (enableZap) {
 
   container.registerInstance<Client>('ZapClientInstance1', client)
   handleAllProcess(client, 'ZapClientInstance1')
-  console.log('client1 is online!')
+  logger.info('client1 is online!')
 }

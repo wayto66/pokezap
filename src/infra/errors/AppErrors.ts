@@ -208,7 +208,6 @@ export class MissingParametersRankRouteError extends AppError {
     const message = `Esta é a rota de ranking. Você deve especificar qual ranking deseja ver.
     `
     const statusCode = 300
-    const actions = ['pz. rank elo', 'pz. rank catch']
 
     super(message, statusCode)
   }
@@ -321,7 +320,7 @@ export class PlayerOnlyHasOnePokemonError extends AppError {
 }
 
 export class CantSellPokemonInTeamError extends AppError {
-  constructor(id: number, playerName: string) {
+  constructor(id: number) {
     const message = `O pokemon #${id} faz parte do seu time e não pode ser vendido. Retire-o do seu time primeiro.`
     const statusCode = 300
 
@@ -330,7 +329,7 @@ export class CantSellPokemonInTeamError extends AppError {
 }
 
 export class CantTradePokemonInTeamError extends AppError {
-  constructor(id: number, playerName: string) {
+  constructor(id: number) {
     const message = `O pokemon #${id} faz parte do seu time e não pode ser trocado. Retire-o do seu time primeiro.`
     const statusCode = 300
 
@@ -612,7 +611,7 @@ export class FailedToFindXinYError extends AppError {
 
 export class UnexpectedError extends AppError {
   constructor(routeName: string) {
-    const message = `ERRO: ouve um erro inesperado: ${routeName}.`
+    const message = `ERRO: houve um erro inesperado: ${routeName}.`
     const statusCode = 300
 
     super(message, statusCode)

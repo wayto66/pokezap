@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { metaValues } from '../../../constants/metaValues'
 import {
   EggIsNotReadyToBeHatch,
   MissingParametersBreedRouteError,
@@ -7,11 +8,10 @@ import {
   PlayersPokemonNotFoundError,
   TypeMissmatchError,
 } from '../../../infra/errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
-import { TRouteParams } from '../router'
-import { metaValues } from '../../../constants/metaValues'
 import { getHoursDifference } from '../../../server/helpers/getHoursDifference'
+import { IResponse } from '../../../server/models/IResponse'
 import { iGenPokemonAnalysis } from '../../../server/modules/imageGen/iGenPokemonAnalysis'
+import { TRouteParams } from '../router'
 
 export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
   const [, , pokemonIdString] = data.routeParams
@@ -62,7 +62,7 @@ export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
       isAdult: true,
       spriteUrl: pokemon.baseData.defaultSpriteUrl,
     },
-    include: {baseData:true}
+    include: { baseData: true },
   })
 
   const imageUrl = await iGenPokemonAnalysis({

@@ -1,6 +1,8 @@
 import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import path from 'path'
+import { logger } from '../../../infra/logger'
+import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
 
 type TParams = {
   playerData: any
@@ -110,21 +112,12 @@ export const iGenPlayerAnalysis = async (data: TParams) => {
     const stream = canvas.createPNGStream()
     stream.pipe(out)
     out.on('finish', () => {
-      console.log('The PNG file was created.')
+      logger.info('The PNG file was created.')
       resolve(filepath)
     })
   })
 
-  // Delete the file after 5 seconds
-  setTimeout(() => {
-    fs.unlink(filepath, error => {
-      if (error) {
-        console.error(`Failed to delete file: ${error}`)
-      } else {
-        console.log('File deleted successfully.')
-      }
-    })
-  }, 5000)
+  removeFileFromDisk(filepath, 5000)
 
   return filepath
 }

@@ -1,9 +1,11 @@
+import { Player, Pokemon } from '@prisma/client'
 import { createCanvas, loadImage, registerFont } from 'canvas'
 import fs from 'fs'
 import path from 'path'
-import { talentIdMap } from '../../constants/talentIdMap'
-import { Player, Pokemon } from '@prisma/client'
 import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { logger } from '../../../infra/logger'
+import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
+import { talentIdMap } from '../../constants/talentIdMap'
 
 type DuelPlayer = Player & {
   teamPoke1: Pokemon | null
@@ -100,10 +102,8 @@ export const iGenDuelX2 = async (data: TParams) => {
     const y = 470
 
     const talent = talents[i]
-    if (!talent) {
-      console.error('invalid talents: ' + [i])
-      return
-    }
+    if (!talent) return
+
     ctx.drawImage(await getTalent(talent), x, y, 18, 18)
   }
 
@@ -166,14 +166,12 @@ export const iGenDuelX2 = async (data: TParams) => {
     const y = 470
 
     const talent = talents2[i]
-    if (!talent) {
-      console.error('invalid talents: ' + [i])
-      return
-    }
+    if (!talent) return
+
     ctx.drawImage(await getTalent(talent), x, y, 18, 18)
   }
 
-  const filepath: string = await new Promise((resolve, reject) => {
+  const filepath: string = await new Promise(resolve => {
     // Save the canvas to disk
     const filename = `images/image-${Math.random()}.png`
     const filepath = path.join(__dirname, filename)
@@ -181,21 +179,12 @@ export const iGenDuelX2 = async (data: TParams) => {
     const stream = canvas.createPNGStream()
     stream.pipe(out)
     out.on('finish', () => {
-      console.log('The PNG file was created.')
+      logger.info('The PNG file was created.')
       resolve(filepath)
     })
   })
 
-  // Delete the file after 5 seconds
-  setTimeout(() => {
-    fs.unlink(filepath, error => {
-      if (error) {
-        console.error(`Failed to delete file: ${error}`)
-      } else {
-        console.log('File deleted successfully.')
-      }
-    })
-  }, 15000)
+  removeFileFromDisk(filepath)
 
   return filepath
 }

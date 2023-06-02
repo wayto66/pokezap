@@ -1,13 +1,15 @@
 import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import path from 'path'
+import { logger } from '../../../infra/logger'
+import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
 
 type TParams = {
   playerData: any
   page?: number
 }
 
-export const iGenInvetoryPokemons = async (data: TParams) => {
+export const iGenInventoryPokemons = async (data: TParams) => {
   const page = data.page ? data.page - 1 : 0
   // Define the dimensions of the canvas and the background
   const canvasWidth = 500
@@ -24,8 +26,6 @@ export const iGenInvetoryPokemons = async (data: TParams) => {
 
   // Draw the background on the canvas
   ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
-
-  console.log(data.playerData.ownedPokemons.length)
 
   // draw items
   ctx.globalAlpha = 1
@@ -52,10 +52,8 @@ export const iGenInvetoryPokemons = async (data: TParams) => {
       k = 0
     }
 
-    if (!data.playerData.ownedPokemons[i + page * 19]) {
-      console.log(`no pokemon for i:${i} - page:${page}`)
-      continue
-    }
+    if (!data.playerData.ownedPokemons[i + page * 19]) continue
+
     const x = 60 + k * 82.5
     const y = 40 + j * 107
 
@@ -70,11 +68,7 @@ export const iGenInvetoryPokemons = async (data: TParams) => {
     ctx.fill()
 
     const spriteUrl = data.playerData.ownedPokemons[i + page * 19].spriteUrl
-
-    if (!spriteUrl) {
-      console.error('Could not find sprite for: ' + data.playerData.ownedPokemons[i + page * 19].id)
-      return
-    }
+    if (!spriteUrl) return
 
     const sprite = await loadImage(spriteUrl)
     ctx.drawImage(sprite, x - 12, y - 12, 75, 75)
@@ -100,21 +94,12 @@ export const iGenInvetoryPokemons = async (data: TParams) => {
     const stream = canvas.createPNGStream()
     stream.pipe(out)
     out.on('finish', () => {
-      console.log('The PNG file was created.')
+      logger.info('The PNG file was created.')
       resolve(filepath)
     })
   })
 
-  // Delete the file after 5 seconds
-  setTimeout(() => {
-    fs.unlink(filepath, error => {
-      if (error) {
-        console.error(`Failed to delete file: ${error}`)
-      } else {
-        console.log('File deleted successfully.')
-      }
-    })
-  }, 5000)
+  removeFileFromDisk(filepath, 5000)
 
   return filepath
 }

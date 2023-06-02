@@ -1,65 +1,88 @@
-import { createCanvas, loadImage } from 'canvas'
-import fs from 'fs'
-import path from 'path'
+import { Image, loadImage } from 'canvas'
+import cache from 'memory-cache'
+import { createCanvas2d, drawBackground } from '../../helpers/canvasHelper' // Importação de funções auxiliares relacionadas ao canvas
+import { removeFileFromDisk, saveFileOnDisk } from '../../helpers/fileHelper' // Importação de funções auxiliares relacionadas a arquivos
 
 type TParams = {
-  genre: 'male' | 'female'
+  genre: 'male' | 'female' // Definição do tipo para o parâmetro 'genre'
 }
 
+let canvas2d // Declaração da variável 'canvas2d'
+
 export const iGenAvatarChoose = async (data: TParams) => {
-  // Define the dimensions of the canvas and the background
-  const canvasWidth = 500
-  const canvasHeight = 500
-  const backgroundUrl = './src/assets/sprites/UI/hud/player_choose_avatar.png'
-  const avatarUrlBase = `./src/assets/sprites/avatars/${data.genre}/`
+  canvas2d = await createCanvas2d(1) // Criação de um novo canvas
 
-  // Load the background image
-  const background = await loadImage(backgroundUrl)
+  const backgroundImage = await loadBackgroundImage() // Carregamento da imagem de plano de fundo
+  drawBackground(canvas2d, backgroundImage) // Desenho do plano de fundo no canvas
 
-  // Create a canvas with the defined dimensions
-  const canvas = createCanvas(canvasWidth, canvasHeight)
-  const ctx = canvas.getContext('2d')
-  ctx.imageSmoothingEnabled = false
+  const imageCount = 4 // Número de imagens de avatar
+  const { images, positions } = await loadAvatarImages(`./src/assets/sprites/avatars/${data.genre}/`, imageCount) // Carregamento das imagens de avatar e suas posições
+  await drawAvatarImages(canvas2d, images, positions, imageCount) // Desenho das imagens de avatar no canvas
 
-  // Draw the background on the canvas
-  ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
+  const filepath = await saveFileOnDisk(canvas2d) // Salvamento do canvas como um arquivo no disco
 
-  // Calculate the position of the sprite in the middle of the canvas
-  const spriteWidth = 100 // replace with the actual width of the sprite
-  const spriteHeight = 100 // replace with the actual height of the sprite
+  removeFileFromDisk(filepath) // Remoção do arquivo do disco
 
-  for (let i = 1; i < 5; i++) {
-    for (let j = 1; j < 5; j++) {
-      const sprite = await loadImage(avatarUrlBase + (4 * (i - 1) + j) + '.png')
-      const spriteX = 35 + (j - 1) * 112
-      const spriteY = 37 + (i - 1) * 107
-      ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight)
+  return filepath // Retorno do caminho do arquivo
+}
+
+const loadBackgroundImage = async () => {
+  return await loadImage('./src/assets/sprites/UI/hud/player_choose_avatar.png') // Carregamento da imagem de plano de fundo
+}
+
+const loadAvatarImages = async (avatarUrlBase: string, imageCount: number) => {
+  const images: Image[] = [] // Array para armazenar as imagens de avatar
+  const positions: { positionX: number; positionY: number }[][] = [] // Matriz para armazenar as posições das imagens de avatar
+
+  for (let i = 0; i < imageCount; i++) {
+    const row: { positionX: number; positionY: number }[] = [] // Array para armazenar as posições de uma linha
+
+    for (let j = 0; j < imageCount; j++) {
+      const positionX = 35 + j * 112 // Cálculo da posição X da imagem
+      const positionY = 37 + i * 107 // Cálculo da posição Y da imagem
+      const imageUrl = `${avatarUrlBase}${imageCount * i + j + 1}.png` // URL da imagem de avatar
+      let image = cache.get(imageUrl) as Image // Recuperação da imagem do cache, se disponível
+
+      if (!image) {
+        const imageData = await loadImage(imageUrl) // Carregamento da imagem de avatar
+        image = new Image() // Criação de uma nova instância de Image
+        image.src = imageData.src // Atribuição do src da imagem
+        cache.put(imageUrl, imageData) // Armazenamento da imagem no cache
+      }
+
+      images.push(image) // Adição da imagem ao array de imagens
+      row.push({ positionX, positionY }) // Adição da posição ao array de posições da linha
     }
+
+    positions.push(row) // Adição da linha de posições à matriz de posições
   }
 
-  const filepath: string = await new Promise(resolve => {
-    // Save the canvas to disk
-    const filename = `images/image-${Math.random()}.png`
-    const filepath = path.join(__dirname, filename)
-    const out = fs.createWriteStream(filepath)
-    const stream = canvas.createPNGStream()
-    stream.pipe(out)
-    out.on('finish', () => {
-      console.log('The PNG file was created.')
-      resolve(filepath)
-    })
-  })
+  return { images, positions } // Retorno das imagens e posições
+}
 
-  // Delete the file after 5 seconds
-  setTimeout(() => {
-    fs.unlink(filepath, error => {
-      if (error) {
-        console.error(`Failed to delete file: ${error}`)
-      } else {
-        console.log('File deleted successfully.')
-      }
-    })
-  }, 5000)
+const drawAvatarImages = (
+  canvas2d: any,
+  images: Image[],
+  positions: { positionX: number; positionY: number }[][],
+  imageCount: number
+) => {
+  const imagePromises: Promise<void>[] = [] // Array de promessas para o desenho das imagens
+  const imageSize = 100 // Tamanho da imagem
 
-  return filepath
+  for (let i = 0; i < images.length; i++) {
+    const image = images[i] // Imagem atual
+    const position = positions[Math.floor(i / imageCount)][i % imageCount] // Posição atual da imagem
+
+    imagePromises.push(
+      canvas2d.draw({
+        image,
+        positionX: position.positionX,
+        positionY: position.positionY,
+        width: imageSize,
+        height: imageSize,
+      }) // Adição da promessa de desenho da imagem ao array
+    )
+  }
+
+  return Promise.all(imagePromises) // Retorno de uma promessa que aguarda todas as imagens serem desenhadas
 }

@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { IResponse } from '../../../server/models/IResponse'
+import { iGenDuelX2 } from '../../../server/modules/imageGen/iGenDuelX2'
 import {
   CantDuelItselfError,
   NoEnergyError,
@@ -7,10 +9,7 @@ import {
   PlayerNotFoundError,
   TypeMissmatchError,
 } from '../../errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
-import { iGenDuelX1 } from '../../../server/modules/imageGen/iGenDuelX1'
 import { TRouteParams } from '../router'
-import { iGenDuelX2 } from '../../../server/modules/imageGen/iGenDuelX2'
 
 export const duelX2Route = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , challengedPlayerIdString] = data.routeParams

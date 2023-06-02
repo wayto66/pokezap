@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
 import {
   InsufficientLevelToEvolveError,
   PlayerDoesNotHaveItemError,
@@ -9,9 +10,8 @@ import {
   UnexpectedError,
   UnknownEvolutionMethodError,
 } from '../../../infra/errors/AppErrors'
-import { container } from 'tsyringe'
-import { generateHpStat } from './generateHpStat'
 import { generateGeneralStats } from './generateGeneralStats'
+import { generateHpStat } from './generateHpStat'
 
 type TParams = {
   pokemonId: number

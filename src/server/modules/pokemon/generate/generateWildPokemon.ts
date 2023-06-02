@@ -1,9 +1,9 @@
 import { BasePokemon, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { generateHpStat } from '../generateHpStat'
-import { generateGeneralStats } from '../generateGeneralStats'
 import { talentNameMap } from '../../../../server/constants/talentNameMap'
 import { getRandomBetween2 } from '../../../../server/helpers/getRandomBetween2'
+import { generateGeneralStats } from '../generateGeneralStats'
+import { generateHpStat } from '../generateHpStat'
 
 type TParams = {
   baseData: BasePokemon

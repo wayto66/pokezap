@@ -1,18 +1,16 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { IResponse } from '../../../../server/models/IResponse'
+import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
+import { checkEvolutionPermition } from '../../../../server/modules/pokemon/checkEvolutionPermition'
 import {
-  MissingParametersBuyAmountError,
   MissingParametersPokemonInformationError,
   PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
   PokemonNotFoundError,
-  TypeMissmatchError,
   UnexpectedError,
 } from '../../../errors/AppErrors'
-import { IResponse } from '../../../../server/models/IResponse'
 import { TRouteParams } from '../../router'
-import { checkEvolutionPermition } from '../../../../server/modules/pokemon/checkEvolutionPermition'
-import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
 
 export const pokemonEvolve = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')

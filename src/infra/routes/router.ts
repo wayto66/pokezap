@@ -1,5 +1,6 @@
 import { AppError, RouteNotFoundError, RouteNotProvidedError, UnexpectedError } from '../../infra/errors/AppErrors'
 import { IResponse } from '../../server/models/IResponse'
+import { logger } from '../logger'
 import { battleRoutes } from './battleRoutes'
 import { pokemonBreed1 } from './breedRoutes/pokemonBreed1'
 import { pokemonHatch } from './breedRoutes/pokemonHatch'
@@ -112,7 +113,7 @@ export const router = async (data: TRouteParams): Promise<IResponse> => {
     return await route(data)
   } catch (error) {
     if (!(error instanceof AppError)) {
-      console.log(error)
+      logger.error(error)
       throw new UnexpectedError('')
     }
 

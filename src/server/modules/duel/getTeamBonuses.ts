@@ -21,7 +21,7 @@ type TParams = {
 }
 
 export const getTeamBonuses = async (data: TParams): Promise<DuelPokemonExtra> => {
-  const { poke, team } = data
+  const { poke } = data
 
   const updatedPoke = { ...poke }
   updatedPoke.critChance = 0

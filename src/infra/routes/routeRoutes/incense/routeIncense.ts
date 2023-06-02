@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { IResponse } from '../../../../server/models/IResponse'
 import { PlayerDoesNotHaveItemError, PlayerNotFoundError } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { IResponse } from '../../../../server/models/IResponse'
 
 export const routeIncense = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')

@@ -1,7 +1,9 @@
+import { BasePokemon, Pokemon, Talent } from '@prisma/client'
 import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import path from 'path'
-import { BasePokemon, Pokemon, Talent } from '@prisma/client'
+import { logger } from '../../../infra/logger'
+import { removeFileFromDisk } from '../../helpers/fileHelper'
 
 type TParams = {
   pokemon1: Pokemon & {
@@ -236,21 +238,12 @@ export const iGenPokemonBreed = async (data: TParams) => {
     const stream = canvas.createPNGStream()
     stream.pipe(out)
     out.on('finish', () => {
-      console.log('The PNG file was created.')
+      logger.info('The PNG file was created.')
       resolve(filepath)
     })
   })
 
-  // Delete the file after 5 seconds
-  setTimeout(() => {
-    fs.unlink(filepath, error => {
-      if (error) {
-        console.error(`Failed to delete file: ${error}`)
-      } else {
-        console.log('File deleted successfully.')
-      }
-    })
-  }, 5000)
+  removeFileFromDisk(filepath, 5000)
 
   return filepath
 }

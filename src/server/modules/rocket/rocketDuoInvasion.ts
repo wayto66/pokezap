@@ -1,9 +1,9 @@
 import { GameRoom, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { generateWildPokemon } from '../pokemon/generate/generateWildPokemon'
-import { UnexpectedError } from 'infra/errors/AppErrors'
 import { Client, MessageMedia } from 'whatsapp-web.js'
+import { UnexpectedError } from '../../../infra/errors/AppErrors'
 import { iGenWildPokemon } from '../imageGen/iGenWildPokemon'
+import { generateWildPokemon } from '../pokemon/generate/generateWildPokemon'
 
 type TRocketDuoInvasionParams = {
   gameRoom: GameRoom
@@ -58,6 +58,9 @@ export const rocketDuoInvasion = async (data: TRocketDuoInvasionParams) => {
       enemyPokemons: {
         connect: [{ id: rocketPokemon1.id }, { id: rocketPokemon2.id }],
       },
+      // TO-DO
+      name: 'Equipe rocket',
+      requiredPlayers: 2,
     },
   })
 

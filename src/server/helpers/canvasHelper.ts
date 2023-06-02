@@ -55,6 +55,9 @@ export type TCanvas2D = {
   createStream: () => PNGStream
   clearArea: () => void
   addFrameToEncoder: (encoder: GIFEncoder) => void
+  toBuffer: () => Buffer
+  getImageData: () => Uint8ClampedArray
+  toDataURL: () => string
 }
 
 type TDrawPlayerData = {
@@ -132,7 +135,7 @@ export const createCanvas2d = async (globalAlpha: number, isSmoothing = false): 
   }
 
   const createStream = (): PNGStream => {
-    return canvas.createPNGStream()
+    return canvas.createPNGStream({ compressionLevel: 0 })
   }
 
   const clearArea = () => {
@@ -153,6 +156,12 @@ export const createCanvas2d = async (globalAlpha: number, isSmoothing = false): 
     encoder.addFrame(context as any)
   }
 
+  const toBuffer = () => canvas.toBuffer()
+
+  const getImageData = () => context.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT).data
+
+  const toDataURL = () => canvas.toDataURL()
+
   return {
     fillRect,
     draw,
@@ -162,6 +171,9 @@ export const createCanvas2d = async (globalAlpha: number, isSmoothing = false): 
     createStream,
     clearArea,
     addFrameToEncoder,
+    toBuffer,
+    getImageData,
+    toDataURL,
   }
 }
 

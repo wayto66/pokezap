@@ -1,4 +1,4 @@
-import { Pokemon, PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import {
   PlayerDoestNotOwnThePokemonError,
@@ -10,7 +10,6 @@ import {
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokemonTeam } from '../../../../server/modules/imageGen/iGenPokemonTeam'
 import { TRouteParams } from '../../router'
-import instance from 'tsyringe/dist/typings/dependency-container'
 
 export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , id1, id2, id3, id4, id5, id6] = data.routeParams

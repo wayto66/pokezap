@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { IResponse } from '../../../server/models/IResponse'
+import { duelNXN } from '../../../server/modules/duel/duelNXN'
 import {
   InvasionAlreadyFinishedError,
   InvasionNotFoundError,
@@ -7,10 +9,7 @@ import {
   TypeMissmatchError,
   UnexpectedError,
 } from '../../errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
-import { Client } from 'whatsapp-web.js'
-import { duelNXN } from 'server/modules/duel/duelNXN'
 
 export const raidProgress = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , raidIdString] = data.routeParams
@@ -68,25 +67,27 @@ export const raidProgress = async (data: TRouteParams): Promise<IResponse> => {
   const currentTeamData =
     raid.currentRoomIndex === 0 ? raid.lobbyPokemons : raid.raidRooms[raid.currentRoomIndex - 1].winnerPokemons
 
-  const duel = await duelNXN({
+  await duelNXN({
     playerTeam: currentTeamData,
     enemyTeam: raid.raidRooms[raid.currentRoomIndex].enemyPokemons,
   })
 
-  if (updatedRaid.lobbyPlayers.length === raid.requiredPlayers) {
-    const zapClient = container.resolve<Client>('ZapClientInstance1')
-    await zapClient.sendMessage(
-      data.groupCode,
-      `*${player.name}* e *${player.teamPoke1.baseData.name}* entraram para a equipe de raid!
-      A aventura vai iniciar!`
-    )
-    if (updatedInvasionSession.mode === 'boss-invasion')
-      return await bossInvasion({ ...data, routeParams: ['', '', '', updatedInvasionSession.id.toString()] })
-    return await battleInvasionX2({ ...data, routeParams: ['', '', '', updatedInvasionSession.id.toString()] })
-  }
+  // TODO: RAID
+  // if (updatedRaid.lobbyPlayers.length === raid.requiredPlayers) {
+  //   const zapClient = container.resolve<Client>('ZapClientInstance1')
+  //   await zapClient.sendMessage(
+  //     data.groupCode,
+  //     `*${player.name}* e *${player.teamPoke1.baseData.name}* entraram para a equipe de raid!
+  //     A aventura vai iniciar!`
+  //   )
+  //   if (updatedInvasionSession.mode === 'boss-invasion')
+  //     return await bossInvasion({ ...data, routeParams: ['', '', '', updatedInvasionSession.id.toString()] })
+  //   return await battleInvasionX2({ ...data, routeParams: ['', '', '', updatedInvasionSession.id.toString()] })
+  // }
 
   return {
-    message: `*${player.name}* e *${playerPokemon.baseData.name}* entraram para a equipe de defesa!`,
+    // message: `*${player.name}* e *${playerPokemon.baseData.name}* entraram para a equipe de defesa!`,
+    message: `TO BE DEFINED`,
     status: 200,
     data: null,
   }

@@ -1,5 +1,11 @@
 import { InvasionSession, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { DuelPlayer } from '../../../../infra/routes/duelRoutes/duelAccept'
+import { bossInvasionLootMap } from '../../../../server/constants/bossInvasionLootMap'
+import { IResponse } from '../../../../server/models/IResponse'
+import { duelNX1 } from '../../../../server/modules/duel/duelNX1'
+import { TDuelX2Response } from '../../../../server/modules/duel/duelX2'
+import { handleExperienceGain } from '../../../../server/modules/pokemon/handleExperienceGain'
 import {
   InsufficentPlayersForInvasionError,
   NoDuelLoserFoundError,
@@ -9,13 +15,7 @@ import {
   TypeMissmatchError,
   UnexpectedError,
 } from '../../../errors/AppErrors'
-import { IResponse } from '../../../../server/models/IResponse'
 import { TRouteParams } from '../../router'
-import { handleExperienceGain } from '../../../../server/modules/pokemon/handleExperienceGain'
-import { TDuelX2Response } from '../../../../server/modules/duel/duelX2'
-import { DuelPlayer } from '../../../../infra/routes/duelRoutes/duelAccept'
-import { duelNX1 } from '../../../../server/modules/duel/duelNX1'
-import { bossInvasionLootMap } from '../../../../server/constants/bossInvasionLootMap'
 
 export const bossInvasion = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , invasionSessionIdString] = data.routeParams
@@ -81,8 +81,6 @@ export const bossInvasion = async (data: TRouteParams): Promise<IResponse> => {
     playerTeam: allyTeam,
     boss: invasionSession.enemyPokemons[0],
   })
-
-  console.log({ duel })
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
   if (!duel.winnerTeam) throw new NoDuelWinnerFoundError()
@@ -153,7 +151,6 @@ export const bossInvasion = async (data: TRouteParams): Promise<IResponse> => {
   const shinyMultipler = boss.isShiny ? 1.5 : 1
 
   const lootMessages: string[] = []
-  console.log({ lootData })
 
   if (lootData) {
     for (const player of players) {
@@ -161,7 +158,7 @@ export const bossInvasion = async (data: TRouteParams): Promise<IResponse> => {
       for (const loot of lootData) {
         if (Math.random() * shinyMultipler < loot.dropChance) {
           lootArray.push(loot.itemName)
-          let item = await prismaClient.item.findFirst({
+          const item = await prismaClient.item.findFirst({
             where: {
               ownerId: player.id,
               name: loot.itemName,
@@ -192,7 +189,7 @@ export const bossInvasion = async (data: TRouteParams): Promise<IResponse> => {
       if (Math.random() * shinyMultipler < 0.15) {
         const bonusItems = ['sun-stone', 'dusk-stone', 'dawn-stone', 'shiny-stone']
         const itemName = bonusItems[Math.floor(Math.random() * bonusItems.length)]
-        let item = await prismaClient.item.findFirst({
+        const item = await prismaClient.item.findFirst({
           where: {
             ownerId: player.id,
             name: itemName,

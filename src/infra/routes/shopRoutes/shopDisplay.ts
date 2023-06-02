@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { NoItemsFoundError } from '../../errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
-import { TRouteParams } from '../router'
 import { iGenShop } from '../../../server/modules/imageGen/iGenShop'
+import { NoItemsFoundError } from '../../errors/AppErrors'
+import { TRouteParams } from '../router'
 
 export const shopDisplay = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')

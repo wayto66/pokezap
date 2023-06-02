@@ -1,10 +1,10 @@
-import { BasePokemon, PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { generateHpStat } from '../generateHpStat'
-import { generateGeneralStats } from '../generateGeneralStats'
+import { UnexpectedError } from '../../../../infra/errors/AppErrors'
 import { talentNameMap } from '../../../constants/talentNameMap'
 import { getRandomBetween2 } from '../../../helpers/getRandomBetween2'
-import { UnexpectedError } from 'infra/errors/AppErrors'
+import { generateGeneralStats } from '../generateGeneralStats'
+import { generateHpStat } from '../generateHpStat'
 
 type TParams = {
   name: string

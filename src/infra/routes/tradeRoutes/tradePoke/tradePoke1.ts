@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import { ISession } from 'server/models/ISession'
 import { container } from 'tsyringe'
 import {
   PlayerNotFoundError,
@@ -12,6 +11,7 @@ import {
   TypeMissmatchError,
 } from '../../../../infra/errors/AppErrors'
 import { IResponse } from '../../../../server/models/IResponse'
+import { ISession } from '../../../../server/models/ISession'
 import { iGenTradePokemon } from '../../../../server/modules/imageGen/iGenTradePokemon'
 import { TRouteParams } from '../../router'
 import { tradePoke2 } from './tradePoke2'

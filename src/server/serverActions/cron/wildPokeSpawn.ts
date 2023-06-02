@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { Client, MessageMedia } from 'whatsapp-web.js'
+import { metaValues } from '../../../constants/metaValues'
 import { iGenWildPokemon } from '../../modules/imageGen/iGenWildPokemon'
 import { generateWildPokemon } from '../../modules/pokemon/generate/generateWildPokemon'
-import { metaValues } from '../../../constants/metaValues'
 
 type TParams = {
   prismaClient: PrismaClient
@@ -23,10 +23,8 @@ export const wildPokeSpawn = async (data: TParams) => {
   })
 
   for (const gameRoom of gameRooms) {
-    if (!gameRoom.phone) {
-      console.error('No phone available for gameRoom: ' + gameRoom.id)
-      continue
-    }
+    if (!gameRoom.phone) continue
+
     if (gameRoom.mode !== 'route') continue
 
     if (gameRoom.invasorId && Math.random() < 0.5) {
@@ -102,7 +100,7 @@ Ações:
 `,
       })
       .then(async result => {
-        const newMessage = await prismaClient.message.create({
+        await prismaClient.message.create({
           data: {
             msgId: result.id.id,
             type: '?',

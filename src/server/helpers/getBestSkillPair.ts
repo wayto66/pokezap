@@ -5,21 +5,25 @@ export function getBestSkillPair(map: Map<number, any>): [number, any][] | undef
   let basicSkill: [number, any] | undefined
 
   for (const [power, skills] of map) {
-    if (skills[0].attackPower > 100 && (ultimatePower === undefined || power > ultimatePower)) {
+    const currentSkill = skills[0]
+
+    if (currentSkill.attackPower > 100 && (!ultimatePower || power > ultimatePower)) {
       ultimatePower = power
       ultimateSkill = [power, skills[0]]
     }
-    if (skills[0].attackPower < 100 && (basicPower === undefined || power > basicPower)) {
+    if (currentSkill.attackPower < 100 && (!basicPower || power > basicPower)) {
       basicPower = power
-      basicSkill = [power, skills[0]]
+      basicSkill = [power, currentSkill]
     }
   }
 
-  if (!ultimateSkill && !basicSkill) return [,]
+  if (!ultimateSkill && !basicSkill) return []
 
-  if (!ultimateSkill) ultimateSkill = basicSkill
+  if (!ultimateSkill) {
+    ultimateSkill = basicSkill
+  } else if (basicSkill && ultimateSkill[0] < basicSkill[0]) {
+    ultimateSkill = basicSkill
+  }
 
-  if (ultimateSkill[0] < basicSkill[0]) ultimateSkill = basicSkill
-
-  return [basicSkill, ultimateSkill]
+  return [basicSkill!, ultimateSkill!]
 }

@@ -1,12 +1,12 @@
 import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { FailedToFindXinYError } from '../../../infra/errors/AppErrors'
 import { evoDataIdMap } from '../../../server/constants/evoDataIdMap'
 import { getRandomBetween2 } from '../../../server/helpers/getRandomBetween2'
 import { getRandomBetween3 } from '../../../server/helpers/getRandomBetween3'
 import { IPokemon } from '../../../server/models/IPokemon'
 import { generateGeneralStats } from './generateGeneralStats'
 import { generateHpStat } from './generateHpStat'
-import { FailedToFindXinYError } from '../../../infra/errors/AppErrors'
 
 type TParams = {
   poke1: IPokemon

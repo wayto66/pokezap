@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { IResponse } from '../../../server/models/IResponse'
 import {
   CatchFailedPokemonRanAwayError,
   InvalidPokeBallName,
@@ -10,7 +11,6 @@ import {
   PokemonAlreadyHasOwnerError,
   PokemonNotFoundError,
 } from '../../errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 
 const ballNameMap = new Map<string, string>([
@@ -214,9 +214,6 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
   const catchRate = calculateCatchRate(pokemon.baseData.BaseExperience) * getBallRateMultiplier() * shinyMultiplier
   const random = Math.random()
 
-  console.log(
-    `${player.name} - catchRate: ${catchRate} VS random: ${random} on pokemon: ${pokemon.id} ${pokemon.baseData}. shiny: ${pokemon.isShiny}`
-  )
   if (catchRate > random) {
     await prismaClient.pokemon.updateMany({
       where: {

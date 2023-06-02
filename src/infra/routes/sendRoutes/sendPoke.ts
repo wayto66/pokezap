@@ -1,17 +1,15 @@
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { IResponse } from '../../../server/models/IResponse'
 import {
   MissingParameterError,
-  MissingParametersTradeRouteError,
   PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
   PokemonNotFoundError,
-  SubRouteNotFoundError,
   TypeMissmatchError,
   UnexpectedError,
 } from '../../errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
-import { container } from 'tsyringe'
-import { PrismaClient } from '@prisma/client'
 
 export const sendPoke = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , pokeIdString, targetPlayerIdString] = data.routeParams
@@ -54,7 +52,7 @@ export const sendPoke = async (data: TRouteParams): Promise<IResponse> => {
   if (!targetPlayer) throw new PlayerNotFoundError(targetPlayerIdString)
   if (pokemon.ownerId === targetPlayer.id) throw new UnexpectedError('sendPoke')
 
-  const sentPokemon = await prisma.pokemon.update({
+  await prisma.pokemon.update({
     where: {
       id: pokemon.id,
     },
