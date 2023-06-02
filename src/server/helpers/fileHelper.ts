@@ -19,7 +19,7 @@ export const saveFileOnDisk = async (canvas2d: TCanvas2D): Promise<string> => {
   return filepath
 }
 
-export const removeFileFromDisk = (filepath: string) => {
+export const removeFileFromDisk = (filepath: string, timestamp = 15000) => {
   setTimeout(() => {
     fs.unlink(filepath, error => {
       if (error) {
@@ -28,5 +28,5 @@ export const removeFileFromDisk = (filepath: string) => {
         logger.info('File deleted successfully.')
       }
     })
-  }, 15000)
+  }, timestamp)
 }

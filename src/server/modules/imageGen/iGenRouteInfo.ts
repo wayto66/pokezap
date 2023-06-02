@@ -3,6 +3,7 @@ import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import { logger } from 'infra/logger'
 import path from 'path'
+import { removeFileFromDisk } from 'server/helpers/fileHelper'
 
 type TParams = {
   route: GameRoom & {
@@ -50,16 +51,7 @@ export const iGenRouteInfo = async (data: TParams) => {
     })
   })
 
-  // Delete the file after 5 seconds
-  setTimeout(() => {
-    fs.unlink(filepath, error => {
-      if (error) {
-        logger.error(`Failed to delete file: ${error}`)
-      } else {
-        logger.info('File deleted successfully.')
-      }
-    })
-  }, 11000)
+  removeFileFromDisk(filepath, 11000)
 
   return filepath
 }

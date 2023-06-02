@@ -1,8 +1,8 @@
 import { Image, loadImage } from 'canvas'
 import fs from 'fs'
 import GIFEncoder from 'gifencoder'
-import { logger } from 'infra/logger'
 import path from 'path'
+import { removeFileFromDisk } from 'server/helpers/fileHelper'
 import { createCanvas2d } from '../../../server/helpers/canvasHelper'
 import { BossInvasionRoundData, RoundPokemonData } from '../duel/duelNX1'
 
@@ -374,16 +374,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
     resolve(filepath)
   })
 
-  // Delete the file after 60 seconds
-  setTimeout(() => {
-    fs.unlink(filepath, error => {
-      if (error) {
-        logger.error(`Failed to delete file: ${error}`)
-      } else {
-        logger.info('File deleted successfully.')
-      }
-    })
-  }, 60000)
+  removeFileFromDisk(filepath, 60000)
 
   Promise.all(filepath)
 

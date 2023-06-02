@@ -3,6 +3,7 @@ import { createCanvas, loadImage, registerFont } from 'canvas'
 import fs from 'fs'
 import { logger } from 'infra/logger'
 import path from 'path'
+import { removeFileFromDisk } from 'server/helpers/fileHelper'
 import { UnexpectedError } from '../../../infra/errors/AppErrors'
 import { talentIdMap } from '../../constants/talentIdMap'
 
@@ -183,16 +184,7 @@ export const iGenDuelX2 = async (data: TParams) => {
     })
   })
 
-  // Delete the file after 5 seconds
-  setTimeout(() => {
-    fs.unlink(filepath, error => {
-      if (error) {
-        logger.error(`Failed to delete file: ${error}`)
-      } else {
-        logger.info('File deleted successfully.')
-      }
-    })
-  }, 15000)
+  removeFileFromDisk(filepath)
 
   return filepath
 }

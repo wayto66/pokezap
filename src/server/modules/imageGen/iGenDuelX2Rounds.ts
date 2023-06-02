@@ -2,8 +2,8 @@ import { BasePokemon, Pokemon } from '@prisma/client'
 import { createCanvas, loadImage, registerFont } from 'canvas'
 import fs from 'fs'
 import GIFEncoder from 'gifencoder'
-import { logger } from 'infra/logger'
 import path from 'path'
+import { removeFileFromDisk } from 'server/helpers/fileHelper'
 
 type duelPokemon = Pokemon & {
   baseData: BasePokemon
@@ -439,16 +439,7 @@ export const iGenDuelX2Rounds = async (data: TDuelRoundData): Promise<string> =>
     resolve(filepath)
   })
 
-  // Delete the file after 30 seconds
-  setTimeout(() => {
-    fs.unlink(filepath, error => {
-      if (error) {
-        logger.error(`Failed to delete file: ${error}`)
-      } else {
-        logger.info('File deleted successfully.')
-      }
-    })
-  }, 60000)
+  removeFileFromDisk(filepath, 60000)
 
   Promise.all(filepath)
 

@@ -2,6 +2,7 @@ import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import { logger } from 'infra/logger'
 import path from 'path'
+import { removeFileFromDisk } from 'server/helpers/fileHelper'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import { IPokemon } from '../../../server/models/IPokemon'
 
@@ -198,16 +199,7 @@ export const iGenWildPokemon = async (data: TParams) => {
     })
   })
 
-  // Delete the file after 5 seconds
-  setTimeout(() => {
-    fs.unlink(filepath, error => {
-      if (error) {
-        logger.error(`Failed to delete file: ${error}`)
-      } else {
-        logger.info('File deleted successfully.')
-      }
-    })
-  }, 60000)
+  removeFileFromDisk(filepath, 60000)
 
   return filepath
 }
