@@ -1,16 +1,15 @@
+import { logger } from 'infra/logger'
 import qr from 'qrcode'
 
 export const qrCodeProcess = (qrCodeString: string, instanceName: string) => {
-  // Generate QR code image
-
-  console.log('starting qrCodeProcess')
+  logger.info('starting qrCodeProcess')
 
   const name = `qrCodes/qrcode-${instanceName}.png`
   qr.toFile(name, qrCodeString, err => {
     if (err) {
-      console.error(err)
+      logger.error(err)
       return
     }
-    console.log('QR code image generated successfully. name: ' + name)
+    logger.info('QR code image generated successfully. name: ' + name)
   })
 }

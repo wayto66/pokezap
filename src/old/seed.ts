@@ -1,10 +1,11 @@
 import { PrismaClient } from '@prisma/client'
 import { writeFileSync } from 'fs'
+import { logger } from 'infra/logger'
 import fetch from 'node-fetch'
 import { container } from 'tsyringe'
-import { skillsData } from './moves'
 import { pokemonData } from './data'
 import { itemsData } from './items'
+import { skillsData } from './moves'
 
 export async function thiefTime() {
   const baseUrl = 'https://pokeapi.co/api/v2'
@@ -91,10 +92,10 @@ export async function thiefTime() {
         const filename = 'mega-alola-galar_data.ts'
         writeFileSync(filename, dataString)
 
-        console.log(`Data written to ${filename}`)
+        logger.info(`Data written to ${filename}`)
       })
     })
-    .catch(error => console.error(error))
+    .catch(error => logger.error(error))
 }
 
 export async function thiefTimeMoves() {
@@ -143,10 +144,10 @@ export async function thiefTimeMoves() {
         const filename = 'moves.ts'
         writeFileSync(filename, dataString)
 
-        console.log(`Data written to ${filename}`)
+        logger.info(`Data written to ${filename}`)
       })
     })
-    .catch(error => console.error(error))
+    .catch(error => logger.error(error))
 }
 
 export async function stealItems() {
@@ -187,10 +188,10 @@ export async function stealItems() {
         const filename = 'items.ts'
         writeFileSync(filename, dataString)
 
-        console.log(`Data written to ${filename}`)
+        logger.info(`Data written to ${filename}`)
       })
     })
-    .catch(error => console.error(error))
+    .catch(error => logger.error(error))
 }
 
 export async function populate() {
@@ -252,7 +253,7 @@ export async function populate() {
         },
       })
     } catch (e: any) {
-      console.error(e.message)
+      logger.error(e.message)
     }
   }
 

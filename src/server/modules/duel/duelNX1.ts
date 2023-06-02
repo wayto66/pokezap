@@ -1,21 +1,16 @@
-import { BasePokemon, Player, Pokemon, PrismaClient } from '@prisma/client'
+import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { typeEffectivenessMap } from '../../../server/constants/atkEffectivenessMap'
+import { getBestSkillPair } from '../../../server/helpers/getBestSkillPair'
+import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
 import { talentIdMap } from '../../constants/talentIdMap'
 import { findKeyByValue } from '../../helpers/findKeyByValue'
 import { IPokemon } from '../../models/IPokemon'
 import { ISkill } from '../../models/ISkill'
-import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
-import { DuelPokemonExtra, getTeamBonuses } from './getTeamBonuses'
-import { UnexpectedError } from '../../../infra/errors/AppErrors'
-import { container } from 'tsyringe'
-import { TDuelRoundData, iGenDuel3X1Rounds } from '../imageGen/iGenDuel3X1Rounds'
 import { iGenDuel2X1Rounds } from '../imageGen/iGenDuel2X1Rounds'
-import { getBestSkillPair } from '../../../server/helpers/getBestSkillPair'
-import { typeEffectivenessMap } from '../../../server/constants/atkEffectivenessMap'
-
-export type BossInvasionRoundData = {
-  alliesTeamData: RoundPokemonData[]
-  bossData: RoundPokemonData
-}
+import { TDuelRoundData, iGenDuel3X1Rounds } from '../imageGen/iGenDuel3X1Rounds'
+import { DuelPokemonExtra, getTeamBonuses } from './getTeamBonuses'
 
 export type RoundPokemonData = {
   name: string
@@ -45,6 +40,11 @@ export type RoundPokemonData = {
   lifeSteal: number
   critChance: number
   blockChance: number
+}
+
+export type BossInvasionRoundData = {
+  alliesTeamData: RoundPokemonData[]
+  bossData: RoundPokemonData
 }
 
 type DuelPokemon = Pokemon & {
@@ -237,7 +237,7 @@ export const duelNX1 = async (data: TParams): Promise<TDuelX2Response | void> =>
   const duelMap = new Map<number, BossInvasionRoundData>([])
 
   let duelFinished = false
-  let isDraw = false
+  const isDraw = false
   let roundCount = 1
   let winnerTeam: any[] | null = null
   let loserTeam: any[] | null = null
@@ -300,23 +300,18 @@ export const duelNX1 = async (data: TParams): Promise<TDuelX2Response | void> =>
     for (const poke of alliesArrayInDuelOrder) roundStart(poke)
     roundStart(bossData)
 
-    console.log(alliesTeamData.map(ally => ally.hp))
-    console.log({ BOSSHP: bossData.hp })
-
     const bossDealDamage = () => {
       const target = alliesArrayInDuelOrder[Math.floor(Math.random() * alliesArrayInDuelOrder.length)]
-      const power = bossAttackPowerMap.get(target.id)
-      console.log(`${bossData.name} uses ${bossData.currentSkillName} with power: ${bossData.currentSkillPower} `)
+      bossAttackPowerMap.get(target.id)
+
       if (!target.block) {
         target.hp -= bossData.currentSkillPower * (0.9 + Math.random() * 0.2)
         if (bossData.crit) {
-          console.log(`${bossData.name} encaixa um ${bossData.currentSkillName} crítico!`)
           target.hp -= bossData.currentSkillPower * (0.9 + Math.random() * 0.2) * 0.5
         }
       } else {
         target.hp -= bossData.currentSkillPower * (0.9 + Math.random() * 0.2) * 0.5
         if (bossData.crit) {
-          console.log(`${bossData.name} encaixa um ${bossData.currentSkillName} crítico!`)
           target.hp -= bossData.currentSkillPower * (0.9 + Math.random() * 0.2) * 0.25
         }
       }
@@ -325,13 +320,11 @@ export const duelNX1 = async (data: TParams): Promise<TDuelX2Response | void> =>
     bossDealDamage()
 
     const allyDealDamage = (poke: RoundPokemonData, target: RoundPokemonData) => {
-      console.log(`${poke.name} uses ${poke.currentSkillName} with power: ${poke.currentSkillPower} `)
       if (!target.block) {
         target.hp -= poke.currentSkillPower * (0.9 + Math.random() * 0.2)
         poke.hp += poke.currentSkillPower * poke.lifeSteal
       }
       if (poke.crit) {
-        console.log(`${poke.name} encaixa um ${poke.currentSkillName} crítico!`)
         if (!target.block) {
           target.hp -= poke.currentSkillPower * (0.9 + Math.random() * 0.2) * 0.5
           poke.hp += poke.currentSkillPower * poke.lifeSteal * 0.5
@@ -343,11 +336,7 @@ export const duelNX1 = async (data: TParams): Promise<TDuelX2Response | void> =>
       if (poke.hp > 0) allyDealDamage(poke, bossData)
     }
 
-    ////
-    ////
-
     if (alliesArrayInDuelOrder.map(poke => poke.hp).every(value => value <= 0)) {
-      console.log('boss wins')
       winnerTeam = [bossData]
       loserTeam = alliesArrayInDuelOrder
       winnerTeamIndex = 1
@@ -355,7 +344,6 @@ export const duelNX1 = async (data: TParams): Promise<TDuelX2Response | void> =>
       duelFinished = true
     }
     if (bossData.hp <= 0) {
-      console.log('ally team wins')
       winnerTeam = alliesArrayInDuelOrder
       loserTeam = [bossData]
       winnerTeamIndex = 0
@@ -396,8 +384,6 @@ export const duelNX1 = async (data: TParams): Promise<TDuelX2Response | void> =>
     alliesTeam: alliesTeamData,
     boss: bossData,
   })
-
-  console.log('finished: ' + imageUrl)
 
   return {
     message: `DUELO X2`,
@@ -461,35 +447,35 @@ const getBestTypes = (type1: string, type2?: string): any => {
   const entries = Object.entries(efObj)
   const entrymap2 = entries
     .filter(entry => {
-      if (entry[1] === 2) return entry[0]
+      return entry[1] === 2 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymap1 = entries
     .filter(entry => {
-      if (entry[1] === 1) return entry[0]
+      return entry[1] === 1 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymap0 = entries
     .filter(entry => {
-      if (entry[1] === 0) return entry[0]
+      return entry[1] === 0 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymapBad = entries
     .filter(entry => {
-      if (entry[1] === -1) return entry[0]
+      return entry[1] === -1 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymapWorse = entries
     .filter(entry => {
-      if (entry[1] === -2) return entry[0]
+      return entry[1] === -2 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')

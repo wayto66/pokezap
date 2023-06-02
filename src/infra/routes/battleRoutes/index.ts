@@ -1,9 +1,4 @@
-import {
-  MissingParametersBattleRouteError,
-  MissingParametersDuelRouteError,
-  SubRouteNotFoundError,
-  TypeMissmatchError,
-} from '../../../infra/errors/AppErrors'
+import { MissingParametersBattleRouteError, TypeMissmatchError } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { battleWildPokemon } from './battleWildPokemon'

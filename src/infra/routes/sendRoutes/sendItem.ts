@@ -1,18 +1,15 @@
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { IResponse } from '../../../server/models/IResponse'
 import {
   InsufficientItemAmountError,
   MissingParameterError,
-  MissingParametersTradeRouteError,
-  PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
   PokemonNotFoundError,
-  SubRouteNotFoundError,
   TypeMissmatchError,
   UnexpectedError,
 } from '../../errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
-import { container } from 'tsyringe'
-import { PrismaClient } from '@prisma/client'
 
 export const sendItem = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , itemNameUppercase, amountString, targetPlayerIdString] = data.routeParams
@@ -55,7 +52,7 @@ export const sendItem = async (data: TRouteParams): Promise<IResponse> => {
   if (!targetPlayer) throw new PlayerNotFoundError(targetPlayerIdString)
   if (item.ownerId === targetPlayer.id) throw new UnexpectedError('O item já pertence à você.')
 
-  const senderItem = await prisma.item.update({
+  await prisma.item.update({
     where: {
       id: item.id,
     },

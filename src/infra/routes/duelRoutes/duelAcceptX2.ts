@@ -1,5 +1,9 @@
 import { PrismaClient } from '@prisma/client'
+import { logger } from 'infra/logger'
 import { container } from 'tsyringe'
+import { IResponse } from '../../../server/models/IResponse'
+import { duelX2 } from '../../../server/modules/duel/duelX2'
+import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
 import {
   CouldNotUpdatePlayerError,
   NoDuelLoserFoundError,
@@ -13,11 +17,7 @@ import {
   TypeMissmatchError,
   UnexpectedError,
 } from '../../errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
-import { duelX1 } from '../../../server/modules/duel/duelX1'
 import { TRouteParams } from '../router'
-import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
-import { duelX2 } from '../../../server/modules/duel/duelX2'
 
 export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , sessionIdString] = data.routeParams
@@ -99,8 +99,6 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
     team2: [session.invited.teamPoke1, session.invited.teamPoke2],
   })
 
-  console.log({ duel })
-
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
 
   if (!duel.winnerTeam) throw new NoDuelWinnerFoundError()
@@ -171,7 +169,7 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
         },
       },
     })
-    .catch(e => console.log(e))
+    .catch(e => logger.error(e))
 
   const updatedLoserPlayer = await prismaClient.player
     .update({
@@ -187,7 +185,7 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
         },
       },
     })
-    .catch(e => console.log(e))
+    .catch(e => logger.error(e))
 
   if (!updatedLoserPlayer) throw new CouldNotUpdatePlayerError('id', loser.id)
   if (!updatedWinnerPlayer) throw new CouldNotUpdatePlayerError('id', winner.id)

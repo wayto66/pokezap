@@ -21,13 +21,13 @@ export const tradePoke2 = async (data: TTradePokeParams): Promise<IResponse> => 
       data: null,
     }
 
-  const evolveCreatorPokemon = await checkEvolutionPermition({
+  await checkEvolutionPermition({
     playerId: data.creatorPokemon.ownerId,
     pokemonId: data.creatorPokemon.id,
     fromTrade: true,
   })
 
-  const evolveInvitedPokemon = await checkEvolutionPermition({
+  await checkEvolutionPermition({
     playerId: data.invitedPokemon.ownerId,
     pokemonId: data.invitedPokemon.id,
     fromTrade: true,

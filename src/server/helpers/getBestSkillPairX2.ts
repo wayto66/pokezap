@@ -19,11 +19,13 @@ export function getBestSkillPairX2(map: Map<number[], any>): [number[], any][] |
     }
   }
 
-  if (!ultimateSkill && !basicSkill) return [,]
+  if (!ultimateSkill && !basicSkill) return []
 
-  if (!ultimateSkill) ultimateSkill = basicSkill
-
-  if (ultimatePower0 + ultimatePower1 < basicPower0 + basicPower1) ultimateSkill = basicSkill
+  if (!ultimateSkill) {
+    ultimateSkill = basicSkill
+  } else if (basicSkill && ultimatePower0 + ultimatePower1 < basicPower0 + basicPower1) {
+    ultimateSkill = basicSkill
+  }
 
   return [basicSkill!, ultimateSkill!]
 }

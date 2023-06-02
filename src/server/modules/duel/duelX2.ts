@@ -1,14 +1,15 @@
 import { BasePokemon, Player, Pokemon } from '@prisma/client'
+import { logger } from 'infra/logger'
+import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { getBestSkillPairX2 } from '../../../server/helpers/getBestSkillPairX2'
 import { typeEffectivenessMap } from '../../constants/atkEffectivenessMap'
+import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
 import { talentIdMap } from '../../constants/talentIdMap'
 import { findKeyByValue } from '../../helpers/findKeyByValue'
 import { IPokemon } from '../../models/IPokemon'
 import { ISkill } from '../../models/ISkill'
-import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
-import { getTeamBonuses } from './getTeamBonuses'
-import { UnexpectedError } from '../../../infra/errors/AppErrors'
-import { getBestSkillPairX2 } from '../../../server/helpers/getBestSkillPairX2'
 import { iGenDuelX2Rounds } from '../imageGen/iGenDuelX2Rounds'
+import { getTeamBonuses } from './getTeamBonuses'
 
 type DuelPokemon = Pokemon & {
   baseData: BasePokemon
@@ -219,14 +220,12 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
   const duelMap = new Map<number, RoundData>([])
 
   let duelFinished = false
-  let isDraw = false
+  const isDraw = false
   let roundCount = 1
   let winnerTeam: any[] | null = null
   let loserTeam: any[] | null = null
   let winnerTeamIndex: number | undefined
   let loserTeamIndex: number | undefined
-  let winnerPlayer: Player | undefined
-  let loserPlayer: Player | undefined
 
   const duelLogs = () => {
     if (
@@ -237,7 +236,7 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
         poke1Data.skillType !== poke1Data.type1 &&
         poke1Data.skillType !== poke2Data.type2)
     ) {
-      console.log(
+      logger.info(
         `PREPARAÇÃO: ${poke1Data.name} utiliza seus talentos do tipo ${poke1Data.skillType} para conseguir utilizar ${poke1Data.skillName}. Efetivo contra ${poke2Data.name}`
       )
     }
@@ -250,7 +249,7 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
         poke2Data.skillType !== poke2Data.type1 &&
         poke1Data.skillType !== poke1Data.type2)
     ) {
-      console.log(
+      logger.info(
         `PREPARAÇÃO: ${poke2Data.name} utiliza seus talentos do tipo ${poke2Data.skillType} para conseguir utilizar ${poke2Data.skillName}. Efetivo contra ${poke1Data.name}`
       )
     }
@@ -259,7 +258,7 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
       typeEffectivenessMap.get(poke1Data.skillType)?.ineffective.includes(poke2Data.type1) ||
       typeEffectivenessMap.get(poke1Data.skillType)?.ineffective.includes(poke2Data.type2 || 'null')
     ) {
-      console.log(
+      logger.info(
         `PREPARAÇÃO: ${poke1Data.name} entra em batalha com ${poke1Data.skillName} do tipo ${poke1Data.skillType}. Inefetivo contra ${poke2Data.name}`
       )
     }
@@ -268,12 +267,12 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
       typeEffectivenessMap.get(poke2Data.skillType)?.ineffective.includes(poke1Data.type1) ||
       typeEffectivenessMap.get(poke2Data.skillType)?.ineffective.includes(poke1Data.type2 || 'null')
     ) {
-      console.log(
+      logger.info(
         `PREPARAÇÃO: ${poke2Data.name} entra em batalha com ${poke2Data.skillName} do tipo ${poke2Data.skillType}. Inefetivo contra ${poke1Data.name}`
       )
     }
 
-    console.log(`---- 
+    logger.info(`---- 
     ${poke1Data.name.toUpperCase()} com ${poke1Data.skillName} do tipo ${poke1Data.skillType} e ${
       poke1Data.skillPower
     } de poder
@@ -283,7 +282,7 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
     } de poder
     ----`)
 
-    console.log(`---- INICIO DO DUELO ----`)
+    logger.info(`---- INICIO DO DUELO ----`)
   }
   duelLogs()
 
@@ -295,8 +294,6 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
   })
 
   const pokemonArrayInDuelOrder = [poke1Data, poke2Data, poke3Data, poke4Data].sort((a, b) => b.speed - a.speed)
-
-  console.log({ pokemonArrayInDuelOrder })
 
   while (duelFinished === false) {
     roundCount++
@@ -325,9 +322,6 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
     roundStart(poke4Data)
 
     const dealDamage = (poke: any, target0: any, target1: any) => {
-      console.log(
-        `${poke.name} uses ${poke.currentSkillName} with powers: ${poke.currentSkillPower0} e ${poke.currentSkillPower1}`
-      )
       if (!target0.block) {
         target0.hp -= poke.currentSkillPower0 * (0.9 + Math.random() * 0.2)
         poke.hp += poke.currentSkillPower0 * poke.lifeSteal
@@ -337,7 +331,6 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
         poke.hp += poke.currentSkillPower1 * poke.lifeSteal
       }
       if (poke.crit) {
-        console.log(`${poke.name} encaixa um ${poke.currentSkillName} crítico!`)
         if (!target0.block) {
           target0.hp -= poke.currentSkillPower0 * (0.9 + Math.random() * 0.2) * 0.5
           poke.hp += poke.currentSkillPower0 * poke.lifeSteal * 0.5
@@ -353,11 +346,7 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
       if (poke.hp > 0) dealDamage(poke, poke.target0, poke.target1)
     }
 
-    ////
-    ////
-
     if (poke1Data.hp <= 0 && poke2Data.hp <= 0) {
-      console.log('team2 wins')
       winnerTeam = [poke3Data, poke4Data]
       loserTeam = [poke1Data, poke2Data]
       winnerTeamIndex = 1
@@ -365,7 +354,6 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
       duelFinished = true
     }
     if (poke3Data.hp <= 0 && poke4Data.hp <= 0) {
-      console.log('team1 wins')
       winnerTeam = [poke1Data, poke2Data]
       loserTeam = [poke3Data, poke4Data]
       winnerTeamIndex = 0
@@ -373,13 +361,6 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
       duelFinished = true
     }
 
-    console.log(
-      `Fim do round ${roundCount}: ${poke1Data.name}-${poke1Data.hp.toFixed(2)}hp e ${
-        poke2Data.name
-      }-${poke2Data.hp.toFixed(2)}hp VS ${poke3Data.name}-${poke3Data.hp.toFixed(2)}hp e ${
-        poke4Data.name
-      }-${poke4Data.hp.toFixed(2)}hp`
-    )
     duelMap.set(roundCount, {
       poke1Data: { ...poke1Data },
       poke2Data: { ...poke2Data },
@@ -388,7 +369,6 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
     })
 
     if (roundCount > 50) {
-      console.log('empate')
       duelFinished = true
     }
   }
@@ -406,8 +386,6 @@ export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => 
     winnerDataNames: winnerTeamIndex === 0 ? ['poke1Data', 'poke2Data'] : ['poke3Data', 'poke4Data'],
     loserDataNames: winnerTeamIndex === 1 ? ['poke1Data', 'poke2Data'] : ['poke3Data', 'poke4Data'],
   })
-
-  console.log('finished: ' + imageUrl)
 
   return {
     message: `DUELO X2`,
@@ -433,8 +411,6 @@ const getBestTypes = (data: TGetBestTypesData) => {
   const efData2b = defEffectivenessMap.get(defender2Type2 || defender2Type1)
 
   if (!efData1a || !efData1b || !efData2a || !efData2b) {
-    console.log({ efData1a, efData1b, efData2a, efData2b })
-    console.log(defender1Type1, defender1Type2, defender2Type1, defender2Type2)
     throw new UnexpectedError('Não foi possível obter os dados sobre efetividade de golpes.')
   }
 
@@ -478,35 +454,35 @@ const getBestTypes = (data: TGetBestTypesData) => {
   const entries = Object.entries(efObj)
   const entrymap2 = entries
     .filter(entry => {
-      if (entry[1] > 2) return entry[0]
+      return entry[1] > 2 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymap1 = entries
     .filter(entry => {
-      if (entry[1] >= 0 || entry[1] <= 2) return entry[0]
+      return entry[1] >= 0 || entry[1] <= 2 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymap0 = entries
     .filter(entry => {
-      if (entry[1] === -1) return entry[0]
+      return entry[1] === -1 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymapBad = entries
     .filter(entry => {
-      if (entry[1] === -2) return entry[0]
+      return entry[1] === -2 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymapWorse = entries
     .filter(entry => {
-      if (entry[1] < -2) return entry[0]
+      return entry[1] < -2 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')

@@ -1,4 +1,5 @@
 import { BasePokemon, Player, Pokemon, PrismaClient, Skill } from '@prisma/client'
+import { logger } from 'infra/logger'
 import { container } from 'tsyringe'
 import {
   CouldNotUpdatePlayerError,
@@ -15,9 +16,8 @@ import {
 } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { duelX1 } from '../../../server/modules/duel/duelX1'
-import { TRouteParams } from '../router'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
-import { duelX2 } from '../../../server/modules/duel/duelX2'
+import { TRouteParams } from '../router'
 
 export type DuelPokemon = Pokemon & {
   baseData: BasePokemon & {
@@ -98,14 +98,11 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
   if (!session.creator.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(session.creator.name)
   if (!session.invited.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(session.invited.name)
   if (session.invitedId !== player2.id) throw new SendEmptyMessageError()
-  console.log('starting duelx1')
 
   const duel = await duelX1({
     poke1: session.creator.teamPoke1,
     poke2: session.invited.teamPoke1,
   })
-
-  console.log('after duelX1')
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
 
@@ -172,7 +169,7 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
         },
       },
     })
-    .catch(e => console.log(e))
+    .catch(e => logger.error(e))
 
   const updatedLoserPlayer = await prismaClient.player
     .update({
@@ -188,7 +185,7 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
         },
       },
     })
-    .catch(e => console.log(e))
+    .catch(e => logger.error(e))
 
   if (!updatedLoserPlayer) throw new CouldNotUpdatePlayerError('id', loser.id)
   if (!updatedWinnerPlayer) throw new CouldNotUpdatePlayerError('id', winner.id)
@@ -227,8 +224,6 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
 *${updatedLoserPlayer.name}* perdeu ${eloLose} pontos de ranking.
 ${winnerLevelUpMessage}
 ${loserLevelUpMessage}`
-
-  console.log('returning duelaceppt response')
 
   return {
     message: `${session.creator.name} e seu ${session.creator.teamPoke1.baseData.name} enfrenta o ${session.invited.teamPoke1.baseData.name} de ${session.invited.name}.`,

@@ -1,10 +1,10 @@
 import { PrismaClient } from '@prisma/client'
-import { bossInvasionLootMap } from '../../../server/constants/bossInvasionLootMap'
-import { bossPokemonNames } from '../../../server/constants/bossPokemonNames'
-import { generateBossPokemon } from '../../../server/modules/pokemon/generate/generateBossPokemon'
 import { container } from 'tsyringe'
 import { Client, MessageMedia } from 'whatsapp-web.js'
+import { bossInvasionLootMap } from '../../../server/constants/bossInvasionLootMap'
+import { bossPokemonNames } from '../../../server/constants/bossPokemonNames'
 import { iGenPokeBossInvasion } from '../../../server/modules/imageGen/iGenPokeBossInvasion'
+import { generateBossPokemon } from '../../../server/modules/pokemon/generate/generateBossPokemon'
 
 type TPokeBossInvasion = {
   zapClient: Client

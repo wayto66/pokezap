@@ -1,6 +1,7 @@
 import { BaseRoomUpgrades, GameRoom, RoomUpgrades } from '@prisma/client'
 import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
+import { logger } from 'infra/logger'
 import path from 'path'
 
 type TParams = {
@@ -36,8 +37,7 @@ export const iGenRouteInfo = async (data: TParams) => {
   const sprite2 = await loadImage('./src/assets/sprites/route/trees.png')
   ctx.drawImage(sprite2, 0, 0, canvasWidth, canvasHeight)
 
-  const filepath: string = await new Promise((resolve, reject) => {
-
+  const filepath: string = await new Promise(resolve => {
     // Save the canvas to disk
     const filename = `images/image-${Math.random()}.png`
     const filepath = path.join(__dirname, filename)
@@ -45,7 +45,7 @@ export const iGenRouteInfo = async (data: TParams) => {
     const stream = canvas.createPNGStream()
     stream.pipe(out)
     out.on('finish', () => {
-      console.log('The PNG file was created.')
+      logger.info('The PNG file was created.')
       resolve(filepath)
     })
   })
@@ -54,9 +54,9 @@ export const iGenRouteInfo = async (data: TParams) => {
   setTimeout(() => {
     fs.unlink(filepath, error => {
       if (error) {
-        console.error(`Failed to delete file: ${error}`)
+        logger.error(`Failed to delete file: ${error}`)
       } else {
-        console.log('File deleted successfully.')
+        logger.info('File deleted successfully.')
       }
     })
   }, 11000)

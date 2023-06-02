@@ -1,3 +1,4 @@
+import { logger } from 'infra/logger'
 import { AppError, RouteNotFoundError, RouteNotProvidedError, UnexpectedError } from '../../infra/errors/AppErrors'
 import { IResponse } from '../../server/models/IResponse'
 import { battleRoutes } from './battleRoutes'
@@ -112,7 +113,7 @@ export const router = async (data: TRouteParams): Promise<IResponse> => {
     return await route(data)
   } catch (error) {
     if (!(error instanceof AppError)) {
-      console.log(error)
+      logger.error(error)
       throw new UnexpectedError('')
     }
 

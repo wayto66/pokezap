@@ -1,5 +1,6 @@
 import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
+import { logger } from 'infra/logger'
 import path from 'path'
 
 export const iGenTest = async () => {
@@ -58,7 +59,7 @@ export const iGenTest = async () => {
     const stream = canvas.createPNGStream()
     stream.pipe(out)
     out.on('finish', () => {
-      console.log('The PNG file was created.')
+      logger.info('The PNG file was created.')
       resolve(filepath)
     })
   })

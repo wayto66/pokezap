@@ -1,9 +1,10 @@
+import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
 import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
+import { logger } from 'infra/logger'
 import path from 'path'
-import { talentIdMap } from '../../../server/constants/talentIdMap'
-import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { talentIdMap } from '../../../server/constants/talentIdMap'
 
 type TParams = {
   pokemonData: Pokemon & {
@@ -201,11 +202,10 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
         // fill the circle path with black color
         ctx.fillStyle = circleColor
         ctx.fill()
+
         const talent = talents[i * 3 + j]
-        if (!talent) {
-          console.error('invalid talents: ' + [i * 3 + j])
-          return
-        }
+        if (!talent) return
+
         ctx.drawImage(await getTalent(talent), x, y, 30, 30)
       }
     }
@@ -249,7 +249,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     const stream = canvas.createPNGStream()
     stream.pipe(out)
     out.on('finish', () => {
-      console.log('The PNG file was created.')
+      logger.info('The PNG file was created.')
       resolve(filepath)
     })
   })
@@ -258,9 +258,9 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
   setTimeout(() => {
     fs.unlink(filepath, error => {
       if (error) {
-        console.error(`Failed to delete file: ${error}`)
+        logger.error(`Failed to delete file: ${error}`)
       } else {
-        console.log('File deleted successfully.')
+        logger.info('File deleted successfully.')
       }
     })
   }, 5000)

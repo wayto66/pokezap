@@ -2,13 +2,13 @@ import { MissingParametersRouteRouteError, SubRouteNotFoundError } from '../../.
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { routeEnter } from './enter/routeEnter'
+import { routeForfeit } from './forfeit/routeForfeit'
 import { routeIncense } from './incense/routeIncense'
 import { routeInfo } from './info/routeInfo'
+import { routeLock } from './lock/routeLock'
 import { routeExit } from './routeExit'
 import { routeStart } from './start/routeStart'
-import { routeLock } from './lock/routeLock'
 import { routeVerify } from './verify/routeVerify'
-import { routeForfeit } from './forfeit/routeForfeit'
 
 const routesMap = new Map<string, (data: TRouteParams) => Promise<IResponse>>([
   // ROUTE ENTER ROUTES

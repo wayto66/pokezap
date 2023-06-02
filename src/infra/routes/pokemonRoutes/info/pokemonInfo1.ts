@@ -5,7 +5,6 @@ import {
   MissingParametersPokemonInformationError,
   PlayerNotFoundError,
   PokemonNotFoundError,
-  TypeMissmatchError,
   UnexpectedError,
 } from '../../../../infra/errors/AppErrors'
 import { IResponse } from '../../../../server/models/IResponse'

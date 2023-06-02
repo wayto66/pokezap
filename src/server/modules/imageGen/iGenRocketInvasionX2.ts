@@ -1,9 +1,9 @@
-import { loadImage } from 'canvas'
-import { talentIdMap } from '../../constants/talentIdMap'
-import { createCanvas2d, drawAvatarPlayer, drawBackground, drawPokemon, getTalent } from '../../helpers/canvasHelper'
-import { removeFileFromDisk, saveFileOnDisk } from '../../helpers/fileHelper'
-import { DuelPokemon } from 'infra/routes/duelRoutes/duelAccept'
 import { InvasionSession } from '@prisma/client'
+import { loadImage } from 'canvas'
+import { DuelPokemon } from 'infra/routes/duelRoutes/duelAccept'
+import { talentIdMap } from '../../constants/talentIdMap'
+import { createCanvas2d, drawBackground, getTalent } from '../../helpers/canvasHelper'
+import { removeFileFromDisk, saveFileOnDisk } from '../../helpers/fileHelper'
 
 type TParams = {
   pokemon1: DuelPokemon

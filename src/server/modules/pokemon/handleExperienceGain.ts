@@ -1,8 +1,9 @@
 import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
-import { PokemonNotFoundError, UnexpectedError } from '../../../infra/errors/AppErrors'
+import { logger } from 'infra/logger'
 import { container } from 'tsyringe'
-import { generateHpStat } from './generateHpStat'
+import { PokemonNotFoundError, UnexpectedError } from '../../../infra/errors/AppErrors'
 import { generateGeneralStats } from './generateGeneralStats'
+import { generateHpStat } from './generateHpStat'
 
 type TParams = {
   pokemon: Pokemon
@@ -39,8 +40,6 @@ export const handleExperienceGain = async (data: TParams): Promise<TResponse> =>
 
   if (!pokemon) throw new PokemonNotFoundError(data.pokemon.id)
 
-  console.log({ newExp, newLevel, id: pokemon.id })
-
   const updatedPokemon = await prisma.pokemon
     .update({
       where: {
@@ -61,7 +60,7 @@ export const handleExperienceGain = async (data: TParams): Promise<TResponse> =>
       },
     })
     .catch(e => {
-      console.error(e)
+      logger.error(e)
       throw new UnexpectedError('handleExperienceGain')
     })
 

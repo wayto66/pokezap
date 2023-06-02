@@ -1,6 +1,7 @@
 import { BasePokemon, GameRoom, Pokemon, PrismaClient } from '@prisma/client'
-import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { logger } from 'infra/logger'
 import { container } from 'tsyringe'
+import { UnexpectedError } from '../../../infra/errors/AppErrors'
 
 type TParams = {
   pokemon: Pokemon
@@ -17,16 +18,12 @@ type TResponse = {
 }
 
 export const handleRouteExperienceGain = async (data: TParams): Promise<TResponse> => {
-  console.log('start hecpg')
-  const { pokemon, targetPokemon, route } = data
+  const { route } = data
   const expGain = getExperienceGain(data)
   const newExp = Math.round(route.experience + expGain / 5)
   const newLevel = Math.floor(Math.cbrt(newExp))
 
   const prisma = container.resolve<PrismaClient>('PrismaClient')
-
-  console.log('trying to update exp')
-  console.log({ newExp, newLevel, id: pokemon.id })
 
   const updatedRoute = await prisma.gameRoom
     .update({
@@ -39,7 +36,7 @@ export const handleRouteExperienceGain = async (data: TParams): Promise<TRespons
       },
     })
     .catch(e => {
-      console.error(e)
+      logger.error(e)
       throw new UnexpectedError('handleExperienceGain')
     })
 
@@ -50,7 +47,7 @@ export const handleRouteExperienceGain = async (data: TParams): Promise<TRespons
 }
 
 const getExperienceGain = (data: TParams) => {
-  const { pokemon, targetPokemon, bonusExpMultiplier } = data
+  const { targetPokemon, bonusExpMultiplier } = data
 
   const b = targetPokemon.baseData.BaseExperience
   const L = targetPokemon.level

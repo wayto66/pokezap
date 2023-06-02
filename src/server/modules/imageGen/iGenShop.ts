@@ -1,6 +1,7 @@
 import { BaseItem } from '@prisma/client'
 import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
+import { logger } from 'infra/logger'
 import path from 'path'
 
 type TParams = {
@@ -79,7 +80,7 @@ export const iGenShop = async (data: TParams) => {
     const stream = canvas.createPNGStream()
     stream.pipe(out)
     out.on('finish', () => {
-      console.log('The PNG file was created.')
+      logger.info('The PNG file was created.')
       resolve(filepath)
     })
   })
@@ -88,9 +89,9 @@ export const iGenShop = async (data: TParams) => {
   setTimeout(() => {
     fs.unlink(filepath, error => {
       if (error) {
-        console.error(`Failed to delete file: ${error}`)
+        logger.error(`Failed to delete file: ${error}`)
       } else {
-        console.log('File deleted successfully.')
+        logger.info('File deleted successfully.')
       }
     })
   }, 11000)

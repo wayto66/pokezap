@@ -1,5 +1,6 @@
 import { BasePokemon, Pokemon } from '@prisma/client'
 import { Image, loadImage } from 'canvas'
+import path from 'path'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import {
   TCanvas2D,
@@ -8,9 +9,8 @@ import {
   drawTalents,
   writeSkills,
 } from '../../../server/helpers/canvasHelper'
-import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
-import path from 'path'
 import { initEncoder } from '../../../server/helpers/encoderHelper'
+import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
 
 type duelPokemon = Pokemon & {
   baseData: BasePokemon
@@ -79,7 +79,6 @@ export const iGenDuelRound = async ({
   }
 
   for (let i = 0; i < roundCount * framesPerRound + 40; i++) {
-    console.log({ roundCount })
     if (i > round * framesPerRound && isDuelInProgress) {
       round++
       roundInfo = duelMap.get(round)
@@ -177,8 +176,6 @@ export const iGenDuelRound = async ({
   encoder.finish()
 
   removeFileFromDisk(filepath)
-
-  console.log({ filepath })
 
   return filepath
 }

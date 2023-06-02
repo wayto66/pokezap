@@ -1,5 +1,5 @@
-import GIFEncoder from 'gifencoder'
 import fs from 'fs'
+import GIFEncoder from 'gifencoder'
 
 export const initEncoder = (filepath: string) => {
   const encoder = new GIFEncoder(500, 500)

@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { Client } from 'whatsapp-web.js'
+import { IResponse } from '../../../server/models/IResponse'
 import {
   InvasionAlreadyFinishedError,
   InvasionNotFoundError,
@@ -10,11 +12,9 @@ import {
   SendEmptyMessageError,
   TypeMissmatchError,
 } from '../../errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { battleInvasionX2 } from './invasionDefend/battleInvasionX2'
 import { bossInvasion } from './invasionDefend/bossInvasion'
-import { Client } from 'whatsapp-web.js'
 
 export const invasionDefendLobbyRoute = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , invasionSessionIdString] = data.routeParams

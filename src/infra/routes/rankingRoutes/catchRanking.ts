@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { PlayerNotFoundError, UnexpectedError } from '../../errors/AppErrors'
-import { TRouteParams } from '../router'
 import { IResponse } from '../../../server/models/IResponse'
 import { iGenRanking } from '../../../server/modules/imageGen/iGenRanking'
+import { PlayerNotFoundError, UnexpectedError } from '../../errors/AppErrors'
+import { TRouteParams } from '../router'
 
 export const catchRanking = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
@@ -23,8 +23,6 @@ export const catchRanking = async (data: TRouteParams): Promise<IResponse> => {
     const catchesB = [...new Set(b.caughtDexIds)]
     return catchesA.length - catchesB.length
   })
-
-  console.log({ sortedPlayers })
 
   const rankEntries: any = []
 

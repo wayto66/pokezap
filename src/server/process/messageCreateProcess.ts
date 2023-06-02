@@ -1,10 +1,13 @@
+import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
+import ffprobe from '@ffprobe-installer/ffprobe'
 import { PrismaClient } from '@prisma/client'
+import ffmpeg from 'fluent-ffmpeg'
+import { logger } from 'infra/logger'
 import { container } from 'tsyringe'
 import { Client, Message, MessageMedia } from 'whatsapp-web.js'
 import { router } from '../../infra/routes/router'
 import { verifyTargetChat } from '../../server/helpers/verifyTargetChat'
 import { IResponse } from '../../server/models/IResponse'
-import fs from 'fs'
 
 export const messageCreateProcess = async (msg: Message, instanceName: string) => {
   try {
@@ -60,7 +63,7 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
         if (response.afterMessage) {
           const msgBody = response.afterMessage
           setTimeout(async () => {
-            const result = await zapClient.sendMessage(msg.id.remote, msgBody)
+            await zapClient.sendMessage(msg.id.remote, msgBody)
           }, response.afterMessageDelay || 5000)
         }
         return
@@ -68,9 +71,7 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
 
       const filePath = await new Promise<string>((resolve, reject) => {
         if (!response.isAnimated) resolve(response.imageUrl!)
-        const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg')
-        const ffprobe = require('@ffprobe-installer/ffprobe')
-        const ffmpeg = require('fluent-ffmpeg')().setFfprobePath(ffprobe.path).setFfmpegPath(ffmpegInstaller.path)
+        ffmpeg.setFfprobePath(ffprobe.path).setFfmpegPath(ffmpegInstaller.path)
         const outputPath = `./src/server/modules/imageGen/images/video-${Math.random().toFixed(5)}.mp4`
         ffmpeg
           .input(response.imageUrl)
@@ -86,8 +87,7 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
             resolve(outputPath)
           })
           .on('error', e => {
-            console.log(e)
-            reject('error on ffmpeg')
+            reject(new Error('error on ffmpeg', e))
           })
           .run()
       })
@@ -111,7 +111,6 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
 
       if (response.afterMessage) {
         const msgBody = response.afterMessage
-        console.log({ msgBody })
         const chatId = msg.id.remote
         setTimeout(async () => {
           await zapClient.sendMessage(chatId, msgBody)
@@ -120,6 +119,6 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
       return
     }
   } catch (e: any) {
-    console.error(e)
+    logger.error(e)
   }
 }

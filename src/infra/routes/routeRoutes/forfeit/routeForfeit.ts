@@ -1,16 +1,14 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { IResponse } from '../../../../server/models/IResponse'
 import {
   InsufficientFundsError,
   InvasionNotFoundError,
-  PlayerDoesNotHaveItemError,
   PlayerNotFoundError,
   RouteNotFoundError,
   SendEmptyMessageError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { IResponse } from '../../../../server/models/IResponse'
-import { handleRouteExperienceGain } from 'server/modules/route/handleRouteExperienceGain'
 
 export const routeForfeit = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , confirm] = data.routeParams

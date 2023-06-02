@@ -1,15 +1,16 @@
 import { BasePokemon, Pokemon } from '@prisma/client'
+import { logger } from 'infra/logger'
+import { UnexpectedError } from '../../../infra/errors/AppErrors'
 import { typeEffectivenessMap } from '../../../server/constants/atkEffectivenessMap'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import { findKeyByValue } from '../../../server/helpers/findKeyByValue'
-import { getBestSkillPair } from '../../helpers/getBestSkillPair'
 import { IPokemon } from '../../../server/models/IPokemon'
 import { ISkill } from '../../../server/models/ISkill'
 import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
+import { getBestSkillPair } from '../../helpers/getBestSkillPair'
 import { iGenDuelRound } from '../imageGen/iGenDuelRound'
-import { getTeamBonuses } from './getTeamBonuses'
 import { iGenWildPokemonBattle } from '../imageGen/iGenWildPokemonBattle'
-import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { getTeamBonuses } from './getTeamBonuses'
 
 type TParams = {
   poke1: Pokemon & {
@@ -115,7 +116,7 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
   const duelMap = new Map<number, RoundData>([])
 
   let duelFinished = false
-  let isDraw = false
+  const isDraw = false
   let roundCount = 1
   let winner: any | null = null
   let loser: any | null = null
@@ -129,7 +130,7 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
         poke1Data.skillType !== poke1Data.type1 &&
         poke1Data.skillType !== poke2Data.type2)
     ) {
-      console.log(
+      logger.info(
         `PREPARAÇÃO: ${poke1Data.name} utiliza seus talentos do tipo ${poke1Data.skillType} para conseguir utilizar ${poke1Data.skillName}. Efetivo contra ${poke2Data.name}`
       )
     }
@@ -142,7 +143,7 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
         poke2Data.skillType !== poke2Data.type1 &&
         poke1Data.skillType !== poke1Data.type2)
     ) {
-      console.log(
+      logger.info(
         `PREPARAÇÃO: ${poke2Data.name} utiliza seus talentos do tipo ${poke2Data.skillType} para conseguir utilizar ${poke2Data.skillName}. Efetivo contra ${poke1Data.name}`
       )
     }
@@ -151,7 +152,7 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
       typeEffectivenessMap.get(poke1Data.skillType)?.ineffective.includes(poke2Data.type1) ||
       typeEffectivenessMap.get(poke1Data.skillType)?.ineffective.includes(poke2Data.type2 || 'null')
     ) {
-      console.log(
+      logger.info(
         `PREPARAÇÃO: ${poke1Data.name} entra em batalha com ${poke1Data.skillName} do tipo ${poke1Data.skillType}. Inefetivo contra ${poke2Data.name}`
       )
     }
@@ -160,12 +161,12 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
       typeEffectivenessMap.get(poke2Data.skillType)?.ineffective.includes(poke1Data.type1) ||
       typeEffectivenessMap.get(poke2Data.skillType)?.ineffective.includes(poke1Data.type2 || 'null')
     ) {
-      console.log(
+      logger.info(
         `PREPARAÇÃO: ${poke2Data.name} entra em batalha com ${poke2Data.skillName} do tipo ${poke2Data.skillType}. Inefetivo contra ${poke1Data.name}`
       )
     }
 
-    console.log(`---- 
+    logger.info(`---- 
     ${poke1Data.name.toUpperCase()} com ${poke1Data.skillName} do tipo ${poke1Data.skillType} e ${
       poke1Data.skillPower
     } de poder
@@ -175,7 +176,7 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
     } de poder
     ----`)
 
-    console.log(`---- INICIO DO DUELO ----`)
+    logger.info(`---- INICIO DO DUELO ----`)
   }
   duelLogs()
 
@@ -186,7 +187,7 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
 
   while (duelFinished === false) {
     roundCount++
-    console.log(
+    logger.info(
       `Início do round ${roundCount}: ${poke1Data.name} com ${poke1Data.hp}hp VS ${poke2Data.name} com ${poke2Data.hp}hp`
     )
     poke1Data.crit = false
@@ -233,7 +234,6 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
         poke2Data.hp += poke2Data.currentSkillPower * poke2Data.lifeSteal
       }
       if (isCrit2) {
-        console.log(`${poke2Data.name} encaixa um ${poke2Data.currentSkillName} crítico!`)
         if (!isBlock1) {
           poke1Data.hp -= poke2Data.currentSkillPower * 0.5
           poke2Data.hp += poke2Data.currentSkillPower * poke2Data.lifeSteal * 0.5
@@ -250,7 +250,6 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
         poke1Data.hp += poke1Data.currentSkillPower * poke1Data.lifeSteal
       }
       if (isCrit1) {
-        console.log(`${poke1Data.name} encaixa um ${poke1Data.currentSkillName} crítico!`)
         if (!isBlock2) {
           poke2Data.hp -= poke1Data.currentSkillPower * 0.5
           poke1Data.hp += poke1Data.currentSkillPower * poke1Data.lifeSteal * 0.5
@@ -271,7 +270,6 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
         poke1Data.hp += poke1Data.currentSkillPower * poke1Data.lifeSteal
       }
       if (isCrit1) {
-        console.log(`${poke1Data.name} encaixa um ${poke1Data.currentSkillName} crítico!`)
         if (!isBlock2) {
           poke2Data.hp -= poke1Data.currentSkillPower * 0.5
           poke1Data.hp += poke1Data.currentSkillPower * poke1Data.lifeSteal * 0.5
@@ -287,7 +285,6 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
         poke2Data.hp += poke2Data.currentSkillPower * poke2Data.lifeSteal
       }
       if (isCrit2) {
-        console.log(`${poke2Data.name} encaixa um ${poke2Data.currentSkillName} crítico!`)
         if (!isBlock1) {
           poke1Data.hp -= poke2Data.currentSkillPower * 0.5
           poke2Data.hp += poke2Data.currentSkillPower * poke2Data.lifeSteal
@@ -303,9 +300,6 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
         throw new UnexpectedError('Duelo passou do limite de 60 rounds.')
       }
     }
-    console.log(
-      `Fim do round ${roundCount}: ${poke1Data.name} com ${poke1Data.hp}hp VS ${poke2Data.name} com ${poke2Data.hp}hp`
-    )
     duelMap.set(roundCount, {
       poke1Data: { ...poke1Data },
       poke2Data: { ...poke2Data },
@@ -341,8 +335,6 @@ export const duelX1 = async (data: TParams): Promise<TResponse | void> => {
           skillType: poke2Data.skillType,
           ultimateType: poke2Data.ultimateType,
         }
-
-  console.log('will start to creat gif')
 
   const imageUrl = data.againstWildPokemon
     ? await iGenWildPokemonBattle({
@@ -424,35 +416,35 @@ const getBestTypes = (type1: string, type2?: string): any => {
   const entries = Object.entries(efObj)
   const entrymap2 = entries
     .filter(entry => {
-      if (entry[1] === 2) return entry[0]
+      return entry[1] === 2 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymap1 = entries
     .filter(entry => {
-      if (entry[1] === 1) return entry[0]
+      return entry[1] === 1 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymap0 = entries
     .filter(entry => {
-      if (entry[1] === 0) return entry[0]
+      return entry[1] === 0 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymapBad = entries
     .filter(entry => {
-      if (entry[1] === -1) return entry[0]
+      return entry[1] === -1 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')
 
   const entrymapWorse = entries
     .filter(entry => {
-      if (entry[1] === -2) return entry[0]
+      return entry[1] === -2 ? entry[0] : []
     })
     .flat()
     .filter(entry => typeof entry === 'string')

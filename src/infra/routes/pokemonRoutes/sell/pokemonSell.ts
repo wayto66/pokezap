@@ -1,19 +1,15 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { IResponse } from '../../../../server/models/IResponse'
 import {
   CantSellPokemonInTeamError,
-  InsufficientFundsError,
   MissingParametersBuyAmountError,
-  NoItemsFoundError,
   PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
   PlayerOnlyHasOnePokemonError,
   PokemonNotFoundError,
-  RequestedShopItemDoesNotExists,
   TypeMissmatchError,
-  UnexpectedError,
 } from '../../../errors/AppErrors'
-import { IResponse } from '../../../../server/models/IResponse'
 import { TRouteParams } from '../../router'
 
 export const pokemonSell = async (data: TRouteParams): Promise<IResponse> => {
@@ -70,7 +66,7 @@ export const pokemonSell = async (data: TRouteParams): Promise<IResponse> => {
     35 + (pokemon.level ** 2 / 150) * 100 + (pokemon.baseData.BaseExperience ** 2 / 1200) * 50
   )
 
-  if (data.fromReact && confirm == 'CONFIRM') {
+  if (data.fromReact && confirm === 'CONFIRM') {
     await prismaClient.pokemon.update({
       where: {
         id: pokemon.id,

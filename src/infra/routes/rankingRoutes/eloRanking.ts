@@ -20,8 +20,6 @@ export const eloRanking = async (data: TRouteParams): Promise<IResponse> => {
 
   const sortedPlayers = players.sort((a, b) => b.elo - a.elo)
 
-  console.log({ sortedPlayers })
-
   const rankEntries: any = []
 
   for (const player of sortedPlayers) {

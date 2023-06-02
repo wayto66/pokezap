@@ -1,17 +1,15 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { IResponse } from '../../../../server/models/IResponse'
 import {
-  InvalidRouteError,
   MissingParameterError,
   PlayerDoesNotResideOnTheRoute,
   PlayerNotFoundError,
   RouteNotFoundError,
-  SubRouteNotFoundError,
   TypeMissmatchError,
   UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { IResponse } from '../../../../server/models/IResponse'
 
 export const routeLock = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , levelLockString] = data.routeParams

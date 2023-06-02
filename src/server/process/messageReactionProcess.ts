@@ -1,4 +1,8 @@
+import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
+import ffprobe from '@ffprobe-installer/ffprobe'
 import { PrismaClient } from '@prisma/client'
+import ffmpeg from 'fluent-ffmpeg'
+import { logger } from 'infra/logger'
 import moment from 'moment'
 import { container } from 'tsyringe'
 import { Client, MessageMedia, Reaction } from 'whatsapp-web.js'
@@ -6,7 +10,6 @@ import { router } from '../../infra/routes/router'
 import { reactions } from '../../server/constants/reactions'
 import { verifyTargetChat } from '../../server/helpers/verifyTargetChat'
 import { IResponse } from '../../server/models/IResponse'
-import { metaValues } from '../../constants/metaValues'
 
 export const messageReactionProcess = async (msg: Reaction, instanceName: string) => {
   try {
@@ -29,7 +32,7 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
       .duration(currentTimestamp - Math.floor(new Date(message.createdAt).getTime() / 1000), 'seconds')
       .asMinutes()
     if (difference >= 30) {
-      console.log('ignoring old msg. difference: ' + difference)
+      logger.info('ignoring old msg. difference: ' + difference)
       return
     }
 
@@ -38,8 +41,6 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
         phone: msg.senderId,
       },
     })
-
-    console.log({ react: msg.reaction })
 
     const getRequestedAction = () => {
       for (let i = 0; i < message.actions.length; i++) {
@@ -51,10 +52,7 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
 
     const routeParams = getRequestedAction()
 
-    if (!routeParams) {
-      console.log('no action found.')
-      return
-    }
+    if (!routeParams) return
 
     const startCheck: string = routeParams[1]
 
@@ -87,9 +85,8 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
 
     const filePath = await new Promise<string>((resolve, reject) => {
       if (!response.isAnimated) resolve(response.imageUrl!)
-      const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg')
-      const ffprobe = require('@ffprobe-installer/ffprobe')
-      const ffmpeg = require('fluent-ffmpeg')().setFfprobePath(ffprobe.path).setFfmpegPath(ffmpegInstaller.path)
+
+      ffmpeg.setFfprobePath(ffprobe.path).setFfmpegPath(ffmpegInstaller.path)
       const outputPath = `./src/server/modules/imageGen/images/video-${Math.random().toFixed(5)}.mp4`
       ffmpeg
         .input(response.imageUrl)
@@ -105,12 +102,11 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
           resolve(outputPath)
         })
         .on('error', e => {
-          console.log(e)
-          reject('error on ffmpeg')
+          reject(new Error('error on ffmpeg', e))
         })
         .run()
     }).catch(err => {
-      console.log(err)
+      logger.error(err)
       return ''
     })
 
@@ -134,7 +130,6 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
     if (response.afterMessage) {
       const msgBody = response.afterMessage
       const afterActions = response.afterMessageActions
-      console.log({ msgBody })
       const chatId = msg.id.remote
       setTimeout(async () => {
         const result = await zapClient.sendMessage(chatId, msgBody)
@@ -151,6 +146,6 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
       }, response.afterMessageDelay || 5000)
     }
   } catch (e: any) {
-    console.error(e)
+    logger.error(e)
   }
 }

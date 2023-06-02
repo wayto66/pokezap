@@ -1,3 +1,5 @@
+import { logger } from 'infra/logger'
+
 export const loadingScreenProcess = (percent: string, message: string) => {
-  console.log('LOADING SCREEN', percent, message)
+  logger.info('LOADING SCREEN', percent, message)
 }
