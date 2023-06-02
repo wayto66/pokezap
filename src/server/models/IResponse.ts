@@ -7,5 +7,6 @@ export type IResponse = {
   react?: string
   afterMessage?: string
   afterMessageActions?: string[]
+  afterMessageDelay?: number
   isAnimated?: boolean
 }

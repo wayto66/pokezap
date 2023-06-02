@@ -7,8 +7,10 @@ import { routeInfo } from './info/routeInfo'
 import { routeExit } from './routeExit'
 import { routeStart } from './start/routeStart'
 import { routeLock } from './lock/routeLock'
+import { routeVerify } from './verify/routeVerify'
+import { routeForfeit } from './forfeit/routeForfeit'
 
-const routesMap = new Map<string, any>([
+const routesMap = new Map<string, (data: TRouteParams) => Promise<IResponse>>([
   // ROUTE ENTER ROUTES
   ['ENTRAR', routeEnter],
   ['ENTER', routeEnter],
@@ -35,6 +37,14 @@ const routesMap = new Map<string, any>([
   // ROUTE LOCK
   ['LOCK', routeLock],
   ['TRAVAR', routeLock],
+
+  // ROUTE VERIFY
+  ['VERIFY', routeVerify],
+  ['VERIFICAR', routeVerify],
+
+  // ROUTE FORFEIT
+  ['RENDER', routeForfeit],
+  ['FORFEIT', routeForfeit],
 ])
 
 export const routeRoutes = async (data: TRouteParams): Promise<IResponse> => {

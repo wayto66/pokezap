@@ -28,6 +28,16 @@ export const wildPokeSpawn = async (data: TParams) => {
       continue
     }
     if (gameRoom.mode !== 'route') continue
+
+    if (gameRoom.invasorId && Math.random() < 0.5) {
+      data.zapClient.sendMessage(
+        gameRoom.phone,
+        `Um pokemon selvagem apareceu na rota, mas foi afugentado por algum invasor.
+    (utilize o comando: route verify.)`
+      )
+      continue
+    }
+
     if (
       data.needIncense &&
       (!gameRoom.activeIncense ||

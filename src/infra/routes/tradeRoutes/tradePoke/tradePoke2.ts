@@ -3,6 +3,7 @@ import { ISession } from 'server/models/ISession'
 import { container } from 'tsyringe'
 import { IPokemon } from '../../../../server/models/IPokemon'
 import { IResponse } from '../../../../server/models/IResponse'
+import { checkEvolutionPermition } from '../../../../server/modules/pokemon/checkEvolutionPermition'
 
 export type TTradePokeParams = {
   creatorPokemon: IPokemon
@@ -19,6 +20,18 @@ export const tradePoke2 = async (data: TTradePokeParams): Promise<IResponse> => 
       status: 400,
       data: null,
     }
+
+  const evolveCreatorPokemon = await checkEvolutionPermition({
+    playerId: data.creatorPokemon.ownerId,
+    pokemonId: data.creatorPokemon.id,
+    fromTrade: true,
+  })
+
+  const evolveInvitedPokemon = await checkEvolutionPermition({
+    playerId: data.invitedPokemon.ownerId,
+    pokemonId: data.invitedPokemon.id,
+    fromTrade: true,
+  })
 
   await prismaClient.pokemon.update({
     where: {

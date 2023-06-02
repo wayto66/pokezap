@@ -49,6 +49,7 @@ model Player {
   defeatedInvasions         InvasionSession[] @relation(name:"invasion-defeated-players")
   winnedInvasions           InvasionSession[] @relation(name:"invasion-winner-players")
   lobbdyInvasions           InvasionSession[] @relation(name:"invasion-lobby-players")
+  
 }
 
 model Type {
@@ -95,8 +96,10 @@ model Pokemon {
   basePokemonId Int
   gameRoomId    Int?
   invasionSessionId Int?
+  raidRoomId    Int?
   nickName      String? 
   savage        Boolean
+  catchable     Boolean     @default(true)
   level         Int
   experience    Int @default(0)
   spriteUrl     String @default("")
@@ -149,6 +152,13 @@ model Pokemon {
   owner         Player?     @relation(fields: [ownerId], references: [id])
   gameRoom      GameRoom?   @relation(fields: [gameRoomId], references: [id])
   invasionSession InvasionSession? @relation(fields: [invasionSessionId], references: [id])
+  raidRoom RaidRoom? @relation(fields: [raidRoomId], references: [id])
+  defeatedRaidRooms         RaidRoom[] @relation(name:"raid-room-defeated-pokemons")
+  winnedRaidRooms           RaidRoom[] @relation(name:"raid-room-winner-pokemons")
+  lobbdyRaidRooms           RaidRoom[] @relation(name:"raid-room-lobby-pokemons")
+  defeatedRaids             Raid[] @relation(name:"raid-defeated-pokemons")
+  winnedRaids               Raid[] @relation(name:"raid-winner-pokemons")
+  lobbdyRaids               Raid[] @relation(name:"raid-lobby-pokemons")
   baseData      BasePokemon @relation(fields: [basePokemonId], references: [id])
 
 }
@@ -252,6 +262,7 @@ model Session {
 model InvasionSession{
   id                    Int      @id @default(autoincrement())
   mode                  String
+  name                  String
   gameRoomId            Int
   creatorId             Int
   invitedId             Int[]
@@ -259,6 +270,7 @@ model InvasionSession{
   defeatedPlayersIds    Int[]
   winnerPlayersIds      Int[]
   lootItemsDropRate     Json[]
+  requiredPlayers       Int
 
   forfeitCost           Int?
   cashReward            Int?
@@ -286,6 +298,7 @@ model GameRoom {
   level             Int
   levelLock         Int?
   invasorId         Int? @unique
+  raidId            Int? @unique
   experience        Int
   activeIncense     String?
   incenseCharges    Int?
@@ -299,6 +312,7 @@ model GameRoom {
   messages          Message[]
   upgrades          RoomUpgrades[]
   invasor           InvasionSession? @relation(fields: [invasorId], references: [id])
+  raid              Raid? @relation(fields: [raidId], references: [id])
 }
 
 model RoomUpgrades {
@@ -327,4 +341,66 @@ model Message {
   actions          String[]
   createdAt        DateTime  @default(now())
   gameRoom         GameRoom? @relation(fields: [gameRoomId], references: [id])
+}
+
+model Raid {
+  id                    Int      @id @default(autoincrement())
+  mode                  String
+  name                  String
+  gameRoomId            Int
+  creatorId             Int
+  invitedId             Int[]
+  raidRoomsIds            Int[]
+  currentRoomIndex      Int    @default(0)
+  defeatedPlayersIds    Int[]
+  winnerPlayersIds      Int[]
+  lootItemsDropRate     Json[]
+  requiredPlayers       Int
+  forfeitCost           Int
+  cashReward            Int
+  imageUrl              String?
+  announcementText      String   
+  
+  raidRooms       RaidRoom[] 
+  lobbyPokemons    Pokemon[] @relation(name: "raid-lobby-pokemons")
+  defeatedPokemons Pokemon[] @relation(name: "raid-defeated-pokemons")
+  winnerPokemons   Pokemon[] @relation(name: "raid-winner-pokemons")
+  gameRoom        GameRoom?
+  inInLobby     Boolean  @default(true)
+  isInProgress  Boolean  @default(false)
+  isFinished    Boolean  @default(false)
+  statusTrashed Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())  
+}
+
+model RaidRoom {
+  id                    Int      @id @default(autoincrement())
+  mode                  String
+  name                  String
+  gameRoomId            Int
+  creatorId             Int
+  invitedId             Int[]
+  raidId                Int
+  enemiesIds            Int[]
+  isFinalRoom           Boolean
+  defeatedPlayersIds    Int[]
+  winnerPlayersIds      Int[]
+  lootItemsDropRate     Json[]
+  requiredPlayers       Int
+  forfeitCost           Int?
+  cashReward            Int?
+  imageUrl              String?
+  announcementText      String    
+  enemyPokemons   Pokemon[] 
+  lobbyPokemons    Pokemon[] @relation(name: "raid-room-lobby-pokemons")
+  defeatedPokemons Pokemon[] @relation(name: "raid-room-defeated-pokemons")
+  winnerPokemons   Pokemon[] @relation(name: "raid-room-winner-pokemons")
+  raid                         Raid @relation(fields: [raidId], references: [id])
+  inInLobby     Boolean  @default(true)
+  isInProgress  Boolean  @default(false)
+  isFinished    Boolean  @default(false)
+  statusTrashed Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())  
 }

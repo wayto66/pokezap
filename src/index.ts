@@ -31,24 +31,7 @@ app.get('/', async () => {
 })
 
 app.listen(4000, async () => {
-  const clearDB = false
-  if (clearDB) {
-    await prismaClient.session.deleteMany()
-    await prismaClient.item.deleteMany()
-    await prismaClient.pokemon.deleteMany()
-    await prismaClient.player.deleteMany()
-    console.log('cleared')
-  }
-
   console.log('pokezap is online!')
-  await prismaClient.player.updateMany({
-    where: {
-      OR: [{ id: 24 }, { id: 26 }],
-    },
-    data: {
-      energy: 20,
-    },
-  })
 })
 
 const enableZap = true

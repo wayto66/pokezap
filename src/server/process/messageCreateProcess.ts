@@ -61,7 +61,7 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
           const msgBody = response.afterMessage
           setTimeout(async () => {
             const result = await zapClient.sendMessage(msg.id.remote, msgBody)
-          }, 5000)
+          }, response.afterMessageDelay || 5000)
         }
         return
       }
@@ -115,7 +115,7 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
         const chatId = msg.id.remote
         setTimeout(async () => {
           await zapClient.sendMessage(chatId, msgBody)
-        }, 5000)
+        }, response.afterMessageDelay || 5000)
       }
       return
     }

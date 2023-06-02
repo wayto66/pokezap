@@ -10,6 +10,7 @@ type TParams = {
     baseData: BasePokemon
   }
   bonusExp?: number
+  divide?: boolean
 }
 
 type TResponse = {
@@ -20,8 +21,8 @@ type TResponse = {
 }
 
 export const handleExperienceGain = async (data: TParams): Promise<TResponse> => {
-
-  const expGain = getExperienceGain(data)
+  const divideFactor = data.divide ? 0.5 : 1
+  const expGain = Math.round(getExperienceGain(data) * divideFactor)
   const newExp = data.pokemon.experience + expGain
   const newLevel = Math.floor(Math.cbrt(newExp))
 

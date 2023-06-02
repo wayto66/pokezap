@@ -27,6 +27,14 @@ type TDrawCircle = {
   positionY: number
 }
 
+type TFillRect = {
+  fillStyle?: string
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
 type TWrite = {
   font: string
   fillStyle: string
@@ -40,13 +48,13 @@ type TWrite = {
 
 export type TCanvas2D = {
   draw: (data: TDraw) => Promise<void>
+  fillRect: (data: TFillRect) => void
   drawCircle: (data: TDrawCircle) => void
   drawBar: (data: TDrawBar) => void
   write: (data: TWrite) => void
   createStream: () => PNGStream
   clearArea: () => void
   addFrameToEncoder: (encoder: GIFEncoder) => void
-  buffer: Buffer
 }
 
 type TDrawPlayerData = {
@@ -90,6 +98,11 @@ export const createCanvas2d = async (globalAlpha: number, isSmoothing = false): 
 
   const draw = async ({ height, image, positionX, positionY, width }: TDraw) => {
     context.drawImage(image, positionX, positionY, width, height)
+  }
+
+  const fillRect = async ({ x, y, w, h, fillStyle }: TFillRect) => {
+    if (fillStyle) context.fillStyle = fillStyle
+    context.fillRect(x, y, w, h)
   }
 
   const drawCircle = ({ circleColor, circleRadius, positionX, positionY }: TDrawCircle) => {
@@ -140,10 +153,8 @@ export const createCanvas2d = async (globalAlpha: number, isSmoothing = false): 
     encoder.addFrame(context as any)
   }
 
-  const buffer = canvas.toBuffer('image/png')
-
   return {
-    buffer,
+    fillRect,
     draw,
     drawBar,
     drawCircle,

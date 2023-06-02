@@ -19,13 +19,13 @@ import { TRouteParams } from '../router'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
 import { duelX2 } from '../../../server/modules/duel/duelX2'
 
-type DuelPokemon = Pokemon & {
+export type DuelPokemon = Pokemon & {
   baseData: BasePokemon & {
     skills: Skill[]
   }
 }
 
-type DuelPlayer = Player & {
+export type DuelPlayer = Player & {
   teamPoke1: DuelPokemon | null
 }
 

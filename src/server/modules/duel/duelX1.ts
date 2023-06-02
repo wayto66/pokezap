@@ -496,7 +496,7 @@ const getBestSkills = async ({ attacker, defender }: any) => {
       return attacker.spAtk / defender.spDef
     }
 
-    const talentBonus = 0.03 * talentCheck.count
+    const talentBonus = 0.05 * talentCheck.count
 
     if (efData.best.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
       const power =

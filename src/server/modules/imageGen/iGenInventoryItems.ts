@@ -1,3 +1,4 @@
+import { Item } from '@prisma/client'
 import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import path from 'path'
@@ -29,7 +30,9 @@ export const iGenInventoryItems = async (data: TParams) => {
   let j = 0
   let k = 0
 
-  for (let i = 0; i < data.playerData.ownedItems.length; i++) {
+  const items = data.playerData.ownedItems.filter((item: Item) => item.amount > 0)
+
+  for (let i = 0; i < items.length; i++) {
     if (i === 5 || i === 10 || i === 15) {
       j++
       k = 0
@@ -48,13 +51,13 @@ export const iGenInventoryItems = async (data: TParams) => {
     ctx.fillStyle = circleColor
     ctx.fill()
 
-    const sprite = await loadImage(data.playerData.ownedItems[i].baseItem.spriteUrl)
+    const sprite = await loadImage(items[i].baseItem.spriteUrl)
     ctx.drawImage(sprite, x, y, 50, 50)
 
     ctx.font = ' 20px Pokemon'
     ctx.fillStyle = 'white'
     ctx.textAlign = 'center'
-    ctx.fillText(`${data.playerData.ownedItems[i].amount}`, x + 20, y + 80)
+    ctx.fillText(`${items[i].amount}`, x + 20, y + 80)
 
     k++
   }

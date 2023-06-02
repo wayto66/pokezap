@@ -2,13 +2,14 @@ import { MissingParametersTradeRouteError, SubRouteNotFoundError } from '../../.
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { sendCash } from './sendCash'
+import { sendItem } from './sendItem'
 import { sendPoke } from './sendPoke'
 
 const routesMap = new Map<string, any>([
   ['POKE', sendPoke],
   ['POKEMON', sendPoke],
-  ['ITEN', undefined],
-  ['ITEM', undefined],
+  ['ITEN', sendItem],
+  ['ITEM', sendItem],
   ['CASH', sendCash],
   ['POKECOIN', sendCash],
   ['POKECOINS', sendCash],

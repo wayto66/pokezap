@@ -20,12 +20,12 @@ type DuelPokemon = Pokemon & {
 type TParams = {
   team1: [DuelPokemon, DuelPokemon]
   team2: [DuelPokemon, DuelPokemon]
-  player1: Player
-  player2: Player
+  player1?: Player
+  player2?: Player
   againstWildPokemon?: boolean
 }
 
-type TResponse = {
+export type TDuelX2Response = {
   winnerTeam: any[] | null
   loserTeam: any[] | null
   message: string
@@ -33,7 +33,7 @@ type TResponse = {
   imageUrl: string
 }
 
-export const duelX2 = async (data: TParams): Promise<TResponse | void> => {
+export const duelX2 = async (data: TParams): Promise<TDuelX2Response | void> => {
   /// apply team-bonuses to the pokemons
   const poke1 = await getTeamBonuses({
     poke: data.team1[0],
@@ -555,7 +555,7 @@ const getBestSkills = async ({ attacker, defenderTeam }: any) => {
       return attacker.spAtk / defender.spDef
     }
 
-    const talentBonus = 0.03 * talentCheck.count
+    const talentBonus = 0.05 * talentCheck.count
 
     let effectivenessDamageMultiplier = 10
     if (efData.best.includes(skill.typeName) && learnedSkills.includes(skill.name)) effectivenessDamageMultiplier = 2.5

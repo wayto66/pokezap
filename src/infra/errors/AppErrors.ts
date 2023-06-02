@@ -257,8 +257,35 @@ export class PokemonNotFoundError extends AppError {
   }
 }
 
+export class RaidDataNotFoundError extends AppError {
+  constructor(raidName: string) {
+    const message = `Não existe nenhuma raid com o nome ${raidName}`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class ItemNotFoundError extends AppError {
+  constructor(itemName: string) {
+    const message = `Item não encontrado com o nome ${itemName}`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class InsufficientItemAmountError extends AppError {
+  constructor(itemName: string, currentAmount: number, requestedAmount: number) {
+    const message = `Não foi possível enviar ${requestedAmount} ${itemName}. Você possui apenas ${currentAmount}.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class InvasionNotFoundError extends AppError {
-  constructor(invasionId: number) {
+  constructor(invasionId: number | string) {
     const message = `ERRO: Invasão não encontrada com o id ${invasionId}`
     const statusCode = 300
 
@@ -470,6 +497,15 @@ export class SendEmptyMessageError extends AppError {
 export class InvasionAlreadyFinishedError extends AppError {
   constructor() {
     const message = `A invasão já se encerrou.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class InsufficentPlayersForInvasionError extends AppError {
+  constructor(amount: number, requiredAmount: number) {
+    const message = `É necessário ${requiredAmount} jogadores para esta missão. No momento há apenas ${amount}.`
     const statusCode = 300
 
     super(message, statusCode)

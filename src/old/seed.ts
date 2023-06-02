@@ -11,8 +11,8 @@ export async function thiefTime() {
   const endpoint = '/pokemon/'
 
   // Fetch data for the first 151 Pokemon
-  const limit = 721
-  const url = `${baseUrl}${endpoint}?limit=${limit}`
+  const limit = 500
+  const url = `${baseUrl}${endpoint}?limit=${limit}&offset=1030`
 
   fetch(url)
     .then(response => response.json())
@@ -88,7 +88,7 @@ export async function thiefTime() {
         const dataString = `export const pokemonData = ${JSON.stringify(data)};`
 
         // Write data to file
-        const filename = 'data.ts'
+        const filename = 'mega-alola-galar_data.ts'
         writeFileSync(filename, dataString)
 
         console.log(`Data written to ${filename}`)

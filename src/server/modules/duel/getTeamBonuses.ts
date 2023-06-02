@@ -1,6 +1,6 @@
 import { BasePokemon, Pokemon } from '@prisma/client'
 
-type duelPokemon = Pokemon & {
+export type DuelPokemonExtra = Pokemon & {
   baseData: BasePokemon
   manaBonus?: number | undefined
   lifeSteal?: number | undefined
@@ -9,11 +9,18 @@ type duelPokemon = Pokemon & {
 }
 
 type TParams = {
-  poke: duelPokemon
-  team: duelPokemon[] | undefined
+  poke: DuelPokemonExtra
+  team:
+    | (
+        | (Pokemon & {
+            baseData: BasePokemon
+          })
+        | null
+      )[]
+    | undefined
 }
 
-export const getTeamBonuses = async (data: TParams): Promise<duelPokemon> => {
+export const getTeamBonuses = async (data: TParams): Promise<DuelPokemonExtra> => {
   const { poke, team } = data
 
   const updatedPoke = { ...poke }

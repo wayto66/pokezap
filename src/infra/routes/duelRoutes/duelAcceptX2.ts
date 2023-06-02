@@ -233,39 +233,58 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
   if (!loserPokemon1) throw new PokemonNotFoundError(duel.loserTeam[1].id)
   if (!winnerPokemon1) throw new PokemonNotFoundError(duel.winnerTeam[1].id)
 
-  const handleLoseExp0 = await handleExperienceGain({
-    pokemon: loserPokemon0,
-    targetPokemon: winnerPokemon0,
-  })
-  const handleLoseExp1 = await handleExperienceGain({
-    pokemon: loserPokemon1,
-    targetPokemon: winnerPokemon1,
-  })
-  const handleWinExp0 = await handleExperienceGain({
-    pokemon: winnerPokemon0,
-    targetPokemon: loserPokemon0,
-  })
-  const handleWinExp1 = await handleExperienceGain({
-    pokemon: winnerPokemon1,
-    targetPokemon: loserPokemon1,
-  })
+  let levelDiffMessage = ''
+  let handleLoseExp0
+  let handleLoseExp1
+  let handleWinExp0
+  let handleWinExp1
 
-  const winnerLevelUpMessage0 = handleWinExp0.leveledUp
+  if (
+    loserPokemon0.level - winnerPokemon0.level > 9 ||
+    loserPokemon0.level - winnerPokemon1.level > 9 ||
+    loserPokemon1.level - winnerPokemon0.level > 9 ||
+    loserPokemon1.level - winnerPokemon1.level > 9
+  ) {
+    levelDiffMessage = `Devido à uma diferença de 10 níveis, não foi possível obter experiência na batalha.`
+  } else {
+    handleLoseExp0 = await handleExperienceGain({
+      pokemon: loserPokemon0,
+      targetPokemon: winnerPokemon0,
+      divide: true,
+    })
+    handleLoseExp1 = await handleExperienceGain({
+      pokemon: loserPokemon1,
+      targetPokemon: winnerPokemon1,
+      divide: true,
+    })
+    handleWinExp0 = await handleExperienceGain({
+      pokemon: winnerPokemon0,
+      targetPokemon: loserPokemon0,
+      divide: true,
+    })
+    handleWinExp1 = await handleExperienceGain({
+      pokemon: winnerPokemon1,
+      targetPokemon: loserPokemon1,
+      divide: true,
+    })
+  }
+
+  const winnerLevelUpMessage0 = handleWinExp0?.leveledUp
     ? `*${winnerPokemon0.baseData.name}* subiu para o nível ${handleWinExp0.pokemon.level}!`
     : ''
-  const loserLevelUpMessage0 = handleLoseExp0.leveledUp
+  const loserLevelUpMessage0 = handleLoseExp0?.leveledUp
     ? `*${loserPokemon0.baseData.name}* subiu para o nível ${handleLoseExp0.pokemon.level}!`
     : ''
-  const winnerLevelUpMessage1 = handleWinExp1.leveledUp
+  const winnerLevelUpMessage1 = handleWinExp1?.leveledUp
     ? `*${winnerPokemon1.baseData.name}* subiu para o nível ${handleWinExp1.pokemon.level}!`
     : ''
-  const loserLevelUpMessage1 = handleLoseExp1.leveledUp
+  const loserLevelUpMessage1 = handleLoseExp1?.leveledUp
     ? `*${loserPokemon1.baseData.name}* subiu para o nível ${handleLoseExp1.pokemon.level}!`
     : ''
 
   const afterMessage = `*${updatedWinnerPlayer.name}* vence o duelo e recebe +${eloGain} pontos de ranking e +${cashGain} POKECOINS.
 *${updatedLoserPlayer.name}* perdeu ${eloLose} pontos de ranking.
-
+${levelDiffMessage}
 ${winnerLevelUpMessage0}
 ${winnerLevelUpMessage1}
 ${loserLevelUpMessage0}

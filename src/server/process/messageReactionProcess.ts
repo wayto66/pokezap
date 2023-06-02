@@ -148,7 +148,7 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
             },
           })
         }
-      }, 5000)
+      }, response.afterMessageDelay || 5000)
     }
   } catch (e: any) {
     console.error(e)

@@ -6,6 +6,7 @@ import { pokemonHatch } from './breedRoutes/pokemonHatch'
 import { catchRoutes } from './catchRoutes'
 import { duelRoutes } from './duelRoutes'
 import { helpRoutes } from './helpRoutes'
+import { invasionRoutes } from './invasionRoutes'
 import { inventoryRoutes } from './inventoryRoutes'
 import { pokemonRoutes } from './pokemonRoutes'
 import { rankRoutes } from './rankingRoutes'
@@ -95,6 +96,9 @@ const routeMap = new Map<string, TRouteType>([
   // SEND ROUTES
   ['SEND', sendRoutes],
   ['ENVIAR', sendRoutes],
+
+  // INVASION ROUTES
+  ['INVASION', invasionRoutes],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {

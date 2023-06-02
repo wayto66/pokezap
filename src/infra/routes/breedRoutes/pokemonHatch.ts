@@ -54,7 +54,7 @@ export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
       metaValues.eggHatchingTimeInHours - getHoursDifference(pokemon.createdAt, new Date())
     )
 
-  await prismaClient.pokemon.update({
+  const bornPokemon = await prismaClient.pokemon.update({
     where: {
       id: pokemon.id,
     },
@@ -62,10 +62,11 @@ export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
       isAdult: true,
       spriteUrl: pokemon.baseData.defaultSpriteUrl,
     },
+    include: {baseData:true}
   })
 
   const imageUrl = await iGenPokemonAnalysis({
-    pokemonData: pokemon,
+    pokemonData: bornPokemon,
   })
 
   return {

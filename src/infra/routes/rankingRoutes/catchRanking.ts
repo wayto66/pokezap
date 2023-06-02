@@ -18,7 +18,11 @@ export const catchRanking = async (data: TRouteParams): Promise<IResponse> => {
 
   if (!player) throw new PlayerNotFoundError(data.playerPhone)
 
-  const sortedPlayers = players.sort((a, b) => a.elo - b.elo)
+  const sortedPlayers = players.sort((a, b) => {
+    const catchesA = [...new Set(a.caughtDexIds)]
+    const catchesB = [...new Set(b.caughtDexIds)]
+    return catchesA.length - catchesB.length
+  })
 
   console.log({ sortedPlayers })
 
@@ -28,7 +32,7 @@ export const catchRanking = async (data: TRouteParams): Promise<IResponse> => {
     const playerInfo = {
       id: player.id,
       name: player.name,
-      value: player.elo,
+      value: [...new Set(player.caughtDexIds)].length,
     }
     rankEntries.push(playerInfo)
   }

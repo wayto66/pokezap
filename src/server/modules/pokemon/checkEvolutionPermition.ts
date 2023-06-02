@@ -17,6 +17,7 @@ type TParams = {
   pokemonId: number
   playerId: number
   fromTrade?: boolean
+  preferredPokemonName?: string
 }
 
 export const checkEvolutionPermition = async (
@@ -66,7 +67,12 @@ export const checkEvolutionPermition = async (
 
   const currentPosition = getCurrentPosition()
 
-  if (currentPosition === 2) throw new PokemonAlreadyOnLastEvolution(poke.id, poke.baseData.name)
+  if (currentPosition === 2 && !data.fromTrade) throw new PokemonAlreadyOnLastEvolution(poke.id, poke.baseData.name)
+  if (currentPosition === 2 && data.fromTrade)
+    return {
+      message: 'already on last evolution',
+      status: 'not-evolved',
+    }
 
   if (currentPosition === -1)
     throw new UnexpectedError('Não foi possível localizar a posição do pokemon na cadeia evolutiva.')
@@ -85,8 +91,14 @@ export const checkEvolutionPermition = async (
 
   const evoTrigger = evoData?.evolution_details[0]?.trigger
 
+  if (evoTrigger?.name !== 'trade' && data.fromTrade)
+    return {
+      message: 'trigger is not trade',
+      status: 'not-evolved',
+    }
+
   if (!evoTrigger) throw new PokemonAlreadyOnLastEvolution(poke.id, poke.baseData.name)
-  if (evoTrigger.name !== 'level-up' && evoTrigger.name !== 'use-item' && evoTrigger.name !== 'trade') {
+  if (!['trade', 'level-up', 'use-item'].includes(evoTrigger.name)) {
     return {
       message: 'Infelizmente o modo de evolução do seu Pokemon ainda não foi implementado.',
       status: 'evo-trigger-unsupported',
@@ -98,7 +110,7 @@ export const checkEvolutionPermition = async (
   if (evoTrigger.name === 'level-up' && poke.level < (evoData.evolution_details[0].min_level || 15))
     throw new InsufficientLevelToEvolveError(poke.id, poke.baseData.name, evoData.evolution_details[0].min_level || 15)
 
-  if (evoTrigger.name === 'use-item') {
+  if (evoTrigger.name === 'use-item' || (evoTrigger.name === 'trade' && evoData.evolution_details[0].held_item?.name)) {
     const requiredItemName = evoData.evolution_details[0].item.name
     if (!requiredItemName) throw new UnexpectedError('Não foi possível obter o nome do item requirido para evolução.')
     const requiredItem = await client.item.findFirst({
