@@ -3,7 +3,7 @@ import { container } from 'tsyringe'
 import { PlayerNotFoundError } from '../../../../infra/errors/AppErrors'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
-import { iGenInvetoryPokemons } from '../../../../server/modules/imageGen/iGenInvetoryPokemons'
+import { iGenInventoryPokemons } from '../../../../server/modules/imageGen/iGenInventoryPokemons'
 
 export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , page] = data.routeParams
@@ -37,7 +37,7 @@ export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse>
     return 1
   }
 
-  const imageUrl = await iGenInvetoryPokemons({
+  const imageUrl = await iGenInventoryPokemons({
     playerData: player,
     page: numberPage(),
   })

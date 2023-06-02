@@ -1,7 +1,7 @@
 import { BasePokemon, GameRoom, Pokemon, PrismaClient } from '@prisma/client'
-import { logger } from 'infra/logger'
 import { container } from 'tsyringe'
 import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { logger } from '../../../infra/logger'
 
 type TParams = {
   pokemon: Pokemon

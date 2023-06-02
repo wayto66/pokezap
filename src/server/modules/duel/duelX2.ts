@@ -1,6 +1,6 @@
 import { BasePokemon, Player, Pokemon } from '@prisma/client'
-import { logger } from 'infra/logger'
 import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { logger } from '../../../infra/logger'
 import { getBestSkillPairX2 } from '../../../server/helpers/getBestSkillPairX2'
 import { typeEffectivenessMap } from '../../constants/atkEffectivenessMap'
 import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
@@ -10,6 +10,16 @@ import { IPokemon } from '../../models/IPokemon'
 import { ISkill } from '../../models/ISkill'
 import { iGenDuelX2Rounds } from '../imageGen/iGenDuelX2Rounds'
 import { getTeamBonuses } from './getTeamBonuses'
+
+interface TypeData {
+  innefective: string[]
+  effective: string[]
+  noDamage: string[]
+}
+
+interface EffectivenessObject {
+  [key: string]: number
+}
 
 type DuelPokemon = Pokemon & {
   baseData: BasePokemon
@@ -414,7 +424,7 @@ const getBestTypes = (data: TGetBestTypesData) => {
     throw new UnexpectedError('Não foi possível obter os dados sobre efetividade de golpes.')
   }
 
-  const efObj = {
+  const efObj: EffectivenessObject = {
     normal: 0,
     fire: 0,
     water: 0,
@@ -441,15 +451,23 @@ const getBestTypes = (data: TGetBestTypesData) => {
     noDamage: [...efData1a.noDamage, ...efData1b.noDamage, ...efData2a.noDamage, ...efData2b.noDamage],
   }
 
-  for (const type of efDataTotal?.effective) {
-    efObj[type] += 1
+  const processTypeData = (typeData: TypeData) => {
+    if (!typeData) return
+
+    for (const type of typeData.effective) {
+      efObj[type] += 1
+    }
+
+    for (const type of typeData.innefective) {
+      efObj[type] -= 1
+    }
+
+    for (const type of typeData.noDamage) {
+      efObj[type] -= 1000
+    }
   }
-  for (const type of efDataTotal?.innefective) {
-    efObj[type] -= 1
-  }
-  for (const type of efDataTotal?.noDamage) {
-    efObj[type] -= 1000
-  }
+
+  processTypeData(efDataTotal)
 
   const entries = Object.entries(efObj)
   const entrymap2 = entries

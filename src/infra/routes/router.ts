@@ -1,6 +1,6 @@
-import { logger } from 'infra/logger'
 import { AppError, RouteNotFoundError, RouteNotProvidedError, UnexpectedError } from '../../infra/errors/AppErrors'
 import { IResponse } from '../../server/models/IResponse'
+import { logger } from '../logger'
 import { battleRoutes } from './battleRoutes'
 import { pokemonBreed1 } from './breedRoutes/pokemonBreed1'
 import { pokemonHatch } from './breedRoutes/pokemonHatch'

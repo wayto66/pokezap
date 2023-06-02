@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client'
-import { ISession } from 'server/models/ISession'
 import { container } from 'tsyringe'
 import { IPokemon } from '../../../../server/models/IPokemon'
 import { IResponse } from '../../../../server/models/IResponse'
+import { ISession } from '../../../../server/models/ISession'
 import { checkEvolutionPermition } from '../../../../server/modules/pokemon/checkEvolutionPermition'
 
 export type TTradePokeParams = {

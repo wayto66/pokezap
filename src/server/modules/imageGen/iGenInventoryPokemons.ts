@@ -1,15 +1,15 @@
 import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
-import { logger } from 'infra/logger'
 import path from 'path'
-import { removeFileFromDisk } from 'server/helpers/fileHelper'
+import { logger } from '../../../infra/logger'
+import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
 
 type TParams = {
   playerData: any
   page?: number
 }
 
-export const iGenInvetoryPokemons = async (data: TParams) => {
+export const iGenInventoryPokemons = async (data: TParams) => {
   const page = data.page ? data.page - 1 : 0
   // Define the dimensions of the canvas and the background
   const canvasWidth = 500

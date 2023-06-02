@@ -1,6 +1,6 @@
 import { BasePokemon, Pokemon } from '@prisma/client'
-import { logger } from 'infra/logger'
 import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { logger } from '../../../infra/logger'
 import { typeEffectivenessMap } from '../../../server/constants/atkEffectivenessMap'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import { findKeyByValue } from '../../../server/helpers/findKeyByValue'
@@ -11,6 +11,16 @@ import { getBestSkillPair } from '../../helpers/getBestSkillPair'
 import { iGenDuelRound } from '../imageGen/iGenDuelRound'
 import { iGenWildPokemonBattle } from '../imageGen/iGenWildPokemonBattle'
 import { getTeamBonuses } from './getTeamBonuses'
+
+interface TypeData {
+  innefective: string[]
+  effective: string[]
+  noDamage: string[]
+}
+
+interface EffectivenessObject {
+  [key: string]: number
+}
 
 type TParams = {
   poke1: Pokemon & {
@@ -369,7 +379,7 @@ const getBestTypes = (type1: string, type2?: string): any => {
 
   if (!efData1 || !efData2) return null
 
-  const efObj = {
+  const efObj: EffectivenessObject = {
     normal: 0,
     fire: 0,
     water: 0,
@@ -390,28 +400,24 @@ const getBestTypes = (type1: string, type2?: string): any => {
     fairy: 0,
   }
 
-  for (const type of efData1?.effective) {
-    efObj[type] += 1
-  }
-  for (const type of efData1?.innefective) {
-    efObj[type] -= 1
-  }
-  for (const type of efData1?.noDamage) {
-    efObj[type] -= 100
+  const processTypeData = (typeData: TypeData, modifier: number) => {
+    if (!typeData) return
+
+    for (const type of typeData.effective) {
+      efObj[type] += modifier
+    }
+
+    for (const type of typeData.innefective) {
+      efObj[type] -= modifier
+    }
+
+    for (const type of typeData.noDamage) {
+      efObj[type] -= 100 * modifier
+    }
   }
 
-  for (const type of efData2?.effective) {
-    if (!efObj[type]) efObj[type] = 0
-    efObj[type] += 1
-  }
-  for (const type of efData2?.innefective) {
-    if (!efObj[type]) efObj[type] = 0
-    efObj[type] -= 1
-  }
-  for (const type of efData2?.noDamage) {
-    if (!efObj[type]) efObj[type] = 0
-    efObj[type] -= 100
-  }
+  processTypeData(efData1, 1)
+  processTypeData(efData2, 1)
 
   const entries = Object.entries(efObj)
   const entrymap2 = entries

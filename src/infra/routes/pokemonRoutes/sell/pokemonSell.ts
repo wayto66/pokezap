@@ -60,7 +60,7 @@ export const pokemonSell = async (data: TRouteParams): Promise<IResponse> => {
     pokemon.teamSlot5 ||
     pokemon.teamSlot6
   )
-    throw new CantSellPokemonInTeamError(pokemon.id, player.name)
+    throw new CantSellPokemonInTeamError(pokemon.id)
 
   const pokemonSellPrice = Math.floor(
     35 + (pokemon.level ** 2 / 150) * 100 + (pokemon.baseData.BaseExperience ** 2 / 1200) * 50

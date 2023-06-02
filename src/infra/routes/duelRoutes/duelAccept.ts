@@ -1,5 +1,5 @@
 import { BasePokemon, Player, Pokemon, PrismaClient, Skill } from '@prisma/client'
-import { logger } from 'infra/logger'
+
 import { container } from 'tsyringe'
 import {
   CouldNotUpdatePlayerError,
@@ -17,6 +17,7 @@ import {
 import { IResponse } from '../../../server/models/IResponse'
 import { duelX1 } from '../../../server/modules/duel/duelX1'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
+import { logger } from '../../logger'
 import { TRouteParams } from '../router'
 
 export type DuelPokemon = Pokemon & {

@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-import { TRouteParams } from 'infra/routes/router'
 import { container } from 'tsyringe'
+import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
 import { MissingParameterError, PokemonNotFoundError, UnexpectedError } from '../../../errors/AppErrors'
 

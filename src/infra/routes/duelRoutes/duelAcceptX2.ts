@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-import { logger } from 'infra/logger'
 import { container } from 'tsyringe'
+import { logger } from '../../../infra/logger'
 import { IResponse } from '../../../server/models/IResponse'
 import { duelX2 } from '../../../server/modules/duel/duelX2'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'

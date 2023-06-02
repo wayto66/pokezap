@@ -12,6 +12,16 @@ import { iGenDuel2X1Rounds } from '../imageGen/iGenDuel2X1Rounds'
 import { TDuelRoundData, iGenDuel3X1Rounds } from '../imageGen/iGenDuel3X1Rounds'
 import { DuelPokemonExtra, getTeamBonuses } from './getTeamBonuses'
 
+interface TypeData {
+  innefective: string[]
+  effective: string[]
+  noDamage: string[]
+}
+
+interface EffectivenessObject {
+  [key: string]: number
+}
+
 export type RoundPokemonData = {
   name: string
   id: number
@@ -400,7 +410,7 @@ const getBestTypes = (type1: string, type2?: string): any => {
 
   if (!efData1 || !efData2) return null
 
-  const efObj = {
+  const efObj: EffectivenessObject = {
     normal: 0,
     fire: 0,
     water: 0,
@@ -421,28 +431,24 @@ const getBestTypes = (type1: string, type2?: string): any => {
     fairy: 0,
   }
 
-  for (const type of efData1?.effective) {
-    efObj[type] += 1
-  }
-  for (const type of efData1?.innefective) {
-    efObj[type] -= 1
-  }
-  for (const type of efData1?.noDamage) {
-    efObj[type] -= 100
+  const processTypeData = (typeData: TypeData, modifier: number) => {
+    if (!typeData) return
+
+    for (const type of typeData.effective) {
+      efObj[type] += modifier
+    }
+
+    for (const type of typeData.innefective) {
+      efObj[type] -= modifier
+    }
+
+    for (const type of typeData.noDamage) {
+      efObj[type] -= 100
+    }
   }
 
-  for (const type of efData2?.effective) {
-    if (!efObj[type]) efObj[type] = 0
-    efObj[type] += 1
-  }
-  for (const type of efData2?.innefective) {
-    if (!efObj[type]) efObj[type] = 0
-    efObj[type] -= 1
-  }
-  for (const type of efData2?.noDamage) {
-    if (!efObj[type]) efObj[type] = 0
-    efObj[type] -= 100
-  }
+  processTypeData(efData1, 1)
+  processTypeData(efData2, 1)
 
   const entries = Object.entries(efObj)
   const entrymap2 = entries

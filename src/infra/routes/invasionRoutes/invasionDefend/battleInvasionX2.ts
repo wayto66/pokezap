@@ -1,6 +1,6 @@
 import { InvasionSession, PrismaClient } from '@prisma/client'
-import { DuelPlayer } from 'infra/routes/duelRoutes/duelAccept'
 import { container } from 'tsyringe'
+import { DuelPlayer } from '../../../../infra/routes/duelRoutes/duelAccept'
 import { IResponse } from '../../../../server/models/IResponse'
 import { TDuelX2Response, duelX2 } from '../../../../server/modules/duel/duelX2'
 import { handleExperienceGain } from '../../../../server/modules/pokemon/handleExperienceGain'

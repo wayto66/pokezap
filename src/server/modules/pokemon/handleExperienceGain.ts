@@ -1,7 +1,7 @@
 import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
-import { logger } from 'infra/logger'
 import { container } from 'tsyringe'
 import { PokemonNotFoundError, UnexpectedError } from '../../../infra/errors/AppErrors'
+import { logger } from '../../../infra/logger'
 import { generateGeneralStats } from './generateGeneralStats'
 import { generateHpStat } from './generateHpStat'
 

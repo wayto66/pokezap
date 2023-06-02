@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
-import { logger } from 'infra/logger'
 import cron from 'node-cron'
 import { container } from 'tsyringe'
 import { Client } from 'whatsapp-web.js'
 import { metaValues } from '../../constants/metaValues'
+import { logger } from '../../infra/logger'
 import { pokeBossInvasion } from '../../server/serverActions/cron/pokeBossInvasion'
 import { wildPokeSpawn } from '../../server/serverActions/cron/wildPokeSpawn'
 

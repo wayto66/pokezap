@@ -1,9 +1,9 @@
 import { Image, createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
-import { logger } from 'infra/logger'
 import path from 'path'
-import { removeFileFromDisk } from 'server/helpers/fileHelper'
+import { logger } from '../../../infra/logger'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
+import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
 
 type TParams = {
   playerData: any

@@ -1,6 +1,6 @@
 import fs from 'fs'
-import { logger } from 'infra/logger'
 import path from 'path'
+import { logger } from '../../infra/logger'
 import { TCanvas2D } from './canvasHelper'
 
 export const saveFileOnDisk = async (canvas2d: TCanvas2D): Promise<string> => {

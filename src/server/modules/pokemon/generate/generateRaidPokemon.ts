@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-import { UnexpectedError } from 'infra/errors/AppErrors'
 import { container } from 'tsyringe'
+import { UnexpectedError } from '../../../../infra/errors/AppErrors'
 import { talentNameMap } from '../../../constants/talentNameMap'
 import { getRandomBetween2 } from '../../../helpers/getRandomBetween2'
 import { generateGeneralStats } from '../generateGeneralStats'

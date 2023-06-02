@@ -1,10 +1,10 @@
 import { Player, Pokemon } from '@prisma/client'
 import { createCanvas, loadImage, registerFont } from 'canvas'
 import fs from 'fs'
-import { logger } from 'infra/logger'
 import path from 'path'
-import { removeFileFromDisk } from 'server/helpers/fileHelper'
 import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { logger } from '../../../infra/logger'
+import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
 import { talentIdMap } from '../../constants/talentIdMap'
 
 type DuelPlayer = Player & {

@@ -1,7 +1,7 @@
 import { GameRoom, PrismaClient } from '@prisma/client'
-import { UnexpectedError } from 'infra/errors/AppErrors'
 import { container } from 'tsyringe'
 import { Client, MessageMedia } from 'whatsapp-web.js'
+import { UnexpectedError } from '../../../infra/errors/AppErrors'
 import { iGenWildPokemon } from '../imageGen/iGenWildPokemon'
 import { generateWildPokemon } from '../pokemon/generate/generateWildPokemon'
 

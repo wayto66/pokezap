@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 import { writeFileSync } from 'fs'
-import { logger } from 'infra/logger'
 import fetch from 'node-fetch'
 import { container } from 'tsyringe'
+import { logger } from '../infra/logger'
 import { pokemonData } from './data'
 import { itemsData } from './items'
 import { skillsData } from './moves'
@@ -19,7 +19,7 @@ export async function thiefTime() {
     .then(response => response.json())
     .then(data => {
       // Map each Pokemon to a new object with name and types properties
-      const pokemonData = data.results.map(pokemon => ({
+      const pokemonData = data.results.map((pokemon: any) => ({
         name: pokemon.name,
         types: [],
         sprites: [],
@@ -27,7 +27,7 @@ export async function thiefTime() {
 
       // Fetch additional data for each Pokemon and add types to the objects
       Promise.all(
-        pokemonData.map(pokemon => {
+        pokemonData.map((pokemon: any) => {
           const url = `${baseUrl}${endpoint}${pokemon.name}`
           return fetch(url)
             .then(response => response.json())
@@ -44,14 +44,14 @@ export async function thiefTime() {
                 speed: data.stats[5].base_stat,
               }
 
-              const moves = data.moves.filter(move => {
-                return move.version_group_details.some(detail => {
+              const moves = data.moves.filter((move: any) => {
+                return move.version_group_details.some((detail: any) => {
                   return !detail.move_learn_method.name.includes('egg')
                 })
               })
 
-              pokemon.moves = moves.map(move => {
-                const getLevelLearned = move.version_group_details.find(detail => {
+              pokemon.moves = moves.map((move: any) => {
+                const getLevelLearned = move.version_group_details.find((detail: any) => {
                   return detail.level_learned_at !== 0
                 })
 
@@ -63,7 +63,7 @@ export async function thiefTime() {
                 }
               })
 
-              pokemon.types = data.types.map(type => type.type.name)
+              pokemon.types = data.types.map((type: any) => type.type.name)
               pokemon.isDualType = pokemon.types.length !== 1
               pokemon.sprites = {
                 normal: data.sprites.front_default,
@@ -110,13 +110,13 @@ export async function thiefTimeMoves() {
     .then(response => response.json())
     .then(data => {
       // Map each Pokemon to a new object with name and types properties
-      const moveData = data.results.map(move => ({
+      const moveData = data.results.map((move: any) => ({
         name: move.name,
       }))
 
       // Fetch additional data for each Pokemon and add types to the objects
       Promise.all(
-        moveData.map(move => {
+        moveData.map((move: any) => {
           const url = `${baseUrl}${endpoint}${move.name}`
           return fetch(url)
             .then(response => response.json())
@@ -127,7 +127,7 @@ export async function thiefTimeMoves() {
               move.pp = data.pp
               move.class = data.damage_class.name
               move.power = data.power
-              move.statChanges = data.stat_changes.map(data => {
+              move.statChanges = data.stat_changes.map((data: any) => {
                 return {
                   change: data.change,
                   stat: data.stat.name,
@@ -162,13 +162,13 @@ export async function stealItems() {
     .then(response => response.json())
     .then(data => {
       // Map each Pokemon to a new object with name and types properties
-      const itemData = data.results.map(item => ({
+      const itemData = data.results.map((item: any) => ({
         name: item.name,
       }))
 
       // Fetch additional data for each Pokemon and add types to the objects
       Promise.all(
-        itemData.map(item => {
+        itemData.map((item: any) => {
           const url = `${baseUrl}${endpoint}${item.name}`
           return fetch(url)
             .then(response => response.json())

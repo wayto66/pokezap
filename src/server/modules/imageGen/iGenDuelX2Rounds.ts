@@ -3,7 +3,7 @@ import { createCanvas, loadImage, registerFont } from 'canvas'
 import fs from 'fs'
 import GIFEncoder from 'gifencoder'
 import path from 'path'
-import { removeFileFromDisk } from 'server/helpers/fileHelper'
+import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
 
 type duelPokemon = Pokemon & {
   baseData: BasePokemon

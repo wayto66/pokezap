@@ -1,5 +1,5 @@
-import { logger } from 'infra/logger'
 import qr from 'qrcode'
+import { logger } from '../../infra/logger'
 
 export const qrCodeProcess = (qrCodeString: string, instanceName: string) => {
   logger.info('starting qrCodeProcess')

@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client'
-import { raidsDataMap } from 'server/constants/raidsDataMap'
-import { generateRaidPokemon } from 'server/modules/pokemon/generate/generateRaidPokemon'
 import { container } from 'tsyringe'
+import { raidsDataMap } from '../../../server/constants/raidsDataMap'
 import { IResponse } from '../../../server/models/IResponse'
+import { generateRaidPokemon } from '../../../server/modules/pokemon/generate/generateRaidPokemon'
 import {
   MissingParameterError,
   PlayerDoesNotHaveThePokemonInTheTeamError,

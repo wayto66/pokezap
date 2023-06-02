@@ -1,10 +1,11 @@
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
+// @ts-ignore
 import ffprobe from '@ffprobe-installer/ffprobe'
 import { PrismaClient } from '@prisma/client'
 import ffmpeg from 'fluent-ffmpeg'
-import { logger } from 'infra/logger'
 import { container } from 'tsyringe'
 import { Client, Message, MessageMedia } from 'whatsapp-web.js'
+import { logger } from '../../infra/logger'
 import { router } from '../../infra/routes/router'
 import { verifyTargetChat } from '../../server/helpers/verifyTargetChat'
 import { IResponse } from '../../server/models/IResponse'
@@ -71,9 +72,13 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
 
       const filePath = await new Promise<string>((resolve, reject) => {
         if (!response.isAnimated) resolve(response.imageUrl!)
-        ffmpeg.setFfprobePath(ffprobe.path).setFfmpegPath(ffmpegInstaller.path)
         const outputPath = `./src/server/modules/imageGen/images/video-${Math.random().toFixed(5)}.mp4`
+
+        if (!response.imageUrl) return
+
         ffmpeg
+          .setFfprobePath(ffprobe.path)
+          .setFfmpegPath(ffmpegInstaller.path)
           .input(response.imageUrl)
           .outputOptions([
             '-pix_fmt yuv420p',
@@ -86,8 +91,9 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
           .on('end', () => {
             resolve(outputPath)
           })
-          .on('error', e => {
-            reject(new Error('error on ffmpeg', e))
+          .on('error', (e: Error) => {
+            logger.info(e)
+            reject(new Error('error on ffmpeg'))
           })
           .run()
       })

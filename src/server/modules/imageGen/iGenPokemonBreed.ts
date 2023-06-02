@@ -1,9 +1,9 @@
 import { BasePokemon, Pokemon, Talent } from '@prisma/client'
 import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
-import { logger } from 'infra/logger'
 import path from 'path'
-import { removeFileFromDisk } from 'server/helpers/fileHelper'
+import { logger } from '../../../infra/logger'
+import { removeFileFromDisk } from '../../helpers/fileHelper'
 
 type TParams = {
   pokemon1: Pokemon & {

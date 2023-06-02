@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import { TRouteParams } from 'infra/routes/router'
 import { container } from 'tsyringe'
 import {
   MissingParametersPokemonInformationError,
@@ -7,6 +6,7 @@ import {
   PokemonNotFoundError,
   UnexpectedError,
 } from '../../../../infra/errors/AppErrors'
+import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
 

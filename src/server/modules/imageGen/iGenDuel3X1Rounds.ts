@@ -2,8 +2,8 @@ import { Image, loadImage } from 'canvas'
 import fs from 'fs'
 import GIFEncoder from 'gifencoder'
 import path from 'path'
-import { removeFileFromDisk } from 'server/helpers/fileHelper'
 import { createCanvas2d } from '../../../server/helpers/canvasHelper'
+import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
 import { BossInvasionRoundData, RoundPokemonData } from '../duel/duelNX1'
 
 export type TDuelRoundData = {

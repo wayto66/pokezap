@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-import { logger } from 'infra/logger'
 import { container } from 'tsyringe'
+import { logger } from '../../infra/logger'
 
 export const verifyTargetChat = async (target: string): Promise<boolean> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')

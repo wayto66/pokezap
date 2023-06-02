@@ -82,7 +82,7 @@ export const iGenPokeBossInvasion = async (data: TParams) => {
   return filepath
 }
 
-const getTalents = (pokemon: Pokemon) => {
+const getTalents = (pokemon: any) => {
   const talents: (string | undefined)[] = []
   for (let i = 1; i <= 9; i++) {
     const talent = talentIdMap.get(pokemon[`talentId${i}`])

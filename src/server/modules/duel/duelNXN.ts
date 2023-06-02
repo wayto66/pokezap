@@ -66,7 +66,7 @@ export type TDuelX2Response = {
   isDraw: boolean
   imageUrl: string
 }
-// eslint-disable-next-line @typescript-eslint/no-empty-function
+
 export const duelNXN = async (data: TParams): Promise<TDuelX2Response | void> => {
   console.log(data)
 }

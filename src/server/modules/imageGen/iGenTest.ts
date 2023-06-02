@@ -1,7 +1,7 @@
 import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
-import { logger } from 'infra/logger'
 import path from 'path'
+import { logger } from '../../../infra/logger'
 
 export const iGenTest = async () => {
   // Define the dimensions of the canvas and the background

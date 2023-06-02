@@ -43,8 +43,6 @@ export const iGenDuelRound = async ({
 
   const canvas2d = await createCanvas2d(1)
 
-  const backgroundImageUrl = './src/assets/sprites/UI/hud/duel_x1_round.png'
-
   const filepath = path.join(__dirname, `/images/animation-${Math.random()}.gif`)
 
   const encoder = initEncoder(filepath)
@@ -60,7 +58,7 @@ export const iGenDuelRound = async ({
   const winnerHpBarXOffset = random >= 0.5 ? 365 : 55
   const loserHpBarXOffset = random >= 0.5 ? 55 : 365
 
-  const backgroundImage = await loadImage(backgroundImageUrl)
+  const backgroundImage = await loadImage('./src/assets/sprites/UI/hud/duel_x1_round.png')
   const rightPokemonImage = await loadImage(rightPokemon.spriteUrl)
   const leftPokemonImage = await loadImage(leftPokemon.spriteUrl)
 
@@ -204,7 +202,7 @@ const drawPokemons = (canvas2d: TCanvas2D, image: Image, positionX: number, posi
 
 const drawSkillTypeFlags = (
   canvas2d: TCanvas2D,
-  roundInfo: number,
+  roundInfo: any,
   winnerDataName: string,
   loserDataName: string,
   rightPokemon: duelPokemon,

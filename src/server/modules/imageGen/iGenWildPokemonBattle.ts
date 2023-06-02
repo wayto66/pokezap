@@ -3,8 +3,8 @@ import { createCanvas, loadImage } from 'canvas'
 import fs from 'fs'
 import GIFEncoder from 'gifencoder'
 import path from 'path'
-import { removeFileFromDisk } from 'server/helpers/fileHelper'
 import { talentIdMap } from '../../constants/talentIdMap'
+import { removeFileFromDisk } from '../../helpers/fileHelper'
 
 type duelPokemon = Pokemon & {
   baseData: BasePokemon
