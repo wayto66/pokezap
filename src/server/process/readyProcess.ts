@@ -59,7 +59,11 @@ export const readyProcess = (zapIstanceName: string) => {
     }
   })
 
-  cron.schedule(`0 0 */8 * * *`, async () => {
+  pokeBossInvasion({
+    zapClient,
+  })
+
+  cron.schedule(`* */8 * * * *`, async () => {
     pokeBossInvasion({
       zapClient,
     })

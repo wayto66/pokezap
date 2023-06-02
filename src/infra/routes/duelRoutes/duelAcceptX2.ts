@@ -240,12 +240,12 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
   let handleWinExp1
 
   if (
-    loserPokemon0.level - winnerPokemon0.level > 9 ||
-    loserPokemon0.level - winnerPokemon1.level > 9 ||
-    loserPokemon1.level - winnerPokemon0.level > 9 ||
-    loserPokemon1.level - winnerPokemon1.level > 9
+    loserPokemon0.level - winnerPokemon0.level > 15 ||
+    loserPokemon0.level - winnerPokemon1.level > 15 ||
+    loserPokemon1.level - winnerPokemon0.level > 15 ||
+    loserPokemon1.level - winnerPokemon1.level > 15
   ) {
-    levelDiffMessage = `Devido à uma diferença de 10 níveis, não foi possível obter experiência na batalha.`
+    levelDiffMessage = `Devido à uma diferença de mais de 15 níveis, não foi possível obter experiência na batalha.`
   } else {
     handleLoseExp0 = await handleExperienceGain({
       pokemon: loserPokemon0,

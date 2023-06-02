@@ -35,7 +35,7 @@ export const pokeBossInvasion = async (data: TPokeBossInvasion) => {
 
     const pokeBoss = await generateBossPokemon({
       baseData: bossesBaseData[Math.floor(Math.random() * bossesBaseData.length)],
-      level: gameRoom.level * 2.5,
+      level: Math.round(gameRoom.level * 2.5),
       savage: true,
       shinyChance: 0.3,
     })
@@ -45,7 +45,7 @@ export const pokeBossInvasion = async (data: TPokeBossInvasion) => {
       : pokeBoss.baseData.name.toUpperCase()
 
     const announcementText = `Um *${displayName}* nível ${pokeBoss.level} invadiu a ROTA ${gameRoom.id}!`
-    const forfeitCost = Math.round(gameRoom.level * 10 * gameRoom.players.length + 2 * gameRoom.level ** 1.5)
+    const forfeitCost = Math.round(gameRoom.level * 6 * gameRoom.players.length + 2 * gameRoom.level ** 1.3)
     const cashReward = Math.round(200 + gameRoom.level * 10 + 2 * gameRoom.level ** 1.6)
     const lootItemsDropRate = bossInvasionLootMap.get(pokeBoss.baseData.name)
 

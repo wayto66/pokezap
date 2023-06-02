@@ -209,7 +209,7 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
     return 0.4
   }
 
-  const shinyMultiplier = pokemon.isShiny ? 0.015 : 1
+  const shinyMultiplier = pokemon.isShiny ? 0.03 : 1
 
   const catchRate = calculateCatchRate(pokemon.baseData.BaseExperience) * getBallRateMultiplier() * shinyMultiplier
   const random = Math.random()
