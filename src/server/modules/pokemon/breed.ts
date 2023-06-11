@@ -16,6 +16,9 @@ type TParams = {
 export const breed = async (data: TParams): Promise<Pokemon & { baseData: BasePokemon }> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
+  console.log(data.poke1.baseData.id)
+  console.log(data.poke2.baseData.id)
+
   const babyId1 = evoDataIdMap.get(data.poke1.baseData.id)
   const babyId2 = evoDataIdMap.get(data.poke2.baseData.id)
 

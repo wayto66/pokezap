@@ -3,12 +3,14 @@ export class AppError {
   readonly data: string | null
   readonly statusCode: number
   readonly actions?: string[]
+  readonly react?: string
 
-  constructor(message: string, statusCode = 400, data = null, actions?: string[]) {
+  constructor(message: string, statusCode = 400, react?: string, actions?: string[], data = null) {
     this.message = message
     this.statusCode = statusCode
     this.data = data
     this.actions = actions
+    this.react = react
   }
 }
 
@@ -63,6 +65,78 @@ export class InvalidRouteError extends AppError {
 export class RouteNotFoundError extends AppError {
   constructor(playerName: string, routeName: string) {
     const message = `No route found for ${playerName} with ${routeName}`
+
+    super(message)
+  }
+}
+
+export class RouteForbiddenForDuelRaidError extends AppError {
+  constructor() {
+    const message = `Na rota atual, não é permitido duelos.`
+
+    super(message)
+  }
+}
+
+export class RouteAlreadyHasARaidRunningError extends AppError {
+  constructor(raidName: string) {
+    const message = `A raid: "${raidName}" está ativa na rota. Para cancelar, utilize o comando "raid cancel".`
+
+    super(message)
+  }
+}
+
+export class NoRaidRunningError extends AppError {
+  constructor() {
+    const message = `Não há nenhuma raid ativa no momento.`
+
+    super(message)
+  }
+}
+
+export class RouteDoesNotHaveUpgradeError extends AppError {
+  constructor(upgradeName: string) {
+    const message = `Esta ação não é possível pois a rota atual não possui: ${upgradeName}`
+
+    super(message)
+  }
+}
+
+export class DaycareIsFullError extends AppError {
+  constructor() {
+    const message = `Sinto muito, o daycare está lotado.`
+
+    super(message)
+  }
+}
+
+export class RouteHasADifferentIncenseActiveError extends AppError {
+  constructor(incenseName: string) {
+    const message = `Esta ação não é possível pois a rota atual possui um incenso diferente ativo: ${incenseName}`
+
+    super(message)
+  }
+}
+
+export class UpgradeNotFoundError extends AppError {
+  constructor(name: string) {
+    const message = `Nenhum upgrade encontrado com o nome: ${name}`
+
+    super(message)
+  }
+}
+
+export class AlreadyTravelingError extends AppError {
+  constructor(routeId: number | string) {
+    const message = `Treinadores da rota ${routeId} já estão em viagem.`
+
+    super(message)
+  }
+}
+
+export class UpgradeAlreadyOnRouteError extends AppError {
+  constructor(routeId: number, upgradeName: string) {
+    const message = ``
 
     super(message)
   }
@@ -141,10 +215,12 @@ export class CatchFailedPokemonRanAwayError extends AppError {
 
 export class PlayerDoesNotResideOnTheRoute extends AppError {
   constructor(gameRoomId: number, playerName: string) {
-    const message = `*${playerName}* não reside na rota ${gameRoomId}, portanto não pode enfrentar os pokemons da rota.`
+    const message = `*${playerName}* não reside na rota ${gameRoomId}, portanto não pode enfrentar os pokemons da rota.
+    👍 - Entrar na rota`
     const statusCode = 300
+    const actions = ['pz. rota entrar']
 
-    super(message, statusCode)
+    super(message, statusCode, undefined, actions)
   }
 }
 
@@ -168,16 +244,20 @@ export class MissingParametersSellPokemonError extends AppError {
 
 export class MissingParametersInventoryRouteError extends AppError {
   constructor() {
-    const message = 'Especifique se deseja ver ITEM ou POKEMON.'
+    const message = `Deseja ver itens ou pokemons?
+    👍 - Pokemons
+    ❤ - Items
+    😂 - Items + nomes`
     const statusCode = 300
+    const actions = ['pz. inventory poke', 'pz. inventory item', 'pz. inventory item names']
 
-    super(message, statusCode)
+    super(message, statusCode, undefined, actions)
   }
 }
 
 export class MissingParametersPokemonRouteError extends AppError {
   constructor() {
-    const message = 'DUMMY: This is the pokemon route, specify a sub route.'
+    const message = 'Por favor, especifique uma ação.'
     const statusCode = 300
 
     super(message, statusCode)
@@ -186,7 +266,7 @@ export class MissingParametersPokemonRouteError extends AppError {
 
 export class MissingParametersRouteRouteError extends AppError {
   constructor() {
-    const message = 'DUMMY: This is the routes route. Please specify a sub route'
+    const message = 'Por favor, especifique uma ação.'
     const statusCode = 300
 
     super(message, statusCode)
@@ -195,8 +275,7 @@ export class MissingParametersRouteRouteError extends AppError {
 
 export class MissingParametersBreedRouteError extends AppError {
   constructor() {
-    const message = `ERROR: you must provide the ids for the pokemon pair to be breeded. The correct syntax would be something like:
-      pokemon breed 123 456`
+    const message = `Você deve fornecer o id dos pokemons à serem cruzados.`
     const statusCode = 400
 
     super(message, statusCode)
@@ -206,16 +285,19 @@ export class MissingParametersBreedRouteError extends AppError {
 export class MissingParametersRankRouteError extends AppError {
   constructor() {
     const message = `Esta é a rota de ranking. Você deve especificar qual ranking deseja ver.
+    👍 - Elo
+    ❤ - Capturas
     `
     const statusCode = 300
+    const actions = ['pz. rank elo', 'pz. rank catch']
 
-    super(message, statusCode)
+    super(message, statusCode, undefined, actions)
   }
 }
 
 export class MissingParametersPokemonInformationError extends AppError {
   constructor() {
-    const message = `ERROR: you must provide a pokemon id. `
+    const message = `Forneca o id ou nome do pokemon. `
 
     super(message)
   }
@@ -223,7 +305,7 @@ export class MissingParametersPokemonInformationError extends AppError {
 
 export class MissingParametersTradeRouteError extends AppError {
   constructor() {
-    const message = `DUMMY: 'Esta é a rota de trade/trocas. Especifique se deseja trocar Pokemon ou item.'`
+    const message = `Esta é a rota de trade/trocas. Especifique se deseja trocar Pokemon ou item.s`
     const statusCode = 300
 
     super(message, statusCode)
@@ -239,6 +321,43 @@ export class MissingParameterError extends AppError {
   }
 }
 
+export class MissingParameter_DemonstrationError extends AppError {
+  constructor(parameterName: string) {
+    const message = `Por favor, informe o(a): ${parameterName}`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingTravelRegionError extends AppError {
+  constructor() {
+    const message = `Para onde iremos viajar? \n \n 👍 - Alola \n ❤ - Galar \n 😂 - Voltar `
+    const statusCode = 300
+    const actions = ['pz. rota travel alola', 'pz. rota travel galar', 'pz. rota travel return']
+
+    super(message, statusCode, undefined, actions)
+  }
+}
+
+export class XIsInCooldownError extends AppError {
+  constructor(xName: string, hoursCooldown: string) {
+    const message = `Desculpe, o ${xName} não está disponível no momento. Estará disponível daqui ${hoursCooldown} horas.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class InvalidDifficultError extends AppError {
+  constructor() {
+    const message = `Dificuldade inválida. Disponíveis: easy, medium, hard, expert, insane.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class PlayerNotFoundError extends AppError {
   constructor(playerPhone: string) {
     const message = `ERRO: Jogador não encontrado com o código ${playerPhone}`
@@ -247,9 +366,35 @@ export class PlayerNotFoundError extends AppError {
   }
 }
 
+export class PlayerInRaidIsLockedError extends AppError {
+  constructor(playerName: string) {
+    const message = `${playerName} está em uma raid. Não é possível realizar operações. Se for necessário, utilize "raid cancel" para cancelar a raid.`
+
+    super(message)
+  }
+}
+
 export class PokemonNotFoundError extends AppError {
   constructor(pokemonId: number | string) {
     const message = `ERRO: Pokemon não encontrado com o id ${pokemonId}`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class ZeroPokemonsFoundError extends AppError {
+  constructor() {
+    const message = `Não foi possível localizar os pokemons.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonIsNotHoldingItemError extends AppError {
+  constructor(pokemonId: number | string) {
+    const message = `Pokemon ${pokemonId} não está segurando um item.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -274,6 +419,24 @@ export class ItemNotFoundError extends AppError {
   }
 }
 
+export class RequiredItemNotFoundError extends AppError {
+  constructor(itemName?: string) {
+    const message = `Você não possui um item necessário para realizar esta ação.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PlayerDoesNotHaveRequiredItemError extends AppError {
+  constructor(playerName: string, itemName: string) {
+    const message = `${playerName} não possui ${itemName} para realizar esta ação.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class InsufficientItemAmountError extends AppError {
   constructor(itemName: string, currentAmount: number, requestedAmount: number) {
     const message = `Não foi possível enviar ${requestedAmount} ${itemName}. Você possui apenas ${currentAmount}.`
@@ -292,9 +455,90 @@ export class InvasionNotFoundError extends AppError {
   }
 }
 
+export class RaidNotFoundError extends AppError {
+  constructor(raidId: number | string) {
+    const message = `ERRO: Raid não encontrada com o id ${raidId}`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class PlayerDoestNotOwnThePokemonError extends AppError {
   constructor(id: number | string, playerName: string) {
     const message = `O pokemon #${id} não pertence à ${playerName}.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonExceededRanchTimeLimit extends AppError {
+  constructor(id: number | string, pokemonName: string) {
+    const message = `O pokemon #${id} ${pokemonName} excedeu o tempo limite de 12 horas para o uso do poke-ranch.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonDoesNotHasMegaEvolutionError extends AppError {
+  constructor(id: number | string, pokemonName: string) {
+    const message = `O pokemon #${id} ${pokemonName} não é capaz de mega-evoluir.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonInDaycareError extends AppError {
+  constructor(pokemonId: number, pokemonName: string) {
+    const message = `#${pokemonId} ${pokemonName} está no daycare.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonNotInDaycareError extends AppError {
+  constructor(pokemonId: number, pokemonName: string) {
+    const message = `#${pokemonId} ${pokemonName} não está no daycare.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonIsNotInRaidTeamError extends AppError {
+  constructor(playerName: string, pokemonId: number, pokemonName: string) {
+    const message = `O pokemon #${pokemonId} ${pokemonName} não está registrado no time de raid de ${playerName}.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class CantProceedWithPokemonInTeamError extends AppError {
+  constructor(pokemonId: number, pokemonName: string) {
+    const message = `#${pokemonId} ${pokemonName} está no seu time. Para poder realizar esta ação, remova-o do seu time.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonInDaycare_RemainingTime extends AppError {
+  constructor(pokemonId: number, pokemonName: string, remainingTime: string) {
+    const message = `#${pokemonId} ${pokemonName} está no daycare. Faltam ainda: ${remainingTime} horas.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonAboveDaycareLevelLimit extends AppError {
+  constructor(pokemonId: number, pokemonName: string, levelLimit: number) {
+    const message = `#${pokemonId} ${pokemonName} está acima do nivel máximo do daycare. O nível é determinado pelo nível atual da rota: ${levelLimit}.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -319,6 +563,15 @@ export class PlayerOnlyHasOnePokemonError extends AppError {
   }
 }
 
+export class CantSellAllPokemonsError extends AppError {
+  constructor(playerName: string) {
+    const message = `${playerName} não pode vender todos os seus pokemons.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class CantSellPokemonInTeamError extends AppError {
   constructor(id: number) {
     const message = `O pokemon #${id} faz parte do seu time e não pode ser vendido. Retire-o do seu time primeiro.`
@@ -331,6 +584,15 @@ export class CantSellPokemonInTeamError extends AppError {
 export class CantTradePokemonInTeamError extends AppError {
   constructor(id: number) {
     const message = `O pokemon #${id} faz parte do seu time e não pode ser trocado. Retire-o do seu time primeiro.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class CantSendPokemonInTeamError extends AppError {
+  constructor(id: number) {
+    const message = `O pokemon #${id} faz parte do seu time e não pode ser enviado. Retire-o do seu time primeiro.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -357,7 +619,7 @@ export class SessionNotFoundError extends AppError {
 
 export class PlayersPokemonNotFoundError extends AppError {
   constructor(pokemonId: number, playerName: string) {
-    const message = `ERRO: Pokemon não encontrado com o id ${pokemonId} para o player ${playerName}`
+    const message = `ERRO: Pokemon não encontrado com o id "${pokemonId}" para o player ${playerName}`
     const statusCode = 300
 
     super(message, statusCode)
@@ -426,6 +688,15 @@ export class InvalidChildrenAmountError extends AppError {
   }
 }
 
+export class WrongRegionToEvolveError extends AppError {
+  constructor(pokemonName: string) {
+    const message = `${pokemonName} parece evoluir apenas em uma certa região.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class TypeMissmatchError extends AppError {
   constructor(value: string, typeName: string) {
     const message = `ERRO: "${value}" não é do tipo ${typeName}.`
@@ -455,7 +726,7 @@ export class PlayerDoesNotHaveThePokemonInTheTeamError extends AppError {
 
 export class RequestedShopItemDoesNotExists extends AppError {
   constructor(itemId: number | string) {
-    const message = `Não há um item com id: ${itemId} disponível na loja.`
+    const message = `Não há um item com id: "${itemId}" disponível na loja.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -487,15 +758,70 @@ export class InsufficientShardsError extends AppError {
 export class SendEmptyMessageError extends AppError {
   constructor() {
     const message = ''
+    const react = '❌'
     const statusCode = 300
 
-    super(message, statusCode)
+    super(message, statusCode, react)
   }
 }
 
 export class InvasionAlreadyFinishedError extends AppError {
   constructor() {
     const message = `A invasão já se encerrou.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class RaidAlreadyFinishedError extends AppError {
+  constructor() {
+    const message = `A raid já se encerrou.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PlayerDoesNotBelongToRaidTeamError extends AppError {
+  constructor(playerName: string) {
+    const message = `${playerName} não está na equipe da raid.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class RaidAlreadyInProgressError extends AppError {
+  constructor(playerName: string) {
+    const message = `${playerName}: A raid já se iniciou, não é possível entrar mais.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class RoomDoesNotExistsInRaidError extends AppError {
+  constructor(roomIndex: number, raidName: string) {
+    const message = `A sala ${roomIndex} não existe na raid ${raidName}.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class RoomAlreadyFinishedError extends AppError {
+  constructor(roomIndex: number) {
+    const message = `A sala ${roomIndex} já foi finalizada.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PlayerDoesNotHaveReviveForPokemonInRaidError extends AppError {
+  constructor(playerName: string, pokemonName: string) {
+    const message = `${playerName} não possui um revive para usar em ${pokemonName}. Troque de pokemon.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -567,7 +893,7 @@ export class PokemonHasNotBornYetError extends AppError {
 
 export class EggIsNotReadyToBeHatch extends AppError {
   constructor(id: number, hoursLeft: number) {
-    const message = `O ovo #${id} ainda não está pronto para ser chocado. Faltam ${hoursLeft} horas ainda.`
+    const message = `O ovo #${id} ainda não está pronto para ser chocado. Faltam ${hoursLeft.toFixed(2)} horas ainda.`
     const statusCode = 300
 
     super(message, statusCode)

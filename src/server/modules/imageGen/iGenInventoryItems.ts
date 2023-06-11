@@ -1,12 +1,26 @@
-import { Item } from '@prisma/client'
-import { createCanvas, loadImage } from 'canvas'
+import { BaseItem, BasePokemon, HeldItem, Item, Player, Pokemon } from '@prisma/client'
+import { createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '../../../infra/logger'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
+import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
 type TParams = {
-  playerData: any
+  playerData: Player & {
+    ownedItems: (Item & {
+      baseItem: BaseItem
+    })[]
+    ownedPokemons: (Pokemon & {
+      baseData: BasePokemon
+      heldItem:
+        | (HeldItem & {
+            baseItem: BaseItem
+          })
+        | null
+    })[]
+  }
 }
 
 export const iGenInventoryItems = async (data: TParams) => {
@@ -16,7 +30,7 @@ export const iGenInventoryItems = async (data: TParams) => {
   const backgroundUrl = './src/assets/sprites/UI/hud/player_inventory_items.png'
 
   // Load the background image
-  const background = await loadImage(backgroundUrl)
+  const background = await loadOrSaveImageFromCache(backgroundUrl)
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
@@ -33,15 +47,34 @@ export const iGenInventoryItems = async (data: TParams) => {
   let k = 0
 
   const items = data.playerData.ownedItems.filter((item: Item) => item.amount > 0)
+  const heldItems = data.playerData.ownedPokemons.map(poke => {
+    if (poke.heldItem)
+      return {
+        name: poke.heldItem.name,
+        baseItem: {
+          spriteUrl: poke.heldItem.baseItem.spriteUrl,
+        },
+        ownerName: poke.baseData.name,
+        ownerId: poke.id,
+        ownerSpriteUrl: poke.spriteUrl,
+        isHeld: true,
+        amount: 1,
+      }
+  })
 
-  for (let i = 0; i < items.length; i++) {
+  const totalItems: any = [items, heldItems].flat().filter(item => item !== undefined)
+
+  if (!totalItems) throw new UnexpectedError('igenvinetoryitems')
+
+  for (let i = 0; i < totalItems.length; i++) {
+    if (!totalItems[i]) continue
     if (i === 5 || i === 10 || i === 15) {
       j++
       k = 0
     }
 
     const x = 60 + k * 82.5
-    const y = 40 + j * 110
+    const y = 40 + j * 108
 
     // set up the circle style
     const circleRadius = 25
@@ -53,15 +86,23 @@ export const iGenInventoryItems = async (data: TParams) => {
     ctx.fillStyle = circleColor
     ctx.fill()
 
-    const sprite = await loadImage(items[i].baseItem.spriteUrl)
+    const sprite = await loadOrSaveImageFromCache(totalItems[i]!.baseItem.spriteUrl)
     ctx.drawImage(sprite, x, y, 50, 50)
 
-    ctx.font = ' 20px Pokemon'
-    ctx.fillStyle = 'white'
-    ctx.textAlign = 'center'
-    ctx.fillText(`${items[i].amount}`, x + 20, y + 80)
+    if ('ownerSpriteUrl' in totalItems[i]!) {
+      const sprite = await loadOrSaveImageFromCache(totalItems[i]!.ownerSpriteUrl)
+      ctx.drawImage(sprite, x, y + 40, 45, 45)
+      k++
+      continue
+    }
 
-    k++
+    if ('amount' in totalItems[i]!) {
+      ctx.font = ' 20px Pokemon'
+      ctx.fillStyle = 'white'
+      ctx.textAlign = 'center'
+      ctx.fillText(`${totalItems[i]!.amount}`, x + 20, y + 80)
+      k++
+    }
   }
 
   const filepath: string = await new Promise(resolve => {
@@ -77,7 +118,7 @@ export const iGenInventoryItems = async (data: TParams) => {
     })
   })
 
-  removeFileFromDisk(filepath, 5000)
+  removeFileFromDisk(filepath, 55000)
 
   return filepath
 }

@@ -35,6 +35,49 @@ export const generateWildPokemon = async (data: TParams) => {
         Math.max(Math.ceil(Math.random() * 18), 1),
       ]
 
+  if (baseData.isRegional) {
+    return await prismaClient.pokemon.create({
+      data: {
+        basePokemonId: baseData.id,
+        gameRoomId,
+        savage: savage,
+        level: level,
+        experience: level ** 3,
+        isMale: Math.random() > 0.5,
+        isShiny: false,
+        spriteUrl: baseData.shinySpriteUrl,
+        hp: Math.round(generateHpStat(baseData.BaseHp, level) * 1.05),
+        atk: Math.round(generateGeneralStats(baseData.BaseAtk, level) * 1.05),
+        def: Math.round(generateGeneralStats(baseData.BaseDef, level) * 1.05),
+        spAtk: Math.round(generateGeneralStats(baseData.BaseSpAtk, level) * 1.05),
+        spDef: Math.round(generateGeneralStats(baseData.BaseSpDef, level) * 1.05),
+        speed: Math.round(generateGeneralStats(baseData.BaseSpeed, level) * 1.05),
+        isAdult: isAdult,
+        talentId1: talentIds[0],
+        talentId2: talentIds[1],
+        talentId3: talentIds[2],
+        talentId4: talentIds[3],
+        talentId5: talentIds[4],
+        talentId6: talentIds[5],
+        talentId7: talentIds[6],
+        talentId8: talentIds[7],
+        talentId9: talentIds[8],
+      },
+      include: {
+        baseData: true,
+        talent1: true,
+        talent2: true,
+        talent3: true,
+        talent4: true,
+        talent5: true,
+        talent6: true,
+        talent7: true,
+        talent8: true,
+        talent9: true,
+      },
+    })
+  }
+
   if (isShiny) {
     const talentId1 = talentNameMap.get(baseData.type1Name)
     const talentId2 = talentNameMap.get(baseData.type2Name || baseData.type1Name)
@@ -48,12 +91,12 @@ export const generateWildPokemon = async (data: TParams) => {
         isMale: Math.random() > 0.5,
         isShiny: true,
         spriteUrl: baseData.shinySpriteUrl,
-        hp: Math.round(generateHpStat(baseData.BaseHp, level) * 1.1),
-        atk: Math.round(generateGeneralStats(baseData.BaseAtk, level) * 1.1),
-        def: Math.round(generateGeneralStats(baseData.BaseDef, level) * 1.1),
-        spAtk: Math.round(generateGeneralStats(baseData.BaseSpAtk, level) * 1.1),
-        spDef: Math.round(generateGeneralStats(baseData.BaseSpDef, level) * 1.1),
-        speed: Math.round(generateGeneralStats(baseData.BaseSpeed, level) * 1.1),
+        hp: Math.round(generateHpStat(baseData.BaseHp, level) * 1.15),
+        atk: Math.round(generateGeneralStats(baseData.BaseAtk, level) * 1.15),
+        def: Math.round(generateGeneralStats(baseData.BaseDef, level) * 1.15),
+        spAtk: Math.round(generateGeneralStats(baseData.BaseSpAtk, level) * 1.15),
+        spDef: Math.round(generateGeneralStats(baseData.BaseSpDef, level) * 1.15),
+        speed: Math.round(generateGeneralStats(baseData.BaseSpeed, level) * 1.15),
         isAdult: isAdult,
         talentId1: getRandomBetween2({ obj1: [talentId1, 0.5], obj2: [talentId2, 0.5] }),
         talentId2: getRandomBetween2({ obj1: [talentId1, 0.5], obj2: [talentId2, 0.5] }),

@@ -1,32 +1,33 @@
-import { createCanvas, loadImage } from 'canvas'
+import { createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '../../../infra/logger'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
-import { IPokemon } from '../../../server/models/IPokemon'
+import { Pokemon_BaseData } from '../duel/duelNXN'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
 type TParams = {
-  pokemonData: IPokemon | any
+  pokemon: Pokemon_BaseData
 }
 
 export const iGenWildPokemon = async (data: TParams) => {
-  const bg1 = './src/assets/backgrounds/city.png'
-  const bg2 = './src/assets/backgrounds/forest.png'
-  const bg3 = './src/assets/backgrounds/savannah.png'
-  const bg4 = './src/assets/backgrounds/underwater.png'
+  const bg1 = `./src/assets/sprites/UI/hud/duel_bg/${data.pokemon.baseData.type1Name}.png`
+  const bg2 = `./src/assets/sprites/UI/hud/duel_bg/${
+    data.pokemon.baseData.type2Name || data.pokemon.baseData.type1Name
+  }.png`
 
-  const bgs = [bg1, bg2, bg3, bg4]
+  const bgs = [bg1, bg2]
   // Define the dimensions of the canvas and the background
   const canvasWidth = 500
   const canvasHeight = 500
   const backgroundUrl = bgs[Math.floor(Math.random() * bgs.length)]
 
   // Load the background image
-  const background = await loadImage(backgroundUrl)
+  const background = await loadOrSaveImageFromCache(backgroundUrl)
 
   // Load the sprite image
-  const sprite = await loadImage(data.pokemonData.spriteUrl)
+  const sprite = await loadOrSaveImageFromCache(data.pokemon.spriteUrl)
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
@@ -45,7 +46,7 @@ export const iGenWildPokemon = async (data: TParams) => {
   // Draw the sprite on the canvas
   ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight)
 
-  const bar = await loadImage('./src/assets/sprites/UI/hud/pokemon_wild_encounter.png')
+  const bar = await loadOrSaveImageFromCache('./src/assets/sprites/UI/hud/pokemon_wild_encounter.png')
   // Calculate the position of the sprite in the middle of the canvas
   const barWidth = 500 // replace with the actual width of the bar
   const barHeight = 500 // replace with the actual height of the bar
@@ -57,7 +58,9 @@ export const iGenWildPokemon = async (data: TParams) => {
 
   ctx.globalAlpha = 1
 
-  const typeLabel1 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemonData.baseData.type1Name + '.png')
+  const typeLabel1 = await loadOrSaveImageFromCache(
+    './src/assets/sprites/UI/types/' + data.pokemon.baseData.type1Name + '.png'
+  )
   // Calculate the position of the sprite in the middle of the canvas
   const typeLabel1Width = 100 // replace with the actual width of the typeLabel1
   const typeLabel1Height = 31 // replace with the actual height of the typeLabel1
@@ -67,8 +70,10 @@ export const iGenWildPokemon = async (data: TParams) => {
   ctx.globalAlpha = 0.8
   ctx.drawImage(typeLabel1, typeLabel1X, typeLabel1Y, typeLabel1Width, typeLabel1Height)
 
-  if (data.pokemonData.baseData.type2Name) {
-    const typeLabel2 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemonData.baseData.type2Name + '.png')
+  if (data.pokemon.baseData.type2Name) {
+    const typeLabel2 = await loadOrSaveImageFromCache(
+      './src/assets/sprites/UI/types/' + data.pokemon.baseData.type2Name + '.png'
+    )
     // Calculate the position of the sprite in the middle of the canvas
     const typeLabel2Width = 100 // replace with the actual width of the typeLabel2
     const typeLabel2Height = 31 // replace with the actual height of the typeLabel2
@@ -81,7 +86,7 @@ export const iGenWildPokemon = async (data: TParams) => {
 
   // write pokemon name
 
-  const name = `#${data.pokemonData.id} ${data.pokemonData.baseData.name.toUpperCase()} `
+  const name = `#${data.pokemon.id} ${data.pokemon.baseData.name.toUpperCase()} `
   ctx.font = 30 - name.length / 3 + 'px Righteous'
   ctx.fillStyle = 'white'
   ctx.textAlign = 'start'
@@ -94,7 +99,7 @@ export const iGenWildPokemon = async (data: TParams) => {
   ctx.fillStyle = 'white'
   ctx.textAlign = 'center'
   ctx.fillText(
-    `${data.pokemonData.level}
+    `${data.pokemon.level}
  `,
     450,
     65
@@ -112,9 +117,9 @@ export const iGenWildPokemon = async (data: TParams) => {
 
   // set up the table data
   const tableData = [
-    [data.pokemonData.hp.toString(), data.pokemonData.atk.toString(), data.pokemonData.def.toString()],
+    [data.pokemon.hp.toString(), data.pokemon.atk.toString(), data.pokemon.def.toString()],
 
-    [data.pokemonData.speed.toString(), data.pokemonData.spAtk.toString(), data.pokemonData.spDef.toString()],
+    [data.pokemon.speed.toString(), data.pokemon.spAtk.toString(), data.pokemon.spDef.toString()],
   ]
 
   // set up the table style
@@ -143,19 +148,19 @@ export const iGenWildPokemon = async (data: TParams) => {
   // draw talents
 
   const getTalent = async (name: string) => {
-    return await loadImage('./src/assets/sprites/UI/types/circle/' + name + '.png')
+    return await loadOrSaveImageFromCache('./src/assets/sprites/UI/types/circle/' + name + '.png')
   }
 
   const talents = [
-    talentIdMap.get(data.pokemonData.talentId1),
-    talentIdMap.get(data.pokemonData.talentId2),
-    talentIdMap.get(data.pokemonData.talentId3),
-    talentIdMap.get(data.pokemonData.talentId4),
-    talentIdMap.get(data.pokemonData.talentId5),
-    talentIdMap.get(data.pokemonData.talentId6),
-    talentIdMap.get(data.pokemonData.talentId7),
-    talentIdMap.get(data.pokemonData.talentId8),
-    talentIdMap.get(data.pokemonData.talentId9),
+    talentIdMap.get(data.pokemon.talentId1),
+    talentIdMap.get(data.pokemon.talentId2),
+    talentIdMap.get(data.pokemon.talentId3),
+    talentIdMap.get(data.pokemon.talentId4),
+    talentIdMap.get(data.pokemon.talentId5),
+    talentIdMap.get(data.pokemon.talentId6),
+    talentIdMap.get(data.pokemon.talentId7),
+    talentIdMap.get(data.pokemon.talentId8),
+    talentIdMap.get(data.pokemon.talentId9),
   ]
 
   ctx.globalAlpha = 1

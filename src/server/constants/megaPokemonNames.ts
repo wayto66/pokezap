@@ -12,7 +12,7 @@ export const megaPokemonNames = [
   'tyranitar',
   'sceptile',
   'blaziken',
-  'swamper',
+  'swampert',
   'gardevoir',
   'sableye',
   'mawile',
@@ -36,4 +36,6 @@ export const megaPokemonNames = [
   'diancie',
   'pidgeot',
   'slowbro',
+  'gengar',
+  'alakazam',
 ]

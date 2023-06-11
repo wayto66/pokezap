@@ -1,9 +1,10 @@
 import { BaseItem } from '@prisma/client'
-import { createCanvas, loadImage } from 'canvas'
+import { createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '../../../infra/logger'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
 type TParams = {
   items: BaseItem[]
@@ -16,7 +17,7 @@ export const iGenShop = async (data: TParams) => {
   const backgroundUrl = './src/assets/sprites/UI/hud/shop1.png'
 
   // Load the background image
-  const background = await loadImage(backgroundUrl)
+  const background = await loadOrSaveImageFromCache(backgroundUrl)
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
@@ -48,7 +49,7 @@ export const iGenShop = async (data: TParams) => {
     ctx.fillStyle = circleColor
     ctx.fill()
 
-    const sprite = await loadImage(data.items[i].spriteUrl)
+    const sprite = await loadOrSaveImageFromCache(data.items[i].spriteUrl)
     ctx.drawImage(sprite, x, y, 50, 50)
 
     ctx.font = ' 20px Pokemon'

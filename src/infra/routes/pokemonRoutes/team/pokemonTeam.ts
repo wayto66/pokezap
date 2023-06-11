@@ -10,6 +10,7 @@ import {
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokemonTeam } from '../../../../server/modules/imageGen/iGenPokemonTeam'
 import { TRouteParams } from '../../router'
+import { getActiveClanBonus } from '../../../../server/helpers/getActiveClanBonus'
 
 export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , id1, id2, id3, id4, id5, id6] = data.routeParams
@@ -25,7 +26,6 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
           baseData: true,
         },
       },
-      ownedHeldItems: true,
       teamPoke1: {
         include: {
           baseData: true,
@@ -67,7 +67,15 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
     })
 
     return {
-      message: `Time Pokemon de ${player.name}`,
+      message: `Time Pokemon de ${player.name} 
+      Bonus de clã ativo: ${getActiveClanBonus([
+        player.teamPoke1,
+        player.teamPoke2,
+        player.teamPoke3,
+        player.teamPoke4,
+        player.teamPoke5,
+        player.teamPoke6,
+      ])}`,
       status: 200,
       data: null,
       imageUrl: imageUrl,

@@ -17,15 +17,6 @@ export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse>
       ownedPokemons: {
         include: {
           baseData: true,
-          talent1: true,
-          talent2: true,
-          talent3: true,
-          talent4: true,
-          talent5: true,
-          talent6: true,
-          talent7: true,
-          talent8: true,
-          talent9: true,
         },
       },
     },
@@ -37,15 +28,36 @@ export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse>
     return 1
   }
 
+  const pokemons = await prismaClient.pokemon.findMany({
+    where: {
+      ownerId: player.id,
+    },
+    skip: Math.max(0, (numberPage() - 1) * 20),
+    take: 20,
+    include: {
+      baseData: {
+        include: {
+          skills: true,
+        },
+      },
+      heldItem: {
+        include: {
+          baseItem: true,
+        },
+      },
+    },
+  })
+
   const imageUrl = await iGenInventoryPokemons({
-    playerData: player,
-    page: numberPage(),
+    pokemons,
   })
 
   return {
-    message: `Página ${numberPage()} de Pokemons de ${player.name}.`,
+    message: `Página ${numberPage()} de Pokemons de ${player.name}.
+    👍 - Próxima página`,
     status: 200,
     data: null,
     imageUrl: imageUrl,
+    actions: [`pz. inventory poke ${numberPage() + 1}`],
   }
 }

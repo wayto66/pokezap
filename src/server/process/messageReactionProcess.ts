@@ -1,6 +1,3 @@
-import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
-// @ts-ignore
-import ffprobe from '@ffprobe-installer/ffprobe'
 import { PrismaClient } from '@prisma/client'
 import ffmpeg from 'fluent-ffmpeg'
 import moment from 'moment'
@@ -32,8 +29,8 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
     const difference: number = moment
       .duration(currentTimestamp - Math.floor(new Date(message.createdAt).getTime() / 1000), 'seconds')
       .asMinutes()
-    if (difference >= 30) {
-      logger.info('ignoring old msg. difference: ' + difference)
+    if (difference >= 60) {
+      logger.info('ignoring old msg. difference: ' + difference.toFixed(2) + 'minutes')
       return
     }
 
@@ -84,42 +81,34 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
       return
     }
 
-    const filePath = await new Promise<string>((resolve, reject) => {
-      if (!response.isAnimated) resolve(response.imageUrl!)
+    const filePath = response.isAnimated
+      ? await new Promise<string>((resolve, reject) => {
+          if (!response.isAnimated) resolve(response.imageUrl!)
 
-      const outputPath = `./src/server/modules/imageGen/images/video-${Math.random().toFixed(5)}.mp4`
+          const outputPath = `./src/server/modules/imageGen/images/video-${Math.random().toFixed(5)}.mp4`
 
-      if (!response.imageUrl) return
+          if (!response.imageUrl) return
 
-      ffmpeg
-        .setFfprobePath(ffprobe.path)
-        .setFfmpegPath(ffmpegInstaller.path)
-        .input(response.imageUrl)
-        .outputOptions([
-          '-pix_fmt yuv420p',
-          '-c:v libx264',
-          '-movflags +faststart',
-          "-filter:v crop='floor(in_w/2)*2:floor(in_h/2)*2'",
-        ])
-        .noAudio()
-        .output(outputPath)
-        .on('end', () => {
-          resolve(outputPath)
+          ffmpeg(response.imageUrl)
+            .output(outputPath)
+            .noAudio()
+            .on('end', () => {
+              console.log('Conversão concluída!')
+              resolve(outputPath)
+            })
+            .on('error', err => {
+              console.log('Ocorreu um erro durante a conversão:', err)
+            })
+            .run()
+        }).catch(err => {
+          logger.error(err)
+          return ''
         })
-        .on('error', (e: Error) => {
-          logger.error(e)
-          reject(new Error('error on ffmpeg'))
-        })
-        .run()
-    }).catch(err => {
-      logger.error(err)
-      return ''
-    })
+      : response.imageUrl
 
     const media = MessageMedia.fromFilePath(filePath)
     const result = await zapClient.sendMessage(msg.id.remote, response.message, {
       media: media,
-      sendVideoAsGif: true,
     })
 
     if (response.actions) {
@@ -152,6 +141,7 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
       }, response.afterMessageDelay || 5000)
     }
   } catch (e: any) {
+    console.log(e)
     logger.error(e)
   }
 }

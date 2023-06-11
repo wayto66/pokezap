@@ -1,9 +1,10 @@
-import { Image, createCanvas, loadImage } from 'canvas'
+import { Image, createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '../../../infra/logger'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
 type TParams = {
   playerData: any
@@ -18,12 +19,12 @@ export const iGenPokemonTeam = async (data: TParams) => {
   const talentSpritesMap = new Map<number, Image>([])
 
   for (let i = 1; i < 19; i++) {
-    const image = await loadImage('./src/assets/sprites/UI/types/circle/' + talentIdMap.get(i) + '.png')
+    const image = await loadOrSaveImageFromCache('./src/assets/sprites/UI/types/circle/' + talentIdMap.get(i) + '.png')
     talentSpritesMap.set(i, image)
   }
 
   // Load the background image
-  const background = await loadImage(backgroundUrl)
+  const background = await loadOrSaveImageFromCache(backgroundUrl)
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
@@ -69,15 +70,19 @@ export const iGenPokemonTeam = async (data: TParams) => {
     ctx.fill()
 
     // draw the pokemon sprite
-    const sprite = await loadImage(pokeTeam[i].spriteUrl)
+    const sprite = await loadOrSaveImageFromCache(pokeTeam[i].spriteUrl)
     ctx.drawImage(sprite, x, y, 160, 160)
 
     // draw the pokemon types
-    const typeSprite1 = await loadImage('./src/assets/sprites/UI/types/' + pokeTeam[i].baseData.type1Name + '.png')
+    const typeSprite1 = await loadOrSaveImageFromCache(
+      './src/assets/sprites/UI/types/' + pokeTeam[i].baseData.type1Name + '.png'
+    )
     ctx.drawImage(typeSprite1, x + 130, y + 70, 50, 25)
 
     if (pokeTeam[i].baseData.type2Name) {
-      const typeSprite2 = await loadImage('./src/assets/sprites/UI/types/' + pokeTeam[i].baseData.type2Name + '.png')
+      const typeSprite2 = await loadOrSaveImageFromCache(
+        './src/assets/sprites/UI/types/' + pokeTeam[i].baseData.type2Name + '.png'
+      )
       ctx.drawImage(typeSprite2, x + 180, y + 70, 50, 25)
     }
 

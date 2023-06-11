@@ -1,0 +1,53 @@
+import { Player, Prisma, PrismaClient } from '@prisma/client'
+import { DateExpressionOperatorReturningNumber } from 'mongoose'
+import { container } from 'tsyringe'
+
+export type TQuestCheckData = {
+  player: Player
+  requestedElement: string
+  requestedAmount: number
+}
+
+export type TQuestCheckResponse = {
+  done: boolean
+  remaining?: number
+}
+
+const questCheck = async ({
+  player,
+  requestedAmount,
+  requestedElement,
+}: TQuestCheckData): Promise<TQuestCheckResponse> => {
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
+
+  const today = new Date() // Get the current date
+  today.setHours(0, 0, 0, 0) // Set the time to midnight
+
+  const pokemonsDefeatedToday = await prismaClient.pokemon.findMany({
+    where: {
+      createdAt: {
+        gte: today, // Filter for records created on or after today
+      },
+      defeatedBy: {
+        some: {
+          id: player.id,
+        },
+      },
+      baseData: {
+        OR: [{ type1Name: requestedElement }, { type2Name: requestedElement }],
+      },
+    },
+  })
+
+  const defeatedAmount = pokemonsDefeatedToday.length || 0
+
+  if (defeatedAmount >= requestedAmount)
+    return {
+      done: true,
+    }
+
+  return {
+    done: false,
+    remaining: requestedAmount - defeatedAmount,
+  }
+}

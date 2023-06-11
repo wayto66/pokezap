@@ -101,11 +101,11 @@ thunderforge:
 
 - VOLCANIC: critchance
 - TOXIBUG: lifesteal
-- GARDESTRIKE: atk bonus
-- MASTERMIND: manacharge
-- SEAVELL: spatk+
-- WINGEON: speed bonus?
-- WONDERLEAF: hp+
+- GARDESTRIKE: crescent damage bonus
+- MASTERMIND: manacharge e acuracy
+- SEAVELL: hp+ e statuscleanse%
+- WINGEON: speed e crescent evasion
+- WONDERLEAF: hp+ e healing\statusbuff+
 - THUNDERFORGE: def+spdef
 
 # - by attribute

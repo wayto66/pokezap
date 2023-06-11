@@ -1,10 +1,17 @@
-import { MissingParametersDuelRouteError, SubRouteNotFoundError } from '../../../infra/errors/AppErrors'
+import { container } from 'tsyringe'
+import {
+  MissingParametersDuelRouteError,
+  RouteForbiddenForDuelRaidError,
+  RouteNotFoundError,
+  SubRouteNotFoundError,
+} from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { duelAccept } from './duelAccept'
 import { duelAcceptX2 } from './duelAcceptX2'
 import { duelX1Route } from './duelX1Route'
 import { duelX2Route } from './duelX2Route'
+import { PrismaClient } from '@prisma/client'
 
 const subRouteMap = new Map<string, any>([
   // DUEL X1 ROUTES
@@ -19,6 +26,15 @@ const subRouteMap = new Map<string, any>([
 ])
 
 export const duelRoutes = async (data: TRouteParams): Promise<IResponse> => {
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
+  const gameRoom = await prismaClient.gameRoom.findFirst({
+    where: {
+      phone: data.groupCode,
+    },
+  })
+  if (!gameRoom) throw new RouteNotFoundError('', '')
+  if (gameRoom.mode !== 'duel-raid') throw new RouteForbiddenForDuelRaidError()
+
   const [, , subRoute] = data.routeParams
   if (!subRoute) throw new MissingParametersDuelRouteError()
 

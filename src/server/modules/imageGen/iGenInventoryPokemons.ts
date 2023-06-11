@@ -1,23 +1,27 @@
-import { createCanvas, loadImage } from 'canvas'
+import { Image, createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '../../../infra/logger'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
+import { Pokemon_BaseData, Pokemon_BaseData_Skills_Held } from '../duel/duelNXN'
+import { pokemonTypes } from '../../constants/pokemonTypes'
+import { talentIdMap } from '../../constants/talentIdMap'
+import { getHoursDifference } from '../../helpers/getHoursDifference'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
 type TParams = {
-  playerData: any
-  page?: number
+  pokemons: Pokemon_BaseData_Skills_Held[]
 }
 
 export const iGenInventoryPokemons = async (data: TParams) => {
-  const page = data.page ? data.page - 1 : 0
+  const { pokemons } = data
   // Define the dimensions of the canvas and the background
   const canvasWidth = 500
   const canvasHeight = 500
-  const backgroundUrl = './src/assets/sprites/UI/hud/player_inventory_items.png'
+  const backgroundUrl = './src/assets/sprites/UI/hud/pokemon_inventory.png'
 
   // Load the background image
-  const background = await loadImage(backgroundUrl)
+  const background = await loadOrSaveImageFromCache(backgroundUrl)
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
@@ -27,61 +31,95 @@ export const iGenInventoryPokemons = async (data: TParams) => {
   // Draw the background on the canvas
   ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
 
-  // draw items
-  ctx.globalAlpha = 1
+  const talentImageMap = new Map<string, Image>([])
+  for (const type of pokemonTypes) {
+    talentImageMap.set(type, await loadOrSaveImageFromCache('./src/assets/sprites/UI/types/circle/' + type + '.png'))
+  }
 
   let j = 0
   let k = 0
 
-  for (let i = 0; i < Math.min(19 + page * 19, data.playerData.ownedPokemons.length); i++) {
-    if (
-      i === 5 ||
-      i === 10 ||
-      i === 15 ||
-      i === 20 ||
-      i === 30 ||
-      i === 40 ||
-      i === 45 ||
-      i === 50 ||
-      i === 55 ||
-      i === 75 ||
-      i === 80 ||
-      i === 85
-    ) {
+  for (let i = 0; i < 20; i++) {
+    if (i !== 0 && i % 4 === 0) {
       j++
       k = 0
     }
 
-    if (!data.playerData.ownedPokemons[i + page * 19]) continue
+    if (!pokemons[i]) continue
 
-    const x = 60 + k * 82.5
-    const y = 40 + j * 107
+    const childrenCount = [
+      pokemons[i].childrenId1,
+      pokemons[i].childrenId2,
+      pokemons[i].childrenId3,
+      pokemons[i].childrenId4,
+    ].filter(v => v !== null).length
 
-    // set up the circle style
-    const circleRadius = 15
-    const circleColor = 'rgba(0,0,0,0.33)'
-    // draw the circle path
-    ctx.beginPath()
-    ctx.arc(x + 25, y + 25, circleRadius, 0, Math.PI * 2)
-    // fill the circle path with black color
-    ctx.fillStyle = circleColor
-    ctx.fill()
+    const x = 13 + k * 126
+    const y = 10 + j * 97
 
-    const spriteUrl = data.playerData.ownedPokemons[i + page * 19].spriteUrl
+    const spriteUrl = pokemons[i].spriteUrl
     if (!spriteUrl) return
 
-    const sprite = await loadImage(spriteUrl)
+    const sprite = await loadOrSaveImageFromCache(spriteUrl)
     ctx.drawImage(sprite, x - 12, y - 12, 75, 75)
 
-    ctx.font = ' 14px Pokemon'
+    ctx.font = ' 9px Pokemon'
     ctx.fillStyle = 'white'
-    ctx.textAlign = 'center'
-    ctx.fillText(`lvl: ${data.playerData.ownedPokemons[i + page * 19].level}`, x + 20, y + 80)
+    ctx.textAlign = 'end'
+    ctx.fillText(`Lv: ${pokemons[i].level}| Ovos: ${childrenCount}`, x + 105, y + 75)
 
-    ctx.font = ' 14px Pokemon'
+    ctx.font = ' 12px Pokemon'
     ctx.fillStyle = 'white'
     ctx.textAlign = 'start'
-    ctx.fillText(`#${data.playerData.ownedPokemons[i + page * 19].id}`, x, y + 5)
+    ctx.fillText(`#${pokemons[i].id}`, x - 5, y + 75)
+
+    if (pokemons[i].heldItem) {
+      ctx.beginPath()
+      ctx.arc(x + 48, y + 48, 9, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(250,250,250,0.75)'
+      ctx.fill()
+      const spUrl = pokemons[i].heldItem!.baseItem.spriteUrl
+      const heldItemSprite = await loadOrSaveImageFromCache(spUrl)
+      ctx.drawImage(heldItemSprite, x + 41, y + 41, 15, 15)
+    }
+
+    if (pokemons[i].isAdult) {
+      ctx.font = ' 9px Pokemon'
+      ctx.fillStyle = 'white'
+      ctx.textAlign = 'start'
+      ctx.fillText(pokemons[i].baseData.name, x, y + 60)
+
+      const type1Image = talentImageMap.get(pokemons[i].baseData.type1Name)
+      if (!type1Image) continue
+      ctx.drawImage(type1Image, x + 65, y, 14, 14)
+
+      const type2Image = talentImageMap.get(pokemons[i].baseData.type2Name ?? pokemons[i].baseData.type1Name)
+      if (!type2Image) continue
+      ctx.drawImage(type2Image, x + 82, y, 14, 14)
+
+      // draw talents
+
+      for (let i2 = 0; i2 < 3; i2++) {
+        for (let j = 0; j < 3; j++) {
+          const talentX = x + 66 + j * 10
+          const talentY = y + 25 + i2 * 10
+
+          const talentIndex = 'talentId' + (1 + 3 * i2 + j)
+          const talentName = talentIdMap.get((pokemons as any)[i][talentIndex])
+          if (!talentName) continue
+          const image = talentImageMap.get(talentName)
+          if (!image) continue
+
+          ctx.drawImage(image, talentX, talentY, 10, 10)
+        }
+      }
+    } else {
+      ctx.font = ' 10px Pokemon'
+      ctx.fillStyle = 'white'
+      ctx.textAlign = 'end'
+      ctx.fillText((24 - getHoursDifference(pokemons[i].createdAt, new Date())).toFixed(2) + ' h', x + 90, y + 35)
+      ctx.fillText('restantes', x + 90, y + 50)
+    }
 
     k++
   }

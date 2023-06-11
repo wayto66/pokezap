@@ -2,7 +2,6 @@ import { InvasionSession, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { DuelPlayer } from '../../../../infra/routes/duelRoutes/duelAccept'
 import { IResponse } from '../../../../server/models/IResponse'
-import { TDuelX2Response, duelX2 } from '../../../../server/modules/duel/duelX2'
 import { handleExperienceGain } from '../../../../server/modules/pokemon/handleExperienceGain'
 import {
   InsufficentPlayersForInvasionError,
@@ -14,6 +13,7 @@ import {
   UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
+import { TDuelNXNResponse, duelNXN } from '../../../../server/modules/duel/duelNXN'
 
 export const battleInvasionX2 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , invasionSessionIdString] = data.routeParams
@@ -36,6 +36,11 @@ export const battleInvasionX2 = async (data: TRouteParams): Promise<IResponse> =
                   skills: true,
                 },
               },
+              heldItem: {
+                include: {
+                  baseItem: true,
+                },
+              },
             },
           },
         },
@@ -45,6 +50,11 @@ export const battleInvasionX2 = async (data: TRouteParams): Promise<IResponse> =
           baseData: {
             include: {
               skills: true,
+            },
+          },
+          heldItem: {
+            include: {
+              baseItem: true,
             },
           },
         },
@@ -74,9 +84,9 @@ export const battleInvasionX2 = async (data: TRouteParams): Promise<IResponse> =
     },
   })
 
-  const duel = await duelX2({
-    team1: [player1.teamPoke1, player2.teamPoke1],
-    team2: [invasionSession.enemyPokemons[0], invasionSession.enemyPokemons[1]],
+  const duel = await duelNXN({
+    leftTeam: [player1.teamPoke1, player2.teamPoke1],
+    rightTeam: [invasionSession.enemyPokemons[0], invasionSession.enemyPokemons[1]],
   })
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
@@ -162,7 +172,7 @@ ${player2LevelUpMessage0}
 type THandleInvasionLoseData = {
   player1: DuelPlayer
   player2: DuelPlayer
-  duel: TDuelX2Response
+  duel: TDuelNXNResponse
   invasionSession: InvasionSession
 }
 

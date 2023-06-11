@@ -11,6 +11,8 @@ export const readyProcess = (zapIstanceName: string) => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const zapClient = container.resolve<Client>(zapIstanceName)
 
+
+
   cron.schedule(`*/${metaValues.wildPokemonFleeTimeInMinutes} * * * *`, () => {
     logger.info(`Running a task every ${metaValues.wildPokemonFleeTimeInMinutes} minutes`)
 
@@ -29,16 +31,34 @@ export const readyProcess = (zapIstanceName: string) => {
     })
   })
 
-  cron.schedule('0 0 */12 * * *', async () => {
-    logger.info('Running energy reset cron')
-    const players = await prismaClient.player.findMany()
-    for (const player of players) {
-      await prismaClient.player.update({
+  cron.schedule('0 0 */6 * * *', async () => {
+    logger.info('Running cp cron')
+    const gameRooms = await prismaClient.gameRoom.findMany({
+      where: {
+        upgrades: {
+          some: {
+            base: {
+              name: 'pokemon-center',
+            },
+          },
+        },
+      },
+      include: {
+        players: true,
+      },
+    })
+
+    for (const gameRoom of gameRooms) {
+      await prismaClient.player.updateMany({
         where: {
-          id: player.id,
+          id: {
+            in: gameRoom.players.map(player => player.id),
+          },
         },
         data: {
-          energy: 10,
+          energy: {
+            increment: 2,
+          },
         },
       })
     }
@@ -46,24 +66,14 @@ export const readyProcess = (zapIstanceName: string) => {
 
   cron.schedule('0 0 */12 * * *', async () => {
     logger.info('Running energy reset cron')
-    const players = await prismaClient.player.findMany()
-    for (const player of players) {
-      await prismaClient.player.update({
-        where: {
-          id: player.id,
-        },
-        data: {
-          energy: 10,
-        },
-      })
-    }
+    await prismaClient.player.updateMany({
+      data: {
+        energy: 10,
+      },
+    })
   })
 
-  pokeBossInvasion({
-    zapClient,
-  })
-
-  cron.schedule(`* */8 * * * *`, async () => {
+  cron.schedule(`0 0 */6 * * *`, async () => {
     pokeBossInvasion({
       zapClient,
     })

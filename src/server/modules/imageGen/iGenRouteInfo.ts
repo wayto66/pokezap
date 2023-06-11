@@ -1,9 +1,10 @@
 import { BaseRoomUpgrades, GameRoom, RoomUpgrades } from '@prisma/client'
-import { createCanvas, loadImage } from 'canvas'
+import { createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '../../../infra/logger'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
 type TParams = {
   route: GameRoom & {
@@ -20,7 +21,7 @@ export const iGenRouteInfo = async (data: TParams) => {
   const backgroundUrl = './src/assets/sprites/route/base.png'
 
   // Load the background image
-  const background = await loadImage(backgroundUrl)
+  const background = await loadOrSaveImageFromCache(backgroundUrl)
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
@@ -31,11 +32,11 @@ export const iGenRouteInfo = async (data: TParams) => {
   ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
 
   for (const upgrade of data.route.upgrades) {
-    const sprite1 = await loadImage(`./src/assets/sprites/route/${upgrade.base.name}.png`)
+    const sprite1 = await loadOrSaveImageFromCache(`./src/assets/sprites/route/${upgrade.base.name}.png`)
     ctx.drawImage(sprite1, 0, 0, canvasWidth, canvasHeight)
   }
 
-  const sprite2 = await loadImage('./src/assets/sprites/route/trees.png')
+  const sprite2 = await loadOrSaveImageFromCache('./src/assets/sprites/route/trees.png')
   ctx.drawImage(sprite2, 0, 0, canvasWidth, canvasHeight)
 
   const filepath: string = await new Promise(resolve => {

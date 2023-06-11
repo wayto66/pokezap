@@ -4,6 +4,7 @@ import { IResponse } from '../../../server/models/IResponse'
 import {
   InsufficientFundsError,
   MissingParameterError,
+  PlayerInRaidIsLockedError,
   PlayerNotFoundError,
   TypeMissmatchError,
 } from '../../errors/AppErrors'
@@ -37,6 +38,7 @@ export const sendCash = async (data: TRouteParams): Promise<IResponse> => {
     },
   })
   if (!targetPlayer) throw new PlayerNotFoundError(targetPlayerIdString)
+  if (targetPlayer.isInRaid) throw new PlayerInRaidIsLockedError(targetPlayer.name)
 
   await prisma.player.update({
     where: {

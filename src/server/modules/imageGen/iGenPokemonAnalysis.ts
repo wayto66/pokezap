@@ -1,28 +1,32 @@
-import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
-import { createCanvas, loadImage } from 'canvas'
+import { BaseItem, BasePokemon, HeldItem, Item, Pokemon, PrismaClient } from '@prisma/client'
+import { createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { container } from 'tsyringe'
 import { logger } from '../../../infra/logger'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import { removeFileFromDisk } from '../../helpers/fileHelper'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
-type TParams = {
-  pokemonData: Pokemon & {
-    baseData: BasePokemon
-  }
+type TParams = Pokemon & {
+  baseData: BasePokemon
+  heldItem?:
+    | (HeldItem & {
+        baseItem: BaseItem
+      })
+    | null
 }
 
-export const iGenPokemonAnalysis = async (data: TParams) => {
+export const iGenPokemonAnalysis = async (pokemon: TParams) => {
   const canvasWidth = 500
   const canvasHeight = 500
   const backgroundUrl = './src/assets/sprites/UI/hud/pokemon_analysis.png'
 
   // Load the background image
-  const background = await loadImage(backgroundUrl)
+  const background = await loadOrSaveImageFromCache(backgroundUrl)
 
   // Load the sprite image
-  const sprite = await loadImage(data.pokemonData.spriteUrl)
+  const sprite = await loadOrSaveImageFromCache(pokemon.spriteUrl)
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
@@ -41,7 +45,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
   // Draw the sprite on the canvas
   ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight)
 
-  const bar = await loadImage('./src/assets/sprites/UI/hud/pokemon_wild_encounter.png')
+  const bar = await loadOrSaveImageFromCache('./src/assets/sprites/UI/hud/pokemon_wild_encounter.png')
   // Calculate the position of the sprite in the middle of the canvas
   const barWidth = 500 // replace with the actual width of the bar
   const barHeight = 500 // replace with the actual height of the bar
@@ -53,8 +57,10 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
 
   ctx.globalAlpha = 1
 
-  if (data.pokemonData.isAdult) {
-    const typeLabel1 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemonData.baseData.type1Name + '.png')
+  if (pokemon.isAdult) {
+    const typeLabel1 = await loadOrSaveImageFromCache(
+      './src/assets/sprites/UI/types/' + pokemon.baseData.type1Name + '.png'
+    )
     // Calculate the position of the sprite in the middle of the canvas
     const typeLabel1Width = 100 // replace with the actual width of the typeLabel1
     const typeLabel1Height = 31 // replace with the actual height of the typeLabel1
@@ -64,9 +70,9 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     ctx.globalAlpha = 0.8
     ctx.drawImage(typeLabel1, typeLabel1X, typeLabel1Y, typeLabel1Width, typeLabel1Height)
 
-    if (data.pokemonData.baseData.type2Name) {
-      const typeLabel2 = await loadImage(
-        './src/assets/sprites/UI/types/' + data.pokemonData.baseData.type2Name + '.png'
+    if (pokemon.baseData.type2Name) {
+      const typeLabel2 = await loadOrSaveImageFromCache(
+        './src/assets/sprites/UI/types/' + pokemon.baseData.type2Name + '.png'
       )
       // Calculate the position of the sprite in the middle of the canvas
       const typeLabel2Width = 100 // replace with the actual width of the typeLabel2
@@ -85,7 +91,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     ctx.textAlign = 'start'
 
     ctx.fillText(
-      `${data.pokemonData.baseData.name.toUpperCase()}
+      `${pokemon.baseData.name.toUpperCase()}
  `,
       10,
       70
@@ -93,7 +99,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     ctx.strokeStyle = 'rgba(0,0,0,0.5) 10px solid'
     ctx.lineWidth = 2
     ctx.strokeText(
-      `${data.pokemonData.baseData.name.toUpperCase()}
+      `${pokemon.baseData.name.toUpperCase()}
  `,
       10,
       70
@@ -105,7 +111,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     ctx.fillStyle = 'white'
     ctx.textAlign = 'center'
     ctx.fillText(
-      `${data.pokemonData.level}
+      `${pokemon.level}
  `,
       450,
       70
@@ -113,7 +119,7 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     ctx.strokeStyle = 'black 0px solid'
     ctx.lineWidth = 2
     ctx.strokeText(
-      `${data.pokemonData.level}
+      `${pokemon.level}
  `,
       450,
       70
@@ -139,9 +145,9 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
 
     // set up the table data
     const tableData = [
-      [data.pokemonData.hp.toString(), data.pokemonData.atk.toString(), data.pokemonData.def.toString()],
+      [pokemon.hp.toString(), pokemon.atk.toString(), pokemon.def.toString()],
 
-      [data.pokemonData.speed.toString(), data.pokemonData.spAtk.toString(), data.pokemonData.spDef.toString()],
+      [pokemon.speed.toString(), pokemon.spAtk.toString(), pokemon.spDef.toString()],
     ]
 
     // set up the table style
@@ -170,19 +176,19 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     // draw talents
 
     const getTalent = async (name: string) => {
-      return await loadImage('./src/assets/sprites/UI/types/circle/' + name + '.png')
+      return await loadOrSaveImageFromCache('./src/assets/sprites/UI/types/circle/' + name + '.png')
     }
 
     const talents = [
-      talentIdMap.get(data.pokemonData.talentId1),
-      talentIdMap.get(data.pokemonData.talentId2),
-      talentIdMap.get(data.pokemonData.talentId3),
-      talentIdMap.get(data.pokemonData.talentId4),
-      talentIdMap.get(data.pokemonData.talentId5),
-      talentIdMap.get(data.pokemonData.talentId6),
-      talentIdMap.get(data.pokemonData.talentId7),
-      talentIdMap.get(data.pokemonData.talentId8),
-      talentIdMap.get(data.pokemonData.talentId9),
+      talentIdMap.get(pokemon.talentId1),
+      talentIdMap.get(pokemon.talentId2),
+      talentIdMap.get(pokemon.talentId3),
+      talentIdMap.get(pokemon.talentId4),
+      talentIdMap.get(pokemon.talentId5),
+      talentIdMap.get(pokemon.talentId6),
+      talentIdMap.get(pokemon.talentId7),
+      talentIdMap.get(pokemon.talentId8),
+      talentIdMap.get(pokemon.talentId9),
     ]
 
     ctx.globalAlpha = 1
@@ -212,17 +218,22 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     }
   }
 
+  if (pokemon.heldItem) {
+    const heldItemImage = await loadOrSaveImageFromCache(pokemon.heldItem.baseItem.spriteUrl)
+    ctx.drawImage(heldItemImage, 145, 425, 45, 45)
+  }
+
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const parent1 = await prismaClient.pokemon.findFirst({
     where: {
-      id: data.pokemonData.parentId1 || 0,
+      id: pokemon.parentId1 || 0,
     },
   })
 
   const parent2 = await prismaClient.pokemon.findFirst({
     where: {
-      id: data.pokemonData.parentId2 || 0,
+      id: pokemon.parentId2 || 0,
     },
   })
 
@@ -231,12 +242,12 @@ export const iGenPokemonAnalysis = async (data: TParams) => {
     ctx.fillStyle = 'white'
 
     ctx.textAlign = 'start'
-    const sprite1 = await loadImage(parent1.spriteUrl)
+    const sprite1 = await loadOrSaveImageFromCache(parent1.spriteUrl)
     // Draw the sprite1 on the canvas
     ctx.drawImage(sprite1, 20, 110, 85, 85)
     ctx.fillText('#' + parent1.id, 40, 195)
 
-    const sprite2 = await loadImage(parent2.spriteUrl)
+    const sprite2 = await loadOrSaveImageFromCache(parent2.spriteUrl)
     // Draw the sprite2 on the canvas
     ctx.drawImage(sprite2, 20, 175, 85, 85)
     ctx.fillText('#' + parent2.id, 40, 260)

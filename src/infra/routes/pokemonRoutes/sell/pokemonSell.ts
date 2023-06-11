@@ -9,17 +9,20 @@ import {
   PlayerOnlyHasOnePokemonError,
   PokemonNotFoundError,
   TypeMissmatchError,
+  UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
+import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
 
 export const pokemonSell = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , pokemonIdString, confirm] = data.routeParams
 
   if (!pokemonIdString) throw new MissingParametersBuyAmountError()
 
-  const pokemonId = Number(pokemonIdString)
+  let searchMode = 'string'
 
-  if (isNaN(pokemonId)) throw new TypeMissmatchError('id do pokemon', 'número')
+  const pokemonId = Number(pokemonIdString.slice(pokemonIdString.indexOf('#') + 1))
+  if (!isNaN(pokemonId)) searchMode = 'number'
 
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
@@ -35,10 +38,17 @@ export const pokemonSell = async (data: TRouteParams): Promise<IResponse> => {
   if (!player) throw new PlayerNotFoundError(data.playerPhone)
   if (player.ownedPokemons.length <= 1) throw new PlayerOnlyHasOnePokemonError(player.name)
 
+  const pokemonRequestData = getPokemonRequestData({
+    playerId: player.id,
+    pokemonId: pokemonId,
+    pokemonIdentifierString: pokemonIdString,
+    searchMode,
+    onlyAdult: true,
+  })
+  if (!pokemonRequestData) throw new UnexpectedError('NO REQUEST DATA FOUND.')
+
   const pokemon = await prismaClient.pokemon.findFirst({
-    where: {
-      id: pokemonId,
-    },
+    where: pokemonRequestData.where,
     include: {
       baseData: true,
       teamSlot1: true,
@@ -47,10 +57,10 @@ export const pokemonSell = async (data: TRouteParams): Promise<IResponse> => {
       teamSlot4: true,
       teamSlot5: true,
       teamSlot6: true,
+      owner: true,
     },
   })
-
-  if (!pokemon) throw new PokemonNotFoundError(pokemonId)
+  if (!pokemon) throw new PokemonNotFoundError(pokemonRequestData.identifier)
   if (pokemon.ownerId !== player.id) throw new PlayerDoestNotOwnThePokemonError(pokemonId, player.name)
   if (
     pokemon.teamSlot1 ||

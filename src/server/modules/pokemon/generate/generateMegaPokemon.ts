@@ -5,18 +5,17 @@ import { talentNameMap } from '../../../constants/talentNameMap'
 import { getRandomBetween2 } from '../../../helpers/getRandomBetween2'
 import { generateGeneralStats } from '../generateGeneralStats'
 import { generateHpStat } from '../generateHpStat'
+import { Pokemon_BaseData_Skills, RaidPokemon_BaseData_Skills } from '../../duel/duelNXN'
 
 type TParams = {
   name: string
   level: number
   shinyChance: number
-  gameRoomId: number
-  raidId: number
 }
 
-export const generateMegaPokemon = async (data: TParams) => {
+export const generateMegaPokemon = async (data: TParams): Promise<RaidPokemon_BaseData_Skills> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
-  const { name, level, shinyChance, gameRoomId } = data
+  const { name, level, shinyChance } = data
 
   const baseData = await prismaClient.basePokemon.findFirst({
     where: {
@@ -27,38 +26,28 @@ export const generateMegaPokemon = async (data: TParams) => {
   if (!baseData) throw new UnexpectedError('No basePokemon found for ' + name)
 
   const isShiny = Math.random() < shinyChance
-  const talentIds = [
-    Math.max(Math.ceil(Math.random() * 18), 1),
-    Math.max(Math.ceil(Math.random() * 18), 1),
-    Math.max(Math.ceil(Math.random() * 18), 1),
-    Math.max(Math.ceil(Math.random() * 18), 1),
-    Math.max(Math.ceil(Math.random() * 18), 1),
-    Math.max(Math.ceil(Math.random() * 18), 1),
-    Math.max(Math.ceil(Math.random() * 18), 1),
-    Math.max(Math.ceil(Math.random() * 18), 1),
-    Math.max(Math.ceil(Math.random() * 18), 1),
-  ]
+
+  const random1 = Math.max(Math.ceil(Math.random() * 18), 1)
+  const random2 = Math.max(Math.ceil(Math.random() * 18), 1)
+  const random3 = Math.max(Math.ceil(Math.random() * 18), 1)
+
+  const talentIds = [random1, random1, random1, random2, random2, random2, random3, random3, random3]
 
   if (isShiny) {
     const talentId1 = talentNameMap.get(baseData.type1Name)
     const talentId2 = talentNameMap.get(baseData.type2Name || baseData.type1Name)
-    return await prismaClient.pokemon.create({
+    return await prismaClient.raidPokemon.create({
       data: {
         basePokemonId: baseData.id,
-        gameRoomId,
-        savage: false,
         level: level,
-        experience: level ** 3,
-        isMale: Math.random() > 0.5,
         isShiny: true,
         spriteUrl: baseData.shinySpriteUrl,
-        hp: Math.round(generateHpStat(baseData.BaseHp, level) * 1.1),
-        atk: Math.round(generateGeneralStats(baseData.BaseAtk, level) * 1.1),
-        def: Math.round(generateGeneralStats(baseData.BaseDef, level) * 1.1),
-        spAtk: Math.round(generateGeneralStats(baseData.BaseSpAtk, level) * 1.1),
-        spDef: Math.round(generateGeneralStats(baseData.BaseSpDef, level) * 1.1),
-        speed: Math.round(generateGeneralStats(baseData.BaseSpeed, level) * 1.1),
-        isAdult: true,
+        hp: Math.round(generateHpStat(baseData.BaseHp, level) * 1.2),
+        atk: Math.round(generateGeneralStats(baseData.BaseAtk, level) * 1.2),
+        def: Math.round(generateGeneralStats(baseData.BaseDef, level) * 1.2),
+        spAtk: Math.round(generateGeneralStats(baseData.BaseSpAtk, level) * 1.2),
+        spDef: Math.round(generateGeneralStats(baseData.BaseSpDef, level) * 1.2),
+        speed: Math.round(generateGeneralStats(baseData.BaseSpeed, level) * 1.2),
         talentId1: getRandomBetween2({ obj1: [talentId1, 0.5], obj2: [talentId2, 0.5] }),
         talentId2: getRandomBetween2({ obj1: [talentId1, 0.5], obj2: [talentId2, 0.5] }),
         talentId3: getRandomBetween2({ obj1: [talentId1, 0.5], obj2: [talentId2, 0.5] }),
@@ -70,36 +59,26 @@ export const generateMegaPokemon = async (data: TParams) => {
         talentId9: getRandomBetween2({ obj1: [talentId1, 0.5], obj2: [talentId2, 0.5] }),
       },
       include: {
-        baseData: true,
-        talent1: true,
-        talent2: true,
-        talent3: true,
-        talent4: true,
-        talent5: true,
-        talent6: true,
-        talent7: true,
-        talent8: true,
-        talent9: true,
+        baseData: {
+          include: {
+            skills: true,
+          },
+        },
       },
     })
   }
 
-  return await prismaClient.pokemon.create({
+  return await prismaClient.raidPokemon.create({
     data: {
       basePokemonId: baseData.id,
-      gameRoomId,
-      savage: false,
       level: level,
-      experience: level ** 3,
-      isMale: Math.random() > 0.5,
       spriteUrl: baseData.defaultSpriteUrl,
-      hp: generateHpStat(baseData.BaseHp, level),
-      atk: generateGeneralStats(baseData.BaseAtk, level),
-      def: generateGeneralStats(baseData.BaseDef, level),
-      spAtk: generateGeneralStats(baseData.BaseSpAtk, level),
-      spDef: generateGeneralStats(baseData.BaseSpDef, level),
-      speed: generateGeneralStats(baseData.BaseSpeed, level),
-      isAdult: true,
+      hp: Math.round(generateHpStat(baseData.BaseHp, level) * 1.1),
+      atk: Math.round(generateGeneralStats(baseData.BaseAtk, level) * 1.1),
+      def: Math.round(generateGeneralStats(baseData.BaseDef, level) * 1.1),
+      spAtk: Math.round(generateGeneralStats(baseData.BaseSpAtk, level) * 1.1),
+      spDef: Math.round(generateGeneralStats(baseData.BaseSpDef, level) * 1.1),
+      speed: Math.round(generateGeneralStats(baseData.BaseSpeed, level) * 1.1),
       talentId1: talentIds[0],
       talentId2: talentIds[1],
       talentId3: talentIds[2],
@@ -111,16 +90,11 @@ export const generateMegaPokemon = async (data: TParams) => {
       talentId9: talentIds[8],
     },
     include: {
-      baseData: true,
-      talent1: true,
-      talent2: true,
-      talent3: true,
-      talent4: true,
-      talent5: true,
-      talent6: true,
-      talent7: true,
-      talent8: true,
-      talent9: true,
+      baseData: {
+        include: {
+          skills: true,
+        },
+      },
     },
   })
 }

@@ -4,12 +4,15 @@ import { PokemonNotFoundError, UnexpectedError } from '../../../infra/errors/App
 import { logger } from '../../../infra/logger'
 import { generateGeneralStats } from './generateGeneralStats'
 import { generateHpStat } from './generateHpStat'
+import { RaidPokemon_BaseData } from '../duel/duelNXN'
 
 type TParams = {
   pokemon: Pokemon
-  targetPokemon: Pokemon & {
-    baseData: BasePokemon
-  }
+  targetPokemon:
+    | (Pokemon & {
+        baseData: BasePokemon
+      })
+    | RaidPokemon_BaseData
   bonusExp?: number
   divide?: boolean
 }
@@ -39,6 +42,38 @@ export const handleExperienceGain = async (data: TParams): Promise<TResponse> =>
   })
 
   if (!pokemon) throw new PokemonNotFoundError(data.pokemon.id)
+
+  if (pokemon.isShiny || pokemon.baseData.isRegional) {
+    const multiplier = pokemon.isShiny ? 1.15 : 1.05
+
+    const updatedPokemon = await prisma.pokemon
+      .update({
+        where: {
+          id: pokemon.id,
+        },
+        data: {
+          experience: newExp,
+          level: newLevel,
+          hp: Math.round(generateHpStat(pokemon.baseData.BaseHp, newLevel) * multiplier),
+          atk: Math.round(generateGeneralStats(pokemon.baseData.BaseAtk, newLevel) * multiplier),
+          def: Math.round(generateGeneralStats(pokemon.baseData.BaseDef, newLevel) * multiplier),
+          spAtk: Math.round(generateGeneralStats(pokemon.baseData.BaseSpAtk, newLevel) * multiplier),
+          spDef: Math.round(generateGeneralStats(pokemon.baseData.BaseSpDef, newLevel) * multiplier),
+          speed: Math.round(generateGeneralStats(pokemon.baseData.BaseSpeed, newLevel) * multiplier),
+        },
+        include: {
+          baseData: true,
+        },
+      })
+      .catch(e => {
+        logger.error(e)
+        throw new UnexpectedError('handleExperienceGain')
+      })
+    return {
+      pokemon: updatedPokemon,
+      leveledUp: newLevel !== pokemon.level,
+    }
+  }
 
   const updatedPokemon = await prisma.pokemon
     .update({
@@ -75,7 +110,7 @@ const getExperienceGain = (data: TParams) => {
 
   const b = targetPokemon.baseData.BaseExperience
   const L = targetPokemon.level
-  const a = targetPokemon.ownerId === null ? 1 : 1.5
+  const a = 'ownerId' in targetPokemon ? 1 : 1.5
   const e = bonusExp ? 1 + bonusExp : 1
   const t = 1
 

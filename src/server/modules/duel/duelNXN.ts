@@ -1,609 +1,698 @@
-import { BasePokemon, Pokemon } from '@prisma/client'
-// import { container } from 'tsyringe'
-// import { UnexpectedError } from '../../../infra/errors/AppErrors'
-// import { typeEffectivenessMap } from '../../constants/atkEffectivenessMap'
-// import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
-// import { talentIdMap } from '../../constants/talentIdMap'
-// import { findKeyByValue } from '../../helpers/findKeyByValue'
-// import { getBestSkillPair } from '../../helpers/getBestSkillPair'
-// import { IPokemon } from '../../models/IPokemon'
-// import { ISkill } from '../../models/ISkill'
-// import { iGenDuel2X1Rounds } from '../imageGen/iGenDuel2X1Rounds'
-// import { TDuelRoundData, iGenDuel3X1Rounds } from '../imageGen/iGenDuel3X1Rounds'
-// import { DuelPokemonExtra, getTeamBonuses } from './getTeamBonuses'
+import { BaseItem, BasePokemon, HeldItem, Item, Pokemon, PrismaClient, RaidPokemon, Skill } from '@prisma/client'
+import { container } from 'tsyringe'
+import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
+import { talentIdMap } from '../../constants/talentIdMap'
+import { findKeyByValue } from '../../helpers/findKeyByValue'
+import { TDuelRoundData, iGenDuel2X1Rounds } from '../imageGen/iGenDuel2X1Rounds'
+import { iGenDuel3X1Rounds } from '../imageGen/iGenDuel3X1Rounds'
+import { DuelPokemonExtra, getTeamBonuses } from './getTeamBonuses'
+import { logger } from '../../../infra/logger'
+import { getBestSkillSet } from '../../helpers/getBestSkillSet'
+import { iGenDuelX2Rounds } from '../imageGen/iGenDuelX2Rounds'
+import { plateTypeMap } from '../../constants/plateTypeMap'
+import { iGenDuelRound } from '../imageGen/iGenDuelRound'
+import { iGenDuel3X2Rounds } from '../imageGen/iGenDuel3X2Rounds'
+import { iGenDuel3X3Rounds } from '../imageGen/iGenDuel3X3Rounds'
+import { iGenDuel3X4Rounds } from '../imageGen/iGenDuel3X4Rounds'
 
 export type RoundPokemonData = {
   name: string
   id: number
-  ownerId?: number
+  ownerId?: number | null
+  team: string
   spriteUrl: string
   type1: string
   type2: string | undefined | null
   level: number
   maxHp: number
+  heldItemName: string | undefined
   hp: number
   speed: number
-  skillPower: number
-  skillName: string
-  skillType: string
-  ultimatePower: number
-  ultimateName: string
-  ultimateType: string
-  currentSkillPower: number
-  currentSkillName: string
-  currentSkillType: string
+  skillMap: Map<string, Skill & { processedAttackPower: number }> | undefined
+  currentSkillPower?: number
+  currentSkillName?: string
+  currentSkillType?: string
   crit: boolean
   block: boolean
   mana: number
-  hasUltimate: boolean
   manaBonus: number
   lifeSteal: number
   critChance: number
   blockChance: number
+  crescentBonuses?: {
+    block?: number
+    damage?: number
+  }
+  statusCleanseChance?: number
+  healingBonus?: number
+  buffBonus?: number
+  role?: 'TANKER' | 'DAMAGE' | 'SUPPORT'
+  behavior?: any
+  totalDamageDealt: number
+  totalHealing: number
 }
 
-// export type BossInvasionRoundData = {
-//   alliesTeamData: RoundPokemonData[]
-//   bossData: RoundPokemonData
-// }
+export type DuelNxNRoundData = {
+  leftTeamData: RoundPokemonData[]
+  rightTeamData: RoundPokemonData[]
+}
 
-type DuelPokemon = Pokemon & {
+export type Pokemon_BaseData = Pokemon & {
   baseData: BasePokemon
-  skillName?: string | undefined
-  skillType?: string | undefined
-  ultimateType?: string | undefined
+}
+
+export type RaidPokemon_BaseData = RaidPokemon & {
+  baseData: BasePokemon
+}
+
+export type Pokemon_BaseData_Skills = Pokemon & {
+  baseData: BasePokemon & {
+    skills: Skill[]
+  }
+}
+
+export type Pokemon_BaseData_Skills_Held = Pokemon & {
+  baseData: BasePokemon & {
+    skills: Skill[]
+  }
+  heldItem:
+    | (HeldItem & {
+        baseItem: BaseItem
+      })
+    | null
+    | undefined
+}
+
+export type RaidPokemon_BaseData_Skills_Held = RaidPokemon & {
+  baseData: BasePokemon & {
+    skills: Skill[]
+  }
+  heldItem?:
+    | (HeldItem & {
+        baseItem: BaseItem
+      })
+    | null
+    | undefined
+}
+
+export type RaidPokemon_BaseData_Skills = RaidPokemon & {
+  baseData: BasePokemon & {
+    skills: Skill[]
+  }
 }
 
 type TParams = {
-  playerTeam: DuelPokemon[]
-  enemyTeam: DuelPokemon[]
+  leftTeam: Pokemon_BaseData_Skills_Held[]
+  rightTeam: Pokemon_BaseData_Skills_Held[] | RaidPokemon_BaseData_Skills_Held[]
+  wildBattle?: true
+  staticImage?: boolean
+  returnOnlyPlayerPokemonDefeatedIds?: boolean
+  backgroundTypeName?: string
 }
 
-export type TDuelX2Response = {
+export type TDuelNXNResponse = {
   winnerTeam: RoundPokemonData[]
   loserTeam: RoundPokemonData[]
   message: string
   isDraw: boolean
   imageUrl: string
+  defeatedPokemonsIds?: number[]
+  damageDealtMessage: string
 }
 
-export const duelNXN = async (data: TParams): Promise<TDuelX2Response | void> => {
-  console.log(data)
+export const duelNXN = async (data: TParams): Promise<TDuelNXNResponse | void> => {
+  const prisma = container.resolve<PrismaClient>('PrismaClient')
+
+  const { leftTeam, rightTeam } = data
+  const leftPlayerIds = leftTeam.map(poke => {
+    if (!poke.ownerId) throw new UnexpectedError(`Owner id not found for #${poke.id} in duelNX1.`)
+    return poke.ownerId
+  })
+  const rightPlayerIds = rightTeam
+    .map(poke => {
+      if (!('ownerId' in poke)) return NaN
+      if (!poke.ownerId && !data.wildBattle) throw new UnexpectedError(`Owner id not found for #${poke.id} in duelNX1.`)
+      return Number(poke.ownerId)
+    })
+    .filter(id => id !== null && id !== undefined && !isNaN(id))
+
+  const leftPlayersPokeTeamsData = await prisma.player.findMany({
+    where: {
+      id: {
+        in: leftPlayerIds,
+      },
+    },
+    include: {
+      teamPoke1: {
+        include: {
+          baseData: true,
+        },
+      },
+      teamPoke2: {
+        include: {
+          baseData: true,
+        },
+      },
+      teamPoke3: {
+        include: {
+          baseData: true,
+        },
+      },
+      teamPoke4: {
+        include: {
+          baseData: true,
+        },
+      },
+      teamPoke5: {
+        include: {
+          baseData: true,
+        },
+      },
+      teamPoke6: {
+        include: {
+          baseData: true,
+        },
+      },
+    },
+  })
+  const rightPlayersPokeTeamsData =
+    rightPlayerIds.length > 0
+      ? await prisma.player.findMany({
+          where: {
+            id: {
+              in: rightPlayerIds,
+            },
+          },
+          include: {
+            teamPoke1: {
+              include: {
+                baseData: true,
+              },
+            },
+            teamPoke2: {
+              include: {
+                baseData: true,
+              },
+            },
+            teamPoke3: {
+              include: {
+                baseData: true,
+              },
+            },
+            teamPoke4: {
+              include: {
+                baseData: true,
+              },
+            },
+            teamPoke5: {
+              include: {
+                baseData: true,
+              },
+            },
+            teamPoke6: {
+              include: {
+                baseData: true,
+              },
+            },
+          },
+        })
+      : []
+
+  const leftPokesBonusesMap = new Map<number, DuelPokemonExtra>([])
+  const rightPokesBonusesMap = new Map<number, DuelPokemonExtra>([])
+
+  for (const poke of leftTeam) {
+    const player = leftPlayersPokeTeamsData.find(player => player.id === poke.ownerId)
+    if (!player) throw new UnexpectedError('player not found in duelNX1')
+    leftPokesBonusesMap.set(
+      poke.id,
+      await getTeamBonuses({
+        poke,
+        team: [
+          player.teamPoke1,
+          player.teamPoke2,
+          player.teamPoke3,
+          player.teamPoke4,
+          player.teamPoke5,
+          player.teamPoke6,
+        ],
+      })
+    )
+  }
+
+  if (!data.wildBattle)
+    for (const poke of rightTeam) {
+      if (!('ownerId' in poke)) continue
+      const player = rightPlayersPokeTeamsData.find(player => player.id === poke.ownerId)
+      if (!player) throw new UnexpectedError('player not found in duelNX1')
+      rightPokesBonusesMap.set(
+        poke.id,
+        await getTeamBonuses({
+          poke,
+          team: [
+            player.teamPoke1,
+            player.teamPoke2,
+            player.teamPoke3,
+            player.teamPoke4,
+            player.teamPoke5,
+            player.teamPoke6,
+          ],
+        })
+      )
+    }
+
+  const rightPokesSkillMap = new Map<number, Map<string, Skill & { processedAttackPower: number }> | undefined>([])
+  const leftPokesSkillMap = new Map<number, Map<string, Skill & { processedAttackPower: number }> | undefined>([])
+
+  for (const poke of leftTeam) {
+    leftPokesSkillMap.set(
+      poke.id,
+      await getBestSkills({
+        attacker: poke,
+        defenders: rightTeam,
+      })
+    )
+  }
+
+  for (const poke of rightTeam) {
+    rightPokesSkillMap.set(
+      poke.id,
+      await getBestSkills({
+        attacker: poke,
+        defenders: leftTeam,
+      })
+    )
+  }
+
+  const leftTeamData: RoundPokemonData[] = []
+  const rightTeamData: RoundPokemonData[] = []
+
+  for (const poke of leftTeam) {
+    if (!poke.ownerId) throw new UnexpectedError(`Owner id not found for #${poke.id} in duelNX1.`)
+    const pokeSkill = leftPokesSkillMap.get(poke.id)
+    const pokeBonusData = leftPokesBonusesMap.get(poke.id)
+    leftTeamData.push({
+      name: poke.baseData.name,
+      id: poke.id,
+      ownerId: poke.ownerId,
+      heldItemName: poke.heldItem?.baseItem.name || undefined,
+      team: 'left',
+      spriteUrl: poke.spriteUrl,
+      type1: poke.baseData.type1Name,
+      type2: poke.baseData.type2Name,
+      level: poke.level,
+      maxHp: 18 * poke.hp,
+      hp: 18 * poke.hp,
+      speed: poke.speed,
+      skillMap: pokeSkill,
+      crit: false,
+      block: false,
+      mana: 0,
+      manaBonus: pokeBonusData?.manaBonus || 0,
+      lifeSteal: pokeBonusData?.lifeSteal || 0,
+      critChance: pokeBonusData?.critChance || 0,
+      blockChance: pokeBonusData?.blockChance || 0,
+      crescentBonuses: pokeBonusData?.crescentBonuses,
+      statusCleanseChance: pokeBonusData?.statusCleanseChance,
+      healingBonus: pokeBonusData?.healingBonus,
+      buffBonus: pokeBonusData?.buffBonus,
+      totalDamageDealt: 0,
+      totalHealing: 0,
+    })
+  }
+  for (const poke of rightTeam) {
+    const pokeSkill = rightPokesSkillMap.get(poke.id)
+    const pokeBonusData = rightPokesBonusesMap.get(poke.id)
+    rightTeamData.push({
+      name: poke.baseData.name,
+      id: poke.id,
+      ownerId: 'ownerId' in poke ? poke.ownerId : undefined,
+      heldItemName: poke.heldItem?.baseItem.name || undefined,
+      team: 'right',
+      spriteUrl: poke.spriteUrl,
+      type1: poke.baseData.type1Name,
+      type2: poke.baseData.type2Name,
+      level: poke.level,
+      maxHp: 18 * poke.hp,
+      hp: 18 * poke.hp,
+      speed: poke.speed,
+      skillMap: pokeSkill,
+      crit: false,
+      block: false,
+      mana: 0,
+      manaBonus: pokeBonusData?.manaBonus || 0,
+      lifeSteal: pokeBonusData?.lifeSteal || 0,
+      critChance: pokeBonusData?.critChance || 0,
+      blockChance: pokeBonusData?.blockChance || 0,
+      crescentBonuses: pokeBonusData?.crescentBonuses,
+      statusCleanseChance: pokeBonusData?.statusCleanseChance,
+      healingBonus: pokeBonusData?.healingBonus,
+      buffBonus: pokeBonusData?.buffBonus,
+      totalDamageDealt: 0,
+      totalHealing: 0,
+    })
+  }
+
+  const duelMap = new Map<number, DuelNxNRoundData>([])
+
+  let duelFinished = false
+  const isDraw = false
+  let roundCount = 1
+  let winnerTeam: any[] | null = null
+  let loserTeam: any[] | null = null
+  let winnerSide: 'right' | 'left' | undefined
+
+  duelMap.set(1, {
+    leftTeamData,
+    rightTeamData,
+  })
+
+  const defeatedPokemonsIds: number[] = []
+
+  const pokemonsInDuelOrder = [rightTeamData, leftTeamData].flat().sort((a, b) => b.speed - a.speed)
+
+  while (duelFinished === false) {
+    roundCount++
+
+    const roundStart = (poke: RoundPokemonData) => {
+      if (poke.hp <= 0) {
+        if (data.returnOnlyPlayerPokemonDefeatedIds) {
+          if (!poke.ownerId) return
+        }
+        defeatedPokemonsIds.push(poke.id)
+        return
+      }
+      poke.crit = false
+      poke.block = false
+
+      if (poke.crescentBonuses) {
+        console.log({ pb: poke.crescentBonuses })
+        if (poke.crescentBonuses.block) poke.blockChance = Math.min(poke.crescentBonuses.block * roundCount, 0.2)
+      }
+
+      if (poke.mana < 100) poke.mana += 23 * (0.7 + Math.random() * 0.6) + poke.manaBonus
+      if (poke.mana > 100) poke.mana = 100
+      poke.crit = Math.random() + poke.critChance > 0.93
+      poke.block = Math.random() + poke.blockChance > 0.93
+      if (!poke.crit && poke.mana >= 100) {
+        poke.crit = true
+        poke.mana = 0
+      }
+    }
+
+    for (const poke of pokemonsInDuelOrder) roundStart(poke)
+
+    const dealDamage = (attacker: RoundPokemonData, target: RoundPokemonData) => {
+      if (!target) {
+        logger.error('no target found in round ' + roundCount)
+        return
+      }
+      const currentSkill = attacker.skillMap?.get(target.name)
+      if (!currentSkill || !currentSkill.processedAttackPower) {
+        logger.error(`error: cant get skill for: ${attacker.name} vs ${target.name}`)
+        return
+      }
+      if (attacker.heldItemName && plateTypeMap.get(attacker.heldItemName) === currentSkill?.typeName) {
+        currentSkill.processedAttackPower = currentSkill.processedAttackPower * 1.1
+      }
+      if (attacker.crescentBonuses?.damage)
+        currentSkill.processedAttackPower =
+          currentSkill.processedAttackPower * attacker.crescentBonuses.damage * roundCount
+
+      attacker.currentSkillName = currentSkill.name
+      attacker.currentSkillType = currentSkill.typeName
+      attacker.currentSkillPower = currentSkill.processedAttackPower * Math.max(1, 1 + roundCount ** 0.15)
+
+      if (!target.block) {
+        target.hp -= currentSkill.processedAttackPower * (0.9 + Math.random() * 0.2)
+        attacker.hp += currentSkill.processedAttackPower * attacker.lifeSteal
+        attacker.totalDamageDealt += currentSkill.processedAttackPower * (0.9 + Math.random() * 0.2)
+      }
+      if (attacker.crit) {
+        console.log(`${attacker.name} encaixa um ${attacker.currentSkillName} crítico!`)
+        if (!target.block) {
+          target.hp -= currentSkill.processedAttackPower * (0.9 + Math.random() * 0.2) * 0.5
+          attacker.hp += currentSkill.processedAttackPower * attacker.lifeSteal * 0.5
+          attacker.totalDamageDealt += currentSkill.processedAttackPower * (0.9 + Math.random() * 0.2) * 0.5
+        }
+      }
+      if (attacker.hp > attacker.maxHp) attacker.hp = attacker.maxHp
+    }
+
+    const getRoundTarget = (possibleTargets: RoundPokemonData[]) => {
+      const aliveTargets = possibleTargets.filter(poke => poke.hp > 0)
+      return aliveTargets[Math.floor(Math.random() * aliveTargets.length)]
+    }
+
+    for (const poke of pokemonsInDuelOrder) {
+      if (poke.hp <= 0) continue
+      const target = poke.team === 'right' ? getRoundTarget(leftTeamData) : getRoundTarget(rightTeamData)
+      dealDamage(poke, target)
+    }
+
+    if (leftTeamData.map(poke => poke.hp).every(value => value <= 0)) {
+      console.log('right team wins')
+      winnerTeam = rightTeamData
+      loserTeam = leftTeamData
+      winnerSide = 'right'
+      duelFinished = true
+    }
+
+    if (rightTeamData.map(poke => poke.hp).every(value => value <= 0)) {
+      console.log('left team wins')
+      winnerTeam = leftTeamData
+      loserTeam = rightTeamData
+      winnerSide = 'left'
+      duelFinished = true
+    }
+
+    const leftTeamRoundData: RoundPokemonData[] = []
+    const rightTeamRoundData: RoundPokemonData[] = []
+    for (const poke of leftTeamData) {
+      leftTeamRoundData.push({ ...poke })
+    }
+    for (const poke of rightTeamData) {
+      rightTeamRoundData.push({ ...poke })
+    }
+
+    duelMap.set(roundCount, {
+      leftTeamData: [...leftTeamRoundData],
+      rightTeamData: [...rightTeamRoundData],
+    })
+
+    if (roundCount > 120) {
+      throw new UnexpectedError('duel exceeded 120 rounds.')
+    }
+  }
+
+  if (!winnerTeam || !loserTeam) throw new UnexpectedError('Time vencedor/perdedor do duelo não foi determinado')
+  if (!winnerSide || !['right', 'left'].includes(winnerSide)) {
+    throw new UnexpectedError('Índice do time vencedor/perdedor do duelo não foi determinado')
+  }
+
+  const imageGenFunctionMap = new Map<string, (data: TDuelRoundData) => Promise<string>>([
+    ['3vs1', iGenDuel3X1Rounds],
+    ['2vs1', iGenDuel2X1Rounds],
+    ['2vs2', iGenDuelX2Rounds],
+    ['1vs1', iGenDuelRound],
+    ['3vs2', iGenDuel3X2Rounds],
+    ['3vs3', iGenDuel3X3Rounds],
+    ['3vs4', iGenDuel3X4Rounds],
+  ])
+
+  const imageGen = imageGenFunctionMap.get(leftTeamData.length + 'vs' + rightTeamData.length)
+  if (!imageGen)
+    throw new UnexpectedError(
+      'Could not get imageGen function for: ' + leftTeamData.length + 'vs' + rightTeamData.length
+    )
+  const imageUrl = await imageGen({
+    duelMap: duelMap,
+    roundCount,
+    leftTeam: leftTeamData,
+    rightTeam: rightTeamData,
+    winnerSide,
+    staticImage: data.staticImage,
+    backgroundTypeName: data.backgroundTypeName,
+  })
+
+  console.log('finished: ' + imageUrl)
+
+  const damageDealtMessage = leftTeamData
+    .map(poke => {
+      return `*${poke.id} ${poke.name.toUpperCase()}* causou ${poke.totalDamageDealt.toFixed(2)} de dano!`
+    })
+    .join('\n')
+
+  return {
+    message: `DUELO X2`,
+    isDraw: isDraw,
+    winnerTeam: winnerTeam,
+    loserTeam: loserTeam,
+    imageUrl,
+    defeatedPokemonsIds,
+    damageDealtMessage,
+  }
 }
-// export const duelNXN = async (data: TParams): Promise<TDuelX2Response | void> => {
-//   const prisma = container.resolve<PrismaClient>('PrismaClient')
 
-//   const { enemyTeam } = data
-//   const playerIds = data.playerTeam.map(poke => {
-//     if (!poke.ownerId) throw new UnexpectedError(`Owner id not found for #${poke.id} in duelNX1.`)
-//     return poke.ownerId
-//   })
+export type EffectivenessData = {
+  innefective: string[]
+  effective: string[]
+  noDamage: string[]
+}
 
-//   const playersPokeTeamsData = await prisma.player.findMany({
-//     where: {
-//       id: {
-//         in: playerIds,
-//       },
-//     },
-//     include: {
-//       teamPoke1: {
-//         include: {
-//           baseData: true,
-//         },
-//       },
-//       teamPoke2: {
-//         include: {
-//           baseData: true,
-//         },
-//       },
-//       teamPoke3: {
-//         include: {
-//           baseData: true,
-//         },
-//       },
-//       teamPoke4: {
-//         include: {
-//           baseData: true,
-//         },
-//       },
-//       teamPoke5: {
-//         include: {
-//           baseData: true,
-//         },
-//       },
-//       teamPoke6: {
-//         include: {
-//           baseData: true,
-//         },
-//       },
-//     },
-//   })
+export type TypeScoreObject = {
+  best: string[]
+  good: string[]
+  neutral: string[]
+  bad: string[]
+  worse: string[]
+}
 
-//   const pokesBonusesMap = new Map<number, DuelPokemonExtra>([])
+const getBestTypes = (defenders: Pokemon_BaseData[] | RaidPokemon_BaseData[]): TypeScoreObject => {
+  const efDatas: EffectivenessData[] = []
 
-//   for (const poke of data.playerTeam) {
-//     const player = playersPokeTeamsData.find(player => player.id === poke.ownerId)
-//     if (!player) throw new UnexpectedError('player not found in duelNX1')
-//     pokesBonusesMap.set(
-//       poke.id,
-//       await getTeamBonuses({
-//         poke,
-//         team: [
-//           player.teamPoke1,
-//           player.teamPoke2,
-//           player.teamPoke3,
-//           player.teamPoke4,
-//           player.teamPoke5,
-//           player.teamPoke6,
-//         ],
-//       })
-//     )
-//   }
+  for (const defender of defenders) {
+    const efDataOfType1 = defEffectivenessMap.get(defender.baseData.type1Name)
+    if (efDataOfType1) efDatas.push(efDataOfType1)
+    if (defender.baseData.type2Name) {
+      const efDataOfType2 = defEffectivenessMap.get(defender.baseData.type2Name)
+      if (efDataOfType2) efDatas.push(efDataOfType2)
+    }
+  }
 
-//   const pokeSkillMap = new Map<number, any>([])
+  if (efDatas.length === 0) throw new UnexpectedError('efData object could not be created.')
 
-//   for (const poke of data.playerTeam) {
-//     pokeSkillMap.set(
-//       poke.id,
-//       await getBestSkills({
-//         attacker: poke,
-//         defender: boss,
-//       })
-//     )
-//   }
+  const typeScoreObj: any = {
+    normal: 0,
+    fire: 0,
+    water: 0,
+    electric: 0,
+    grass: 0,
+    ice: 0,
+    fighting: 0,
+    poison: 0,
+    ground: 0,
+    flying: 0,
+    psychic: 0,
+    bug: 0,
+    rock: 0,
+    ghost: 0,
+    dragon: 0,
+    dark: 0,
+    steel: 0,
+    fairy: 0,
+  }
 
-//   const alliesTeamData: RoundPokemonData[] = []
+  for (const efData of efDatas) {
+    for (const type of efData.effective) {
+      if (type === '') continue
+      typeScoreObj[type] += 1
+    }
+    for (const type of efData.innefective) {
+      if (type === '') continue
+      typeScoreObj[type] -= 1
+    }
+    for (const type of efData.noDamage) {
+      if (type === '') continue
+      typeScoreObj[type] -= 2
+    }
+  }
+  delete typeScoreObj['']
+  delete typeScoreObj[' ']
 
-//   for (const poke of data.playerTeam) {
-//     if (!poke.ownerId) throw new UnexpectedError(`Owner id not found for #${poke.id} in duelNX1.`)
-//     const pokeSkill = pokeSkillMap.get(poke.id)
-//     const pokeBonusData = pokesBonusesMap.get(poke.id)
-//     alliesTeamData.push({
-//       name: poke.baseData.name,
-//       id: poke.id,
-//       ownerId: poke.ownerId,
-//       spriteUrl: poke.spriteUrl,
-//       type1: poke.baseData.type1Name,
-//       type2: poke.baseData.type2Name,
-//       level: poke.level,
-//       maxHp: 4 * poke.hp,
-//       hp: 4 * poke.hp,
-//       speed: poke.speed,
-//       skillPower: pokeSkill[0] ? pokeSkill[0][0] : 2,
-//       skillName: pokeSkill[0] ? pokeSkill[0][1].name : 'basic-attack',
-//       skillType: pokeSkill[0] ? pokeSkill[0][1].typeName : 'normal',
-//       ultimatePower: pokeSkill[1] ? pokeSkill[1][0] : 2,
-//       ultimateName: pokeSkill[1] ? pokeSkill[1][1].name : 'basic-attack',
-//       ultimateType: pokeSkill[1] ? pokeSkill[1][1].typeName : 'normal',
-//       currentSkillPower: pokeSkill[0] ? pokeSkill[0][0] : 2,
-//       currentSkillName: pokeSkill[0] ? pokeSkill[0][1].name : 'basic-attack',
-//       currentSkillType: pokeSkill[0] ? pokeSkill[0][1].typeName : 'normal',
-//       crit: false,
-//       block: false,
-//       mana: 0,
-//       hasUltimate: pokeSkill[0] !== pokeSkill[1],
-//       manaBonus: pokeBonusData?.manaBonus || 0,
-//       lifeSteal: pokeBonusData?.lifeSteal || 0,
-//       critChance: pokeBonusData?.critChance || 0,
-//       blockChance: pokeBonusData?.blockChance || 0,
-//     })
-//   }
+  const typeScoreObjEntries: [string, number][] = Object.entries(typeScoreObj)
 
-//   const bossSkills = await prisma.skill.findMany({
-//     where: {
-//       pokemonsLearn: {
-//         some: {
-//           name: boss.baseData.name,
-//         },
-//       },
-//       typeName: {
-//         in: [boss.baseData.type1Name, boss.baseData.type2Name || boss.baseData.type1Name],
-//       },
-//     },
-//   })
-//   const bossSkill = bossSkills.reduce((maxSkill, currentSkill) => {
-//     return currentSkill.attackPower > maxSkill.attackPower ? currentSkill : maxSkill
-//   })
+  return {
+    best: typeScoreObjEntries.filter(entry => entry[1] >= defenders.length * 1).map(entry => entry[0]),
+    good: typeScoreObjEntries.filter(entry => entry[1] >= defenders.length * 0.5).map(entry => entry[0]),
+    neutral: typeScoreObjEntries.filter(entry => entry[1] === 0).map(entry => entry[0]),
+    bad: typeScoreObjEntries.filter(entry => entry[1] <= defenders.length * -0.5).map(entry => entry[0]),
+    worse: typeScoreObjEntries.filter(entry => entry[1] <= defenders.length * -1).map(entry => entry[0]),
+  }
+}
 
-//   const bossDamageNerf = 0.24 / (5 - alliesTeamData.length)
-//   const basePower = (((boss.level * 0.4 + 2) * bossSkill.attackPower) / 50 + 2) * 2.5 * 1.1 * 1.5 * bossDamageNerf
+type TGetBestSkillsParams = {
+  attacker: Pokemon_BaseData_Skills | RaidPokemon_BaseData_Skills_Held
+  defenders: Pokemon_BaseData[] | RaidPokemon_BaseData[]
+}
 
-//   const bossData: RoundPokemonData = {
-//     name: boss.baseData.name,
-//     id: boss.id,
-//     spriteUrl: boss.spriteUrl,
-//     type1: boss.baseData.type1Name,
-//     type2: boss.baseData.type2Name,
-//     level: boss.level,
-//     maxHp: 3.2 * alliesTeamData.length * boss.hp,
-//     hp: 3.2 * alliesTeamData.length * boss.hp,
-//     speed: boss.speed,
-//     skillPower: basePower,
-//     skillName: bossSkill.name,
-//     skillType: bossSkill.typeName,
-//     ultimatePower: basePower * 2,
-//     ultimateName: 'SUPER ' + bossSkill.name,
-//     ultimateType: bossSkill.typeName,
-//     currentSkillPower: basePower,
-//     currentSkillName: bossSkill.name,
-//     currentSkillType: bossSkill.typeName,
-//     crit: false,
-//     block: false,
-//     mana: 0,
-//     hasUltimate: true,
-//     manaBonus: 0,
-//     lifeSteal: 0,
-//     critChance: 0,
-//     blockChance: 0,
-//   }
+const getBestSkills = async ({ attacker, defenders }: TGetBestSkillsParams) => {
+  const efData = getBestTypes(defenders)
+  const skills = attacker.baseData.skills
+  const skillTable = attacker.baseData.skillTable
+  const learnedSkills: string[] = []
 
-//   const duelMap = new Map<number, BossInvasionRoundData>([])
+  for (const skill of skillTable) {
+    const split = skill.split('%')
+    if (Number(split[1]) <= attacker.level) {
+      learnedSkills.push(split[0])
+    }
+  }
 
-//   let duelFinished = false
-//   const isDraw = false
-//   let roundCount = 1
-//   let winnerTeam: any[] | null = null
-//   let loserTeam: any[] | null = null
-//   let winnerTeamIndex: number | undefined
-//   let loserTeamIndex: number | undefined
+  const finalSkillMap = new Map<number, Skill>([])
 
-//   duelMap.set(1, {
-//     alliesTeamData,
-//     bossData,
-//   })
+  for (const skill of skills) {
+    const talentCheck = await verifyTalentPermission(attacker, skill)
+    if (!talentCheck.permit) {
+      continue
+    }
+    const stab = () => {
+      if (attacker.baseData.type1Name === skill.typeName) return 1.1
+      if (attacker.baseData.type2Name === skill.typeName) return 1.1
+      return 1
+    }
 
-//   const alliesArrayInDuelOrder = alliesTeamData.sort((a, b) => b.speed - a.speed)
+    const talentBonus = 0.05 * talentCheck.count
 
-//   const getAttackEffectivenessMultiplier = (atkType: string, defType1: string, defType2?: string | null) => {
-//     const effectivenessData = typeEffectivenessMap.get(atkType)
-//     const getFactor = (type: string, efData: any) => {
-//       if (efData.effective.includes(type)) return 2
-//       if (efData.ineffective.includes(type)) return 0.5
-//       if (efData.noDamage.includes(type)) return 'no-damage'
-//       return 1
-//     }
+    const getEffectivenessMultiplier = () => {
+      if (efData.best.includes(skill.typeName)) return 2.5
+      if (efData.good.includes(skill.typeName)) return 1.75
+      if (efData.neutral.includes(skill.typeName)) return 1
+      if (efData.bad.includes(skill.typeName)) return 0.5
+      if (efData.worse.includes(skill.typeName)) return 0.25
+      return 1
+    }
 
-//     const factor1 = getFactor(defType1, effectivenessData)
-//     const factor2 = getFactor(defType2 || 'notype', effectivenessData)
+    const power = skill.attackPower * getEffectivenessMultiplier() * stab() * (1 + talentBonus)
+    finalSkillMap.set(power, skill)
+  }
 
-//     if (factor1 === 'no-damage' || factor2 === 'no-damage') return 0.25
-//     return factor1 * factor2
-//   }
+  return getBestSkillSet(finalSkillMap, attacker, defenders)
+}
 
-//   const bossAttackPowerMap = new Map<number, number>([])
+export const verifyTalentPermission = async (poke: Pokemon_BaseData | RaidPokemon_BaseData, skill: Skill) => {
+  const talents = [
+    poke.talentId1,
+    poke.talentId2,
+    poke.talentId3,
+    poke.talentId4,
+    poke.talentId5,
+    poke.talentId6,
+    poke.talentId7,
+    poke.talentId8,
+    poke.talentId9,
+  ]
 
-//   for (const ally of alliesArrayInDuelOrder) {
-//     bossAttackPowerMap.set(
-//       ally.id,
-//       bossData.skillPower * getAttackEffectivenessMultiplier(bossData.skillType, ally.type1, ally.type2)
-//     )
-//   }
+  const typeId = findKeyByValue(talentIdMap, skill.typeName)
 
-//   while (duelFinished === false) {
-//     roundCount++
+  const count = talents.reduce((count, current) => count + (current === typeId ? 1 : 0), 0)
 
-//     const roundStart = (poke: RoundPokemonData) => {
-//       poke.crit = false
-//       poke.block = false
-//       poke.mana += 23 * (0.7 + Math.random() * 0.6) + poke.manaBonus
-//       if (poke.mana >= 100) {
-//         poke.mana = 0
-//         poke.currentSkillName = poke.ultimateName
-//         poke.currentSkillPower = poke.ultimatePower
-//         poke.currentSkillType = poke.ultimateType
-//       } else {
-//         poke.currentSkillName = poke.skillName
-//         poke.currentSkillPower = poke.skillPower
-//         poke.currentSkillType = poke.skillType
-//       }
-//       poke.crit = Math.random() + poke.critChance > 0.9
-//       poke.block = Math.random() + poke.blockChance > 0.9
-//     }
+  if (
+    count >= 3 ||
+    (count >= 2 && skill.attackPower <= 75) ||
+    (count === 1 && skill.attackPower <= 40) ||
+    (skill.typeName === 'normal' && skill.attackPower <= 50) ||
+    poke.baseData.type1Name === skill.typeName ||
+    poke.baseData.type2Name === skill.typeName
+  )
+    return {
+      permit: true,
+      count,
+    }
 
-//     for (const poke of alliesArrayInDuelOrder) roundStart(poke)
-//     roundStart(bossData)
-
-//     console.log(alliesTeamData.map(ally => ally.hp))
-//     console.log({ BOSSHP: bossData.hp })
-
-//     const bossDealDamage = () => {
-//       const target = alliesArrayInDuelOrder[Math.floor(Math.random() * alliesArrayInDuelOrder.length)]
-//       const power = bossAttackPowerMap.get(target.id)
-//       console.log(`${bossData.name} uses ${bossData.currentSkillName} with power: ${bossData.currentSkillPower} `)
-//       if (!target.block) {
-//         target.hp -= bossData.currentSkillPower * (0.9 + Math.random() * 0.2)
-//         if (bossData.crit) {
-//           console.log(`${bossData.name} encaixa um ${bossData.currentSkillName} crítico!`)
-//           target.hp -= bossData.currentSkillPower * (0.9 + Math.random() * 0.2) * 0.5
-//         }
-//       } else {
-//         target.hp -= bossData.currentSkillPower * (0.9 + Math.random() * 0.2) * 0.5
-//         if (bossData.crit) {
-//           console.log(`${bossData.name} encaixa um ${bossData.currentSkillName} crítico!`)
-//           target.hp -= bossData.currentSkillPower * (0.9 + Math.random() * 0.2) * 0.25
-//         }
-//       }
-//     }
-
-//     bossDealDamage()
-
-//     const allyDealDamage = (poke: RoundPokemonData, target: RoundPokemonData) => {
-//       console.log(`${poke.name} uses ${poke.currentSkillName} with power: ${poke.currentSkillPower} `)
-//       if (!target.block) {
-//         target.hp -= poke.currentSkillPower * (0.9 + Math.random() * 0.2)
-//         poke.hp += poke.currentSkillPower * poke.lifeSteal
-//       }
-//       if (poke.crit) {
-//         console.log(`${poke.name} encaixa um ${poke.currentSkillName} crítico!`)
-//         if (!target.block) {
-//           target.hp -= poke.currentSkillPower * (0.9 + Math.random() * 0.2) * 0.5
-//           poke.hp += poke.currentSkillPower * poke.lifeSteal * 0.5
-//         }
-//       }
-//     }
-
-//     for (const poke of alliesArrayInDuelOrder) {
-//       if (poke.hp > 0) allyDealDamage(poke, bossData)
-//     }
-
-//     /// /
-//     /// /
-
-//     if (alliesArrayInDuelOrder.map(poke => poke.hp).every(value => value <= 0)) {
-//       console.log('boss wins')
-//       winnerTeam = [bossData]
-//       loserTeam = alliesArrayInDuelOrder
-//       winnerTeamIndex = 1
-//       loserTeamIndex = 0
-//       duelFinished = true
-//     }
-//     if (bossData.hp <= 0) {
-//       console.log('ally team wins')
-//       winnerTeam = alliesArrayInDuelOrder
-//       loserTeam = [bossData]
-//       winnerTeamIndex = 0
-//       loserTeamIndex = 1
-//       duelFinished = true
-//     }
-
-//     const alliesRoundData: RoundPokemonData[] = []
-//     for (const ally of alliesTeamData) {
-//       alliesRoundData.push({ ...ally })
-//     }
-
-//     duelMap.set(roundCount, {
-//       alliesTeamData: [...alliesRoundData],
-//       bossData: { ...bossData },
-//     })
-
-//     if (roundCount > 120) {
-//       throw new UnexpectedError('Boss battle exceeded 120 rounds.')
-//     }
-//   }
-
-//   if (!winnerTeam || !loserTeam) throw new UnexpectedError('Time vencedor/perdedor do duelo não foi determinado')
-//   if ((winnerTeamIndex !== 1 && winnerTeamIndex !== 0) || (loserTeamIndex !== 1 && loserTeamIndex !== 0)) {
-//     throw new UnexpectedError('Índice do time vencedor/perdedor do duelo não foi determinado')
-//   }
-
-//   const imageGenFunctionMap = new Map<number, (data: TDuelRoundData) => Promise<string>>([
-//     [3, iGenDuel3X1Rounds],
-//     [2, iGenDuel2X1Rounds],
-//   ])
-
-//   const imageGen = imageGenFunctionMap.get(alliesTeamData.length)
-//   if (!imageGen) throw new UnexpectedError('Could not get imageGen function for ally count: ' + alliesTeamData.length)
-//   const imageUrl = await imageGen({
-//     duelMap: duelMap,
-//     roundCount,
-//     alliesTeam: alliesTeamData,
-//     boss: bossData,
-//   })
-
-//   console.log('finished: ' + imageUrl)
-
-//   return {
-//     message: `DUELO X2`,
-//     isDraw: isDraw,
-//     winnerTeam: winnerTeam,
-//     loserTeam: loserTeam,
-//     imageUrl,
-//   }
-// }
-
-// const getBestTypes = (type1: string, type2?: string): any => {
-//   const efData1 = defEffectivenessMap.get(type1)
-//   const efData2 = defEffectivenessMap.get(type2 || type1)
-
-//   if (!efData1 || !efData2) return null
-
-//   const efObj = {
-//     normal: 0,
-//     fire: 0,
-//     water: 0,
-//     electric: 0,
-//     grass: 0,
-//     ice: 0,
-//     fighting: 0,
-//     poison: 0,
-//     ground: 0,
-//     flying: 0,
-//     psychic: 0,
-//     bug: 0,
-//     rock: 0,
-//     ghost: 0,
-//     dragon: 0,
-//     dark: 0,
-//     steel: 0,
-//     fairy: 0,
-//   }
-
-//   for (const type of efData1?.effective) {
-//     efObj[type] += 1
-//   }
-//   for (const type of efData1?.innefective) {
-//     efObj[type] -= 1
-//   }
-//   for (const type of efData1?.noDamage) {
-//     efObj[type] -= 100
-//   }
-
-//   for (const type of efData2?.effective) {
-//     if (!efObj[type]) efObj[type] = 0
-//     efObj[type] += 1
-//   }
-//   for (const type of efData2?.innefective) {
-//     if (!efObj[type]) efObj[type] = 0
-//     efObj[type] -= 1
-//   }
-//   for (const type of efData2?.noDamage) {
-//     if (!efObj[type]) efObj[type] = 0
-//     efObj[type] -= 100
-//   }
-
-//   const entries = Object.entries(efObj)
-//   const entrymap2 = entries
-//     .filter(entry => {
-//       if (entry[1] === 2) return entry[0]
-//     })
-//     .flat()
-//     .filter(entry => typeof entry === 'string')
-
-//   const entrymap1 = entries
-//     .filter(entry => {
-//       if (entry[1] === 1) return entry[0]
-//     })
-//     .flat()
-//     .filter(entry => typeof entry === 'string')
-
-//   const entrymap0 = entries
-//     .filter(entry => {
-//       if (entry[1] === 0) return entry[0]
-//     })
-//     .flat()
-//     .filter(entry => typeof entry === 'string')
-
-//   const entrymapBad = entries
-//     .filter(entry => {
-//       if (entry[1] === -1) return entry[0]
-//     })
-//     .flat()
-//     .filter(entry => typeof entry === 'string')
-
-//   const entrymapWorse = entries
-//     .filter(entry => {
-//       if (entry[1] === -2) return entry[0]
-//     })
-//     .flat()
-//     .filter(entry => typeof entry === 'string')
-
-//   return {
-//     best: entrymap2,
-//     good: entrymap1,
-//     neutral: entrymap0,
-//     bad: entrymapBad,
-//     worse: entrymapWorse,
-//   }
-// }
-
-// const getBestSkills = async ({ attacker, defender }: any) => {
-//   const efData = await getBestTypes(defender.baseData.type1Name, defender.baseData.type2Name)
-//   const skills = attacker.baseData.skills
-//   const skillTable = attacker.baseData.skillTable
-//   const learnedSkills: string[] = []
-
-//   for (const skill of skillTable) {
-//     const split = skill.split('%')
-//     if (Number(split[1]) <= attacker.level) {
-//       learnedSkills.push(split[0])
-//     }
-//   }
-
-//   const finalSkillMap = new Map<number, any[]>([])
-
-//   for (const skill of skills) {
-//     const talentCheck = await verifyTalentPermission(attacker, skill)
-//     if (!talentCheck.permit) {
-//       continue
-//     }
-//     const stab = () => {
-//       if (attacker.type1Name === skill.typeName) return 1.1
-//       if (attacker.type2Name === skill.typeName) return 1.1
-//       return 1
-//     }
-//     const adRatio = () => {
-//       if (skill.isPhysical) return attacker.atk / defender.def
-//       return attacker.spAtk / defender.spDef
-//     }
-
-//     const talentBonus = 0.05 * talentCheck.count
-
-//     if (efData.best.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
-//       const power =
-//         (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 2.5 * stab() * (1 + talentBonus)
-//       finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
-//       continue
-//     }
-//     if (efData.good.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
-//       const power =
-//         (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 1.75 * stab() * (1 + talentBonus)
-//       finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
-//       continue
-//     }
-//     if (efData.neutral.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
-//       const power =
-//         (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 1 * stab() * (1 + talentBonus)
-//       finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
-//     }
-
-//     if (efData.bad.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
-//       const power =
-//         (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 0.5 * stab() * (1 + talentBonus)
-//       finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
-//     }
-
-//     if (efData.worse.includes(skill.typeName) && learnedSkills.includes(skill.name)) {
-//       const power =
-//         (((attacker.level * 0.4 + 2) * skill.attackPower * adRatio()) / 50 + 2) * 0.25 * stab() * (1 + talentBonus)
-//       finalSkillMap.set(Number(power.toFixed(2)), [...(finalSkillMap.get(power) || []), skill])
-//     }
-//   }
-
-//   return getBestSkillPair(finalSkillMap)
-// }
-
-// const verifyTalentPermission = async (poke: IPokemon, skill: ISkill) => {
-//   const talents = [
-//     poke.talentId1,
-//     poke.talentId2,
-//     poke.talentId3,
-//     poke.talentId4,
-//     poke.talentId5,
-//     poke.talentId6,
-//     poke.talentId7,
-//     poke.talentId8,
-//     poke.talentId9,
-//   ]
-
-//   const typeId = findKeyByValue(talentIdMap, skill.typeName)
-
-//   const count = talents.reduce((count, current) => count + (current === typeId ? 1 : 0), 0)
-
-//   if (
-//     count >= 3 ||
-//     (count >= 2 && skill.attackPower <= 75) ||
-//     (count === 1 && skill.attackPower <= 40) ||
-//     (skill.typeName === 'normal' && skill.attackPower <= 50) ||
-//     poke.baseData.type1Name === skill.typeName ||
-//     poke.baseData.type2Name === skill.typeName
-//   )
-//     return {
-//       permit: true,
-//       count,
-//     }
-
-//   return {
-//     permit: false,
-//     count,
-//   }
-// }
+  return {
+    permit: false,
+    count,
+  }
+}

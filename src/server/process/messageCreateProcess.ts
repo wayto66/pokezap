@@ -101,7 +101,6 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
       const media = MessageMedia.fromFilePath(filePath)
       const result = await zapClient.sendMessage(msg.id.remote, response.message, {
         media: media,
-        sendVideoAsGif: true,
       })
 
       if (response.actions) {
@@ -125,6 +124,7 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
       return
     }
   } catch (e: any) {
+    console.log(e)
     logger.error(e)
   }
 }

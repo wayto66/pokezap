@@ -1,8 +1,9 @@
-import { createCanvas, loadImage } from 'canvas'
+import { createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '../../../infra/logger'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
 type TParams = {
   playerData: any
@@ -15,7 +16,7 @@ export const iGenPlayerAnalysis = async (data: TParams) => {
   const backgroundUrl = './src/assets/sprites/UI/hud/player_info.png'
 
   // Load the background image
-  const background = await loadImage(backgroundUrl)
+  const background = await loadOrSaveImageFromCache(backgroundUrl)
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
@@ -26,7 +27,7 @@ export const iGenPlayerAnalysis = async (data: TParams) => {
   ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
 
   // draw image avatar
-  const sprite = await loadImage('./src/assets/sprites/avatars/' + data.playerData.spriteUrl)
+  const sprite = await loadOrSaveImageFromCache('./src/assets/sprites/avatars/' + data.playerData.spriteUrl)
   const spriteWidth = 135
   const spriteHeight = 135
   const spriteX = 321
@@ -93,7 +94,7 @@ export const iGenPlayerAnalysis = async (data: TParams) => {
     ctx.fillStyle = circleColor
     ctx.fill()
 
-    const sprite = await loadImage(pokeTeam[i].spriteUrl)
+    const sprite = await loadOrSaveImageFromCache(pokeTeam[i].spriteUrl)
     ctx.drawImage(sprite, x - 12, y - 12, 75, 75)
 
     ctx.font = ' 14px Pokemon'

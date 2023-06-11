@@ -2,7 +2,6 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { logger } from '../../../infra/logger'
 import { IResponse } from '../../../server/models/IResponse'
-import { duelX2 } from '../../../server/modules/duel/duelX2'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
 import {
   CouldNotUpdatePlayerError,
@@ -18,6 +17,7 @@ import {
   UnexpectedError,
 } from '../../errors/AppErrors'
 import { TRouteParams } from '../router'
+import { duelNXN } from '../../../server/modules/duel/duelNXN'
 
 export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , sessionIdString] = data.routeParams
@@ -47,6 +47,11 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
                   skills: true,
                 },
               },
+              heldItem: {
+                include: {
+                  baseItem: true,
+                },
+              },
             },
           },
           teamPoke2: {
@@ -54,6 +59,11 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
               baseData: {
                 include: {
                   skills: true,
+                },
+              },
+              heldItem: {
+                include: {
+                  baseItem: true,
                 },
               },
             },
@@ -69,6 +79,11 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
                   skills: true,
                 },
               },
+              heldItem: {
+                include: {
+                  baseItem: true,
+                },
+              },
             },
           },
           teamPoke2: {
@@ -76,6 +91,11 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
               baseData: {
                 include: {
                   skills: true,
+                },
+              },
+              heldItem: {
+                include: {
+                  baseItem: true,
                 },
               },
             },
@@ -92,11 +112,9 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
 
   if (session.invitedId !== player2.id) throw new SendEmptyMessageError()
 
-  const duel = await duelX2({
-    player1: session.creator,
-    player2: session.invited,
-    team1: [session.creator.teamPoke1, session.creator.teamPoke2],
-    team2: [session.invited.teamPoke1, session.invited.teamPoke2],
+  const duel = await duelNXN({
+    leftTeam: [session.creator.teamPoke1, session.creator.teamPoke2],
+    rightTeam: [session.invited.teamPoke1, session.invited.teamPoke2],
   })
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
@@ -110,8 +128,8 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
   if (!winnerId) throw new UnexpectedError('duelo')
   if (!loserId) throw new UnexpectedError('duelo')
 
-  if (isNaN(winnerId)) throw new TypeMissmatchError(winnerId, 'number')
-  if (isNaN(loserId)) throw new TypeMissmatchError(loserId, 'number')
+  if (isNaN(winnerId)) throw new TypeMissmatchError(winnerId.toString(), 'number')
+  if (isNaN(loserId)) throw new TypeMissmatchError(loserId.toString(), 'number')
 
   const winner = await prismaClient.player.findFirstOrThrow({
     where: {
@@ -248,22 +266,18 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
     handleLoseExp0 = await handleExperienceGain({
       pokemon: loserPokemon0,
       targetPokemon: winnerPokemon0,
-      divide: true,
     })
     handleLoseExp1 = await handleExperienceGain({
       pokemon: loserPokemon1,
       targetPokemon: winnerPokemon1,
-      divide: true,
     })
     handleWinExp0 = await handleExperienceGain({
       pokemon: winnerPokemon0,
       targetPokemon: loserPokemon0,
-      divide: true,
     })
     handleWinExp1 = await handleExperienceGain({
       pokemon: winnerPokemon1,
       targetPokemon: loserPokemon1,
-      divide: true,
     })
   }
 

@@ -7,16 +7,25 @@ import {
   MissingParametersPokemonInformationError,
   PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
+  PokemonHasNotBornYetError,
   PokemonNotFoundError,
+  RouteNotFoundError,
   UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
+import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
+import {
+  getRegionalEvolutionData,
+  handleAlolaGalarEvolution,
+} from '../../../../server/modules/pokemon/handleAlolaGalarEvolution'
 
 export const pokemonEvolve = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
-  const [, , , pokemonIdString] = data.routeParams
+  const [, , , pokemonIdString, targetPokemonNameUppercase] = data.routeParams
   if (!pokemonIdString) throw new MissingParametersPokemonInformationError()
+
+  const targetPokemonName = targetPokemonNameUppercase?.toLowerCase()
 
   let searchMode = 'string'
 
@@ -33,27 +42,13 @@ export const pokemonEvolve = async (data: TRouteParams): Promise<IResponse> => {
   })
   if (!player) throw new PlayerNotFoundError(data.playerPhone)
 
-  const getPokemonRequestData = () => {
-    if (searchMode === 'number')
-      return {
-        identifier: pokemonId,
-        where: {
-          id: pokemonId,
-        },
-      }
-    if (searchMode === 'string')
-      return {
-        identifier: pokemonIdString.toLowerCase(),
-        where: {
-          baseData: {
-            name: pokemonIdString.toLowerCase(),
-          },
-          ownerId: player.id,
-        },
-      }
-  }
-
-  const pokemonRequestData = getPokemonRequestData()
+  const pokemonRequestData = getPokemonRequestData({
+    playerId: player.id,
+    pokemonId: pokemonId,
+    pokemonIdentifierString: pokemonIdString,
+    searchMode,
+    onlyAdult: true,
+  })
   if (!pokemonRequestData) throw new UnexpectedError('NO REQUEST DATA FOUND.')
 
   const pokemon = await prismaClient.pokemon.findFirst({
@@ -75,9 +70,41 @@ export const pokemonEvolve = async (data: TRouteParams): Promise<IResponse> => {
   if (!pokemon) throw new PokemonNotFoundError(pokemonRequestData.identifier)
   if (pokemon.ownerId !== player.id) throw new PlayerDoestNotOwnThePokemonError(pokemonId, player.name)
 
+  const route = await prismaClient.gameRoom.findFirst({
+    where: {
+      phone: data.groupCode,
+    },
+  })
+
+  if (!route) throw new RouteNotFoundError(player.name, data.groupCode)
+
+  const isRegional = getRegionalEvolutionData(pokemon.baseData)
+
+  if (isRegional && route.region) {
+    const evolutionData = await handleAlolaGalarEvolution({
+      pokemon,
+      currentRegion: route.region,
+    })
+
+    if (!evolutionData.evolved || !evolutionData.pokemon)
+      return {
+        message: evolutionData.errorMessage || 'Houve um erro na evolução.',
+        status: 300,
+      }
+
+    const imageUrl = await iGenPokemonAnalysis(evolutionData.pokemon)
+    return {
+      message: `*${pokemon.baseData.name}* evoluiu para *${evolutionData.pokemon.baseData.name}*!`,
+      imageUrl,
+      status: 200,
+      data: null,
+    }
+  }
+
   const evolvePoke = await checkEvolutionPermition({
     pokemonId: pokemon.id,
     playerId: player.id,
+    preferredPokemonName: targetPokemonName,
   })
 
   if (evolvePoke && evolvePoke.status === 'evolved' && evolvePoke.message) {
@@ -92,9 +119,7 @@ export const pokemonEvolve = async (data: TRouteParams): Promise<IResponse> => {
 
     if (!evolvedPoke) throw new PokemonNotFoundError(pokemon.id)
 
-    const imageUrl = await iGenPokemonAnalysis({
-      pokemonData: evolvedPoke,
-    })
+    const imageUrl = await iGenPokemonAnalysis(evolvedPoke)
     return {
       message: evolvePoke.message,
       imageUrl,
@@ -102,6 +127,16 @@ export const pokemonEvolve = async (data: TRouteParams): Promise<IResponse> => {
       data: null,
     }
   }
+
+  if (
+    isRegional &&
+    !route.region &&
+    evolvePoke.message === 'Não foi possível localizar a posição do pokemon na cadeia evolutiva.'
+  )
+    return {
+      message: `Este pokemon parece evoluir apenas em uma certa região.`,
+      status: 300,
+    }
 
   if (evolvePoke && evolvePoke.message)
     return {

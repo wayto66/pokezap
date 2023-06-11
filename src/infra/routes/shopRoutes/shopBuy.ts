@@ -44,6 +44,9 @@ export const shopBuy = async (data: TRouteParams): Promise<IResponse> => {
         { name: 'water-stone' },
         { name: 'fire-stone' },
         { name: 'leaf-stone' },
+        { name: 'shiny-incense' },
+        { name: 'elemental-incense' },
+        { name: 'revive' },
       ],
     },
   })

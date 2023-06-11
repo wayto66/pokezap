@@ -1,11 +1,31 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { IResponse } from '../../../../server/models/IResponse'
-import { PlayerDoesNotHaveItemError, PlayerNotFoundError } from '../../../errors/AppErrors'
+import {
+  PlayerDoesNotHaveItemError,
+  PlayerNotFoundError,
+  RouteHasADifferentIncenseActiveError,
+  RouteNotFoundError,
+  UnexpectedError,
+} from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
+import { pokemonTypes } from '../../../../server/constants/pokemonTypes'
 
 export const routeIncense = async (data: TRouteParams): Promise<IResponse> => {
+  const [, , , givenIncenseName, element1, element2, element3, element4, element5, element6] = data.routeParams
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
+
+  const incenseName = (givenIncenseName || 'full-incense').toLowerCase()
+
+  const elementsPre = [element1, element2, element3, element4, element5, element6]
+  const elements: string[] = []
+
+  for (const element of elementsPre) {
+    if (!element || typeof element !== 'string') continue
+    if (!pokemonTypes.includes(element.toLowerCase())) throw new UnexpectedError('Não há um tipo chamado: ' + element)
+    if (incenseName === 'elemental-incense') elements.push(element.toLowerCase())
+  }
+
   const player = await prismaClient.player.findFirst({
     where: {
       phone: data.playerPhone,
@@ -17,21 +37,33 @@ export const routeIncense = async (data: TRouteParams): Promise<IResponse> => {
     where: {
       ownerId: player.id,
       baseItem: {
-        name: 'full-incense',
+        name: incenseName,
       },
     },
   })
 
-  if (!incenseItem || incenseItem.amount <= 0) throw new PlayerDoesNotHaveItemError(player.name, 'full-incense')
+  const route = await prismaClient.gameRoom.findFirst({
+    where: {
+      phone: data.groupCode,
+    },
+  })
+
+  if (!route) throw new RouteNotFoundError(player.name, data.groupCode)
+  if (!incenseItem || incenseItem.amount <= 0) throw new PlayerDoesNotHaveItemError(player.name, incenseName)
+  if (route.activeIncense !== incenseName && route.incenseCharges && route.incenseCharges > 0)
+    throw new RouteHasADifferentIncenseActiveError(incenseName)
 
   const updatedRoute = await prismaClient.gameRoom.update({
     where: {
       phone: data.groupCode,
     },
     data: {
-      activeIncense: 'full-incense',
+      activeIncense: incenseName,
       incenseCharges: {
         increment: 10,
+      },
+      incenseElements: {
+        set: elements,
       },
     },
   })

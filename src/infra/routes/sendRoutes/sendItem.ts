@@ -4,6 +4,7 @@ import { IResponse } from '../../../server/models/IResponse'
 import {
   InsufficientItemAmountError,
   MissingParameterError,
+  PlayerInRaidIsLockedError,
   PlayerNotFoundError,
   PokemonNotFoundError,
   TypeMissmatchError,
@@ -50,6 +51,8 @@ export const sendItem = async (data: TRouteParams): Promise<IResponse> => {
   })
 
   if (!targetPlayer) throw new PlayerNotFoundError(targetPlayerIdString)
+  if (targetPlayer.isInRaid) throw new PlayerInRaidIsLockedError(targetPlayer.name)
+
   if (item.ownerId === targetPlayer.id) throw new UnexpectedError('O item já pertence à você.')
 
   await prisma.item.update({

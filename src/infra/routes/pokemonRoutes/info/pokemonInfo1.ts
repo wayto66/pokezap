@@ -9,6 +9,7 @@ import {
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
+import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
 
 export const pokemonInfo1 = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
@@ -28,27 +29,12 @@ export const pokemonInfo1 = async (data: TRouteParams): Promise<IResponse> => {
   })
   if (!player) throw new PlayerNotFoundError(data.playerPhone)
 
-  const getPokemonRequestData = () => {
-    if (searchMode === 'number')
-      return {
-        identifier: pokemonId,
-        where: {
-          id: pokemonId,
-        },
-      }
-    if (searchMode === 'string')
-      return {
-        identifier: pokemonIdString.toLowerCase(),
-        where: {
-          baseData: {
-            name: pokemonIdString.toLowerCase(),
-          },
-          ownerId: player.id,
-        },
-      }
-  }
-
-  const pokemonRequestData = getPokemonRequestData()
+  const pokemonRequestData = getPokemonRequestData({
+    playerId: player.id,
+    pokemonId: pokemonId,
+    pokemonIdentifierString: pokemonIdString,
+    searchMode,
+  })
   if (!pokemonRequestData) throw new UnexpectedError('NO REQUEST DATA FOUND.')
 
   const pokemon = await prismaClient.pokemon.findFirst({
@@ -65,13 +51,17 @@ export const pokemonInfo1 = async (data: TRouteParams): Promise<IResponse> => {
       talent8: true,
       talent9: true,
       owner: true,
+      heldItem: {
+        include: {
+          baseItem: true,
+        },
+      },
     },
   })
-  if (!pokemon) throw new PokemonNotFoundError(pokemonRequestData.identifier)
+  if (!pokemon || (searchMode === 'string' && !pokemon.isAdult))
+    throw new PokemonNotFoundError(pokemonRequestData.identifier)
 
-  const imageUrl = await iGenPokemonAnalysis({
-    pokemonData: pokemon,
-  })
+  const imageUrl = await iGenPokemonAnalysis(pokemon)
 
   if (!pokemon.isAdult && pokemon.owner)
     return {

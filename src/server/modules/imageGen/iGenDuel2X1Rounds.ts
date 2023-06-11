@@ -1,23 +1,32 @@
-import { Image, loadImage } from 'canvas'
+import { Image } from 'canvas'
 import fs from 'fs'
 import GIFEncoder from 'gifencoder'
 import path from 'path'
 import { createCanvas2d } from '../../../server/helpers/canvasHelper'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
-import { BossInvasionRoundData, RoundPokemonData } from '../duel/duelNX1'
+import { DuelNxNRoundData, RoundPokemonData } from '../duel/duelNXN'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
 export type TDuelRoundData = {
-  alliesTeam: RoundPokemonData[]
-  boss: RoundPokemonData
+  leftTeam: RoundPokemonData[]
+  rightTeam: RoundPokemonData[]
   roundCount: number
-  duelMap: Map<number, BossInvasionRoundData>
+  duelMap: Map<number, DuelNxNRoundData>
+  winnerSide: 'right' | 'left'
+  backgroundTypeName?: string
+  staticImage?: boolean
+}
+
+export type TFlagSpriteObject = {
+  skillFlag: Image
+  ultimateFlag: Image
 }
 
 export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> => {
   const filepath = await new Promise<string>(resolve => {
     async function processCode() {
-      const boss = data.boss
-      const allyTeam = data.alliesTeam
+      const boss = data.rightTeam[0]
+      const allyTeam = data.leftTeam
 
       // Define the dimensions of the canvas and the background
       const backgroundUrl = './src/assets/sprites/UI/hud/duel_2x1_round.png'
@@ -32,35 +41,33 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
       encoder.createReadStream().pipe(fs.createWriteStream(filepath))
 
       // load poke1 sprite
-      const allyPokeSprite0 = await loadImage(allyTeam[0].spriteUrl)
+      const allyPokeSprite0 = await loadOrSaveImageFromCache(allyTeam[0].spriteUrl)
       // load poke2 sprite
-      const allyPokeSprite1 = await loadImage(allyTeam[1].spriteUrl)
+      const allyPokeSprite1 = await loadOrSaveImageFromCache(allyTeam[1].spriteUrl)
 
       // load boss sprite
-      const bossSprite = await loadImage(boss.spriteUrl)
+      const bossSprite = await loadOrSaveImageFromCache(boss.spriteUrl)
 
-      type TFlagSpriteObject = {
-        skillFlag: Image
-        ultimateFlag: Image
+      const skillFlagImagesMap = new Map<string, Image>([])
+
+      for (const poke of [allyTeam, boss].flat()) {
+        if (!poke.skillMap) continue
+        for (const [, skill] of poke.skillMap) {
+          if (!skillFlagImagesMap.get(skill.typeName)) {
+            skillFlagImagesMap.set(
+              skill.typeName,
+              await loadOrSaveImageFromCache('./src/assets/sprites/UI/types/' + skill.typeName + '.png')
+            )
+          }
+        }
       }
-
-      const skillFlagMap = new Map<number, TFlagSpriteObject>([])
-
-      for (const ally of allyTeam) {
-        skillFlagMap.set(ally.id, {
-          skillFlag: await loadImage('./src/assets/sprites/UI/types/' + ally.skillType + '.png'),
-          ultimateFlag: await loadImage('./src/assets/sprites/UI/types/' + ally.ultimateType + '.png'),
-        })
-      }
-
-      const bossSkillTypeFlag = await loadImage('./src/assets/sprites/UI/types/' + boss.skillType + '.png')
 
       // Load the background image
-      const background = await loadImage(backgroundUrl)
+      const background = await loadOrSaveImageFromCache(backgroundUrl)
 
       // Draw the still part of the animation:
 
-      const drawStillPart = (roundInfo: BossInvasionRoundData) => {
+      const drawStillPart = (roundInfo: DuelNxNRoundData) => {
         canvas.draw({
           height: 500,
           width: 500,
@@ -69,7 +76,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           image: background,
         })
 
-        if (roundInfo.alliesTeamData[0].hp > 0)
+        if (roundInfo.leftTeamData[0].hp > 0)
           canvas.draw({
             height: 251,
             width: 251,
@@ -78,7 +85,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
             image: allyPokeSprite0,
           })
 
-        if (roundInfo.alliesTeamData[1].hp > 0)
+        if (roundInfo.leftTeamData[1].hp > 0)
           canvas.draw({
             height: 251,
             width: 251,
@@ -157,17 +164,15 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
       encoder.setQuality(60) // Image quality (lower is better)
 
       const framesPerRound = 2
-      let round = 2
+      let round = 1
       let roundInfo = data.duelMap.get(round)
-      let isDuelInProgress = true
-
-      let winner: 'allies' | 'boss' | undefined
 
       for (let i = 0; i < data.roundCount * framesPerRound + 12; i++) {
-        if (i > round * framesPerRound && isDuelInProgress) {
+        if (i > round * framesPerRound && round < data.roundCount) {
           round++
           roundInfo = data.duelMap.get(round)
         }
+        if (!roundInfo) roundInfo = data.duelMap.get(round - 1)
         if (!roundInfo) continue
 
         canvas.clearArea()
@@ -178,7 +183,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           fillStyle: `rgb(160,40,40)`,
           x: 55,
           y: 57,
-          w: Math.max(0, (roundInfo.alliesTeamData[0].hp / roundInfo.alliesTeamData[0].maxHp) * 125),
+          w: Math.max(0, (roundInfo.leftTeamData[0].hp / roundInfo.leftTeamData[0].maxHp) * 125),
           h: 7,
         })
 
@@ -186,7 +191,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           fillStyle: `rgb(160,40,40)`,
           x: 55,
           y: 110,
-          w: Math.max(0, (roundInfo.alliesTeamData[1].hp / roundInfo.alliesTeamData[1].maxHp) * 125),
+          w: Math.max(0, (roundInfo.leftTeamData[1].hp / roundInfo.leftTeamData[1].maxHp) * 125),
           h: 7,
         })
 
@@ -194,7 +199,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           fillStyle: `rgb(160,40,40)`,
           x: 365,
           y: 108,
-          w: Math.max(0, (roundInfo.bossData.hp / roundInfo.bossData.maxHp) * 125),
+          w: Math.max(0, (roundInfo.rightTeamData[0].hp / roundInfo.rightTeamData[0].maxHp) * 125),
           h: 7,
         })
 
@@ -203,7 +208,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           fillStyle: `rgb(50,121,211)`,
           x: 5,
           y: 103,
-          w: Math.max(0, (roundInfo.alliesTeamData[0].mana / 100) * 175),
+          w: Math.max(0, (roundInfo.leftTeamData[0].mana / 100) * 175),
           h: 3,
         })
 
@@ -211,7 +216,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           fillStyle: `rgb(50,121,211)`,
           x: 315,
           y: 103,
-          w: Math.max(0, (roundInfo.bossData.mana / 100) * 175),
+          w: Math.max(0, (roundInfo.rightTeamData[0].mana / 100) * 175),
           h: 3,
         })
 
@@ -221,7 +226,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           textAlign: 'start',
           positionX: 15,
           positionY: 405,
-          text: roundInfo.alliesTeamData[0].currentSkillName,
+          text: roundInfo.leftTeamData[0].currentSkillName ?? '',
         })
 
         canvas.write({
@@ -230,7 +235,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           textAlign: 'start',
           positionX: 15,
           positionY: 455,
-          text: roundInfo.alliesTeamData[1].currentSkillName,
+          text: roundInfo.leftTeamData[1].currentSkillName ?? '',
         })
 
         canvas.write({
@@ -239,25 +244,22 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           textAlign: 'start',
           positionX: 315,
           positionY: 425,
-          text: roundInfo.bossData.currentSkillName,
+          text: roundInfo.rightTeamData[0].currentSkillName ?? '',
         })
         // draw skill types
         if (i % 6 !== 0) {
-          canvas.draw({
-            positionX: 421,
-            positionY: 405,
-            height: 25,
-            width: 72,
-            image: bossSkillTypeFlag,
-          })
+          const bossSkillFlag = skillFlagImagesMap.get(roundInfo.rightTeamData[0].currentSkillType ?? '')
+          if (bossSkillFlag)
+            canvas.draw({
+              positionX: 421,
+              positionY: 405,
+              height: 25,
+              width: 72,
+              image: bossSkillFlag,
+            })
 
-          for (let i = 0; i < roundInfo.alliesTeamData.length; i++) {
-            const skillFlags = skillFlagMap.get(roundInfo.alliesTeamData[i].id)
-            const skillFlag =
-              roundInfo.alliesTeamData[0].currentSkillName === roundInfo.alliesTeamData[i].skillName
-                ? skillFlags?.skillFlag
-                : skillFlags?.ultimateFlag
-
+          for (let i = 0; i < roundInfo.leftTeamData.length; i++) {
+            const skillFlag = skillFlagImagesMap.get(roundInfo.leftTeamData[i].currentSkillType ?? '')
             if (skillFlag) {
               canvas.draw({
                 positionX: 131,
@@ -282,7 +284,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
         /// write crits
 
         if (
-          roundInfo.alliesTeamData.map(ally => ally.crit).some(crit => crit === true) &&
+          roundInfo.leftTeamData.map(ally => ally.crit).some(crit => crit === true) &&
           i < data.roundCount * framesPerRound
         ) {
           canvas.write({
@@ -297,7 +299,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           })
         }
 
-        if (roundInfo.bossData.crit && i < data.roundCount * framesPerRound) {
+        if (roundInfo.rightTeamData[0].crit && i < data.roundCount * framesPerRound) {
           canvas.write({
             positionX: 365,
             positionY: 180,
@@ -313,7 +315,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
         /// write blocks
 
         if (
-          roundInfo.alliesTeamData.map(ally => ally.block).some(block => block === true) &&
+          roundInfo.leftTeamData.map(ally => ally.block).some(block => block === true) &&
           i < data.roundCount * framesPerRound
         ) {
           canvas.write({
@@ -328,7 +330,7 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           })
         }
 
-        if (roundInfo.bossData.block && i < data.roundCount * framesPerRound) {
+        if (roundInfo.rightTeamData[0].block && i < data.roundCount * framesPerRound) {
           canvas.write({
             positionX: 365,
             positionY: 215,
@@ -341,9 +343,9 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           })
         }
 
-        if (!isDuelInProgress && i > data.roundCount * framesPerRound) {
+        if (i > data.roundCount * framesPerRound) {
           canvas.write({
-            positionX: winner === 'boss' ? 365 : 105,
+            positionX: data.winnerSide === 'right' ? 365 : 105,
             positionY: 180,
             textAlign: 'center',
             font: '32px Righteous',
@@ -354,24 +356,15 @@ export const iGenDuel2X1Rounds = async (data: TDuelRoundData): Promise<string> =
           })
         }
 
-        if (roundInfo.alliesTeamData.map(ally => ally.hp).every(hp => hp <= 0) && round >= data.roundCount) {
-          isDuelInProgress = false
-          winner = 'boss'
-        }
-        if (roundInfo.bossData.hp <= 0 && round >= data.roundCount) {
-          isDuelInProgress = false
-          winner = 'allies'
-        }
-
         canvas.addFrameToEncoder(encoder)
       }
 
       // Finish encoding the GIF
       encoder.finish()
-    }
 
-    processCode()
-    resolve(filepath)
+      return filepath
+    }
+    resolve(processCode())
   })
 
   removeFileFromDisk(filepath, 60000)

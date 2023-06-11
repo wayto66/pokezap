@@ -1,8 +1,11 @@
 import { MissingParametersPokemonRouteError, SubRouteNotFoundError } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
+import { pokemonDropItem } from './dropItem/pokemonDropItem'
 import { pokemonEvolve } from './evolve/pokemonEvolve'
+import { pokemonHoldItem } from './holdItem/pokemonHoldItem'
 import { pokemonInfo1 } from './info/pokemonInfo1'
+import { pokemonMegaEvolve } from './megaEvolve/pokemonMegaEvolve'
 import { pokemonSell } from './sell/pokemonSell'
 import { pokemonSkills } from './skills/pokemonSkills'
 import { pokemonTeam } from './team/pokemonTeam'
@@ -24,6 +27,12 @@ const subRouteMap = new Map<string, any>([
   ['EVOLVE', pokemonEvolve],
   ['EVOLUIR', pokemonEvolve],
 
+  // POKEMON MEGA EVOLVE ROUTES
+  ['MEGA-EVOLVE', pokemonMegaEvolve],
+  ['MEGA-EVOLUIR', pokemonMegaEvolve],
+  ['MEGAEVOLVE', pokemonMegaEvolve],
+  ['MEGAEVOLUIR', pokemonMegaEvolve],
+
   // POKEMON SKILL ROUTES
   ['SKILL', pokemonSkills],
   ['SKILLS', pokemonSkills],
@@ -31,6 +40,18 @@ const subRouteMap = new Map<string, any>([
   ['MOVES', pokemonSkills],
   ['GOLPES', pokemonSkills],
   ['PODERES', pokemonSkills],
+
+  // POKEMON GIVE-ITEM ROUTES
+  ['GIVE-ITEM', pokemonHoldItem],
+  ['HOLD-ITEM', pokemonHoldItem],
+  ['GIVEITEM', pokemonHoldItem],
+  ['HOLDITEM', pokemonHoldItem],
+
+  // POKEMON REMOVE-ITEM ROUTES
+  ['TAKE-ITEM', pokemonDropItem],
+  ['DROP-ITEM', pokemonDropItem],
+  ['TAKEITEM', pokemonDropItem],
+  ['DROPITEM', pokemonDropItem],
 ])
 
 export const pokemonRoutes = async (data: TRouteParams): Promise<IResponse> => {

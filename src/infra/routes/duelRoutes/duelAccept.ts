@@ -15,10 +15,10 @@ import {
   UnexpectedError,
 } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
-import { duelX1 } from '../../../server/modules/duel/duelX1'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
 import { logger } from '../../logger'
 import { TRouteParams } from '../router'
+import { duelNXN } from '../../../server/modules/duel/duelNXN'
 
 export type DuelPokemon = Pokemon & {
   baseData: BasePokemon & {
@@ -58,6 +58,11 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
                   skills: true,
                 },
               },
+              heldItem: {
+                include: {
+                  baseItem: true,
+                },
+              },
             },
           },
           teamPoke2: {
@@ -65,6 +70,11 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
               baseData: {
                 include: {
                   skills: true,
+                },
+              },
+              heldItem: {
+                include: {
+                  baseItem: true,
                 },
               },
             },
@@ -80,6 +90,11 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
                   skills: true,
                 },
               },
+              heldItem: {
+                include: {
+                  baseItem: true,
+                },
+              },
             },
           },
           teamPoke2: {
@@ -87,6 +102,11 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
               baseData: {
                 include: {
                   skills: true,
+                },
+              },
+              heldItem: {
+                include: {
+                  baseItem: true,
                 },
               },
             },
@@ -100,24 +120,24 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
   if (!session.invited.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(session.invited.name)
   if (session.invitedId !== player2.id) throw new SendEmptyMessageError()
 
-  const duel = await duelX1({
-    poke1: session.creator.teamPoke1,
-    poke2: session.invited.teamPoke1,
+  const duel = await duelNXN({
+    leftTeam: [session.creator.teamPoke1],
+    rightTeam: [session.invited.teamPoke1],
   })
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
 
-  if (!duel.winner) throw new NoDuelWinnerFoundError()
-  if (!duel.loser) throw new NoDuelLoserFoundError()
+  if (!duel.winnerTeam) throw new NoDuelWinnerFoundError()
+  if (!duel.loserTeam) throw new NoDuelLoserFoundError()
 
-  const winnerId = duel.winner.ownerId
-  const loserId = duel.loser.ownerId
+  const winnerId = duel.winnerTeam[0].ownerId
+  const loserId = duel.loserTeam[0].ownerId
 
   if (!winnerId) throw new UnexpectedError('duelo')
   if (!loserId) throw new UnexpectedError('duelo')
 
-  if (isNaN(winnerId)) throw new TypeMissmatchError(winnerId, 'number')
-  if (isNaN(loserId)) throw new TypeMissmatchError(loserId, 'number')
+  if (isNaN(winnerId)) throw new TypeMissmatchError(winnerId.toString(), 'number')
+  if (isNaN(loserId)) throw new TypeMissmatchError(loserId.toString(), 'number')
 
   const players = new Map<number, DuelPlayer>([
     [session.creator.id, session.creator],
@@ -199,11 +219,11 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
     [loser.teamPoke1.id, loser.teamPoke1],
   ])
 
-  const loserPokemon = pokemons.get(duel.loser.id)
-  const winnerPokemon = pokemons.get(duel.winner.id)
+  const loserPokemon = pokemons.get(duel.loserTeam[0].id)
+  const winnerPokemon = pokemons.get(duel.winnerTeam[0].id)
 
-  if (!loserPokemon) throw new PokemonNotFoundError(duel.loser.id)
-  if (!winnerPokemon) throw new PokemonNotFoundError(duel.winner.id)
+  if (!loserPokemon) throw new PokemonNotFoundError(duel.loserTeam[0].id)
+  if (!winnerPokemon) throw new PokemonNotFoundError(duel.winnerTeam[0].id)
 
   const handleLoseExp = await handleExperienceGain({
     pokemon: loserPokemon,

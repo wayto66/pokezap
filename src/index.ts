@@ -7,6 +7,7 @@ import { logger } from './infra/logger'
 import { router } from './infra/routes/router'
 import { registerFonts } from './server/helpers/registerFonts'
 import { handleAllProcess } from './server/process'
+import ffmpegPath from 'ffmpeg-static'
 
 process.on('uncaughtException', error => {
   logger.error(error)
@@ -42,7 +43,7 @@ if (enableZap) {
     puppeteer: {
       executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
     },
-    ffmpegPath: './src/infra/ffmpeg/bin/ffmpeg.exe',
+    ffmpegPath: ffmpegPath ?? '',
   })
 
   container.registerInstance<Client>('ZapClientInstance1', client)

@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import {
+  PlayerInRaidIsLockedError,
   PlayerNotFoundError,
   PokemonDoesNotBelongsToTheUserError,
   PokemonDoesNotHaveOwnerError,
@@ -65,6 +66,7 @@ export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
     },
     include: {
       baseData: true,
+      owner: true,
     },
   })
 
@@ -78,6 +80,7 @@ export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
     throw new PokemonDoesNotBelongsToTheUserError(creatorPokemon.id, creatorPokemon.baseData.name, requesterPlayer.name)
 
   if (!invitedPokemon.ownerId) throw new PokemonDoesNotHaveOwnerError(invitedPokemon.id, invitedPokemon.baseData.name)
+  if (invitedPokemon.owner?.isInRaid) throw new PlayerInRaidIsLockedError(invitedPokemon.owner.name)
 
   const invitedPlayer = await prismaClient.player.findUnique({
     where: {

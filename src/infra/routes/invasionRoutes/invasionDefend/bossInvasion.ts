@@ -3,8 +3,6 @@ import { container } from 'tsyringe'
 import { DuelPlayer } from '../../../../infra/routes/duelRoutes/duelAccept'
 import { bossInvasionLootMap } from '../../../../server/constants/bossInvasionLootMap'
 import { IResponse } from '../../../../server/models/IResponse'
-import { duelNX1 } from '../../../../server/modules/duel/duelNX1'
-import { TDuelX2Response } from '../../../../server/modules/duel/duelX2'
 import { handleExperienceGain } from '../../../../server/modules/pokemon/handleExperienceGain'
 import {
   InsufficentPlayersForInvasionError,
@@ -16,6 +14,7 @@ import {
   UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
+import { TDuelNXNResponse, duelNXN } from '../../../../server/modules/duel/duelNXN'
 
 export const bossInvasion = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , invasionSessionIdString] = data.routeParams
@@ -38,6 +37,11 @@ export const bossInvasion = async (data: TRouteParams): Promise<IResponse> => {
                   skills: true,
                 },
               },
+              heldItem: {
+                include: {
+                  baseItem: true,
+                },
+              },
             },
           },
         },
@@ -47,6 +51,11 @@ export const bossInvasion = async (data: TRouteParams): Promise<IResponse> => {
           baseData: {
             include: {
               skills: true,
+            },
+          },
+          heldItem: {
+            include: {
+              baseItem: true,
             },
           },
         },
@@ -77,9 +86,10 @@ export const bossInvasion = async (data: TRouteParams): Promise<IResponse> => {
     },
   })
 
-  const duel = await duelNX1({
-    playerTeam: allyTeam,
-    boss: invasionSession.enemyPokemons[0],
+  const duel = await duelNXN({
+    leftTeam: allyTeam,
+    rightTeam: [invasionSession.enemyPokemons[0]],
+    wildBattle: true,
   })
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
@@ -244,7 +254,7 @@ ${lootMessages.join(' \n')}
 
 type THandleInvasionLoseData = {
   players: DuelPlayer[]
-  duel: TDuelX2Response
+  duel: TDuelNXNResponse
   invasionSession: InvasionSession
 }
 
@@ -252,7 +262,7 @@ const handleInvasionLose = async (data: THandleInvasionLoseData) => {
   const { players, duel, invasionSession } = data
   const prisma = container.resolve<PrismaClient>('PrismaClient')
 
-  const cashLose = Math.round((invasionSession.cashReward || 0) * 0.5)
+  const cashLose = Math.round((invasionSession.cashReward || 0) * 0.33)
 
   await prisma.player.updateMany({
     where: {

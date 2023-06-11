@@ -31,6 +31,8 @@ export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
       BaseExperience: {
         lt: 65,
       },
+      isMega: false,
+      isRegional: false,
     },
   })
 
@@ -94,7 +96,6 @@ export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
           baseData: true,
         },
       },
-      ownedHeldItems: true,
       teamPoke1: {
         include: {
           baseData: true,

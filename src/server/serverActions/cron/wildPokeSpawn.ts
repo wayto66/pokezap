@@ -4,6 +4,8 @@ import { Client, MessageMedia } from 'whatsapp-web.js'
 import { metaValues } from '../../../constants/metaValues'
 import { iGenWildPokemon } from '../../modules/imageGen/iGenWildPokemon'
 import { generateWildPokemon } from '../../modules/pokemon/generate/generateWildPokemon'
+import { checkEvolutionPermition } from '../../modules/pokemon/checkEvolutionPermition'
+import { windPokeEvolve } from '../../modules/pokemon/windPokeEvolve'
 
 type TParams = {
   prismaClient: PrismaClient
@@ -24,9 +26,7 @@ export const wildPokeSpawn = async (data: TParams) => {
 
   for (const gameRoom of gameRooms) {
     if (!gameRoom.phone) continue
-
     if (gameRoom.mode !== 'route') continue
-
     if (gameRoom.invasorId && Math.random() < 0.5) {
       data.zapClient.sendMessage(
         gameRoom.phone,
@@ -44,29 +44,79 @@ export const wildPokeSpawn = async (data: TParams) => {
         gameRoom.incenseCharges <= 0)
     )
       continue
-
     const baseExperienceTreshold = Math.floor(64 + (gameRoom.level / 100) * 276)
-    const basePokemons = await prismaClient.basePokemon.findMany({
-      where: {
-        BaseExperience: {
-          lte: baseExperienceTreshold,
-        },
-      },
-    })
+
+    const getIncenseTypes = () => {
+      if (gameRoom.incenseElements.length > 0) {
+        return [
+          {
+            type1Name: {
+              in: gameRoom.incenseElements,
+            },
+          },
+          {
+            type2Name: {
+              in: gameRoom.incenseElements,
+            },
+          },
+        ]
+      }
+      return undefined
+    }
+
+    const basePokemons = gameRoom.region
+      ? await prismaClient.basePokemon.findMany({
+          where: {
+            BaseExperience: {
+              lte: baseExperienceTreshold,
+            },
+            name: {
+              contains: `-${gameRoom.region}`,
+            },
+            isMega: false,
+            isRegional: true,
+            OR: getIncenseTypes(),
+          },
+        })
+      : await prismaClient.basePokemon.findMany({
+          where: {
+            BaseExperience: {
+              lte: baseExperienceTreshold,
+            },
+            isMega: false,
+            isRegional: false,
+            isFirstEvolution: true,
+            OR: getIncenseTypes(),
+          },
+        })
+
     const baseData = basePokemons[Math.floor(Math.random() * basePokemons.length)]
     const level = gameRoom.levelLock
       ? Math.floor(Math.min(1 + Math.random() * gameRoom.levelLock, 100))
       : Math.floor(Math.min(1 + Math.random() * gameRoom.level, 100))
 
-    const newWildPokemon = await generateWildPokemon({
+    const getShinyChance = () => {
+      if (!gameRoom.incenseCharges || gameRoom.incenseCharges <= 0) return 0.025
+      if (gameRoom.activeIncense === 'shiny-incense') return 0.09
+      return 0.05
+    }
+
+    const shinyChance = getShinyChance()
+
+    const newWildPokemonPreEvolve = await generateWildPokemon({
       baseData,
       level,
-      shinyChance: data.needIncense ? 0.05 : 0.025,
+      shinyChance,
       savage: true,
       isAdult: true,
       gameRoomId: gameRoom.id,
       fromIncense: true,
     })
+
+    const newWildPokemon = await windPokeEvolve(
+      await windPokeEvolve(newWildPokemonPreEvolve, baseExperienceTreshold),
+      baseExperienceTreshold
+    )
 
     if (data.needIncense) {
       await prismaClient.gameRoom.update({
@@ -82,7 +132,7 @@ export const wildPokeSpawn = async (data: TParams) => {
     }
 
     const imageUrl = await iGenWildPokemon({
-      pokemonData: newWildPokemon,
+      pokemon: newWildPokemon,
     })
     const media = MessageMedia.fromFilePath(imageUrl!)
 
@@ -97,6 +147,7 @@ export const wildPokeSpawn = async (data: TParams) => {
         }!
 Ações:
 👍 - Batalhar
+❤ - Batalha Rápida
 `,
       })
       .then(async result => {
@@ -105,7 +156,7 @@ Ações:
             msgId: result.id.id,
             type: '?',
             body: '',
-            actions: [`pokezap. battle ${newWildPokemon.id}`],
+            actions: [`pokezap. battle ${newWildPokemon.id}`, `pz. battle ${newWildPokemon.id} fast`],
           },
         })
       })

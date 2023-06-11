@@ -22,7 +22,6 @@ export const playerInfo1 = async (data: TUserInfoParams): Promise<IResponse> => 
       },
       include: {
         ownedItems: true,
-        ownedHeldItems: true,
         ownedPokemons: {
           include: {
             baseData: true,

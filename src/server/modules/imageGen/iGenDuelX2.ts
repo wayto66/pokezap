@@ -1,11 +1,12 @@
 import { Player, Pokemon } from '@prisma/client'
-import { createCanvas, loadImage, registerFont } from 'canvas'
+import { createCanvas, registerFont } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { UnexpectedError } from '../../../infra/errors/AppErrors'
 import { logger } from '../../../infra/logger'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
 import { talentIdMap } from '../../constants/talentIdMap'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
 type DuelPlayer = Player & {
   teamPoke1: Pokemon | null
@@ -32,7 +33,7 @@ export const iGenDuelX2 = async (data: TParams) => {
   )
 
   // Load the background image
-  const background = await loadImage(backgroundUrl)
+  const background = await loadOrSaveImageFromCache(backgroundUrl)
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
@@ -43,7 +44,7 @@ export const iGenDuelX2 = async (data: TParams) => {
   ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
 
   // draw image avatar
-  const sprite = await loadImage('./src/assets/sprites/avatars/' + data.player1.spriteUrl)
+  const sprite = await loadOrSaveImageFromCache('./src/assets/sprites/avatars/' + data.player1.spriteUrl)
   const spriteWidth = 200
   const spriteHeight = 200
   const spriteX = 0
@@ -63,11 +64,11 @@ export const iGenDuelX2 = async (data: TParams) => {
   ctx.fillText(`RANK: ${data.player1.elo}`, 51, 75)
 
   // draw poke sprite
-  const pokeSprite1 = await loadImage(data.player1.teamPoke1.spriteUrl)
+  const pokeSprite1 = await loadOrSaveImageFromCache(data.player1.teamPoke1.spriteUrl)
   ctx.drawImage(pokeSprite1, -30, 275, 200, 200)
 
   // draw poke sprite
-  const pokeSprite1b = await loadImage(data.player1.teamPoke2.spriteUrl)
+  const pokeSprite1b = await loadOrSaveImageFromCache(data.player1.teamPoke2.spriteUrl)
   ctx.drawImage(pokeSprite1b, 65, 275, 200, 200)
 
   // write poke id
@@ -80,7 +81,7 @@ export const iGenDuelX2 = async (data: TParams) => {
   // draw talents
 
   const getTalent = async (name: string) => {
-    return await loadImage('./src/assets/sprites/UI/types/circle/' + name + '.png')
+    return await loadOrSaveImageFromCache('./src/assets/sprites/UI/types/circle/' + name + '.png')
   }
 
   const talents = [
@@ -112,7 +113,7 @@ export const iGenDuelX2 = async (data: TParams) => {
   /// ////////////////////////////////////////////////////
 
   // draw image avatar
-  const sprite2 = await loadImage('./src/assets/sprites/avatars/' + data.player2.spriteUrl)
+  const sprite2 = await loadOrSaveImageFromCache('./src/assets/sprites/avatars/' + data.player2.spriteUrl)
   const sprite2Width = 200
   const sprite2Height = 200
   const sprite2X = 300
@@ -132,10 +133,10 @@ export const iGenDuelX2 = async (data: TParams) => {
   ctx.fillText(`RANK: ${data.player2.elo}`, 450, 75)
 
   // draw poke sprite
-  const pokeSprite2 = await loadImage(data.player2.teamPoke1.spriteUrl)
+  const pokeSprite2 = await loadOrSaveImageFromCache(data.player2.teamPoke1.spriteUrl)
   ctx.drawImage(pokeSprite2, 275, 275, 200, 200)
   // draw poke sprite
-  const pokeSprite2b = await loadImage(data.player2.teamPoke2.spriteUrl)
+  const pokeSprite2b = await loadOrSaveImageFromCache(data.player2.teamPoke2.spriteUrl)
   ctx.drawImage(pokeSprite2b, 310, 275, 200, 200)
 
   // write poke id

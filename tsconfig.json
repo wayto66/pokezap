@@ -16,6 +16,6 @@
     "resolveJsonModule": true,
     "moduleResolution": "node"
   },
-  "include": ["src"],
+  "include": ["src", "seed.js", "seed copy.ts"],
   "exclude": ["node_modules"]
 }

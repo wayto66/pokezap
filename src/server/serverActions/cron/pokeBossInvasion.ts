@@ -35,9 +35,9 @@ export const pokeBossInvasion = async (data: TPokeBossInvasion) => {
 
     const pokeBoss = await generateBossPokemon({
       baseData: bossesBaseData[Math.floor(Math.random() * bossesBaseData.length)],
-      level: Math.round(gameRoom.level * 2.5),
+      level: Math.round((gameRoom.level * 2.2) / 1.25),
       savage: true,
-      shinyChance: 0.3,
+      shinyChance: 0.35,
     })
 
     const displayName = pokeBoss.isShiny
@@ -56,7 +56,7 @@ export const pokeBossInvasion = async (data: TPokeBossInvasion) => {
         creatorId: gameRoom.id,
         gameRoomId: gameRoom.id,
         mode: 'boss-invasion',
-        requiredPlayers: Math.max(2, Math.ceil(gameRoom.players.length / 2)),
+        requiredPlayers: Math.min(3, Math.ceil(gameRoom.players.length / 2)),
         enemyPokemons: {
           connect: {
             id: pokeBoss.id,

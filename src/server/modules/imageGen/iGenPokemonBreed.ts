@@ -1,9 +1,10 @@
 import { BasePokemon, Pokemon, Talent } from '@prisma/client'
-import { createCanvas, loadImage } from 'canvas'
+import { createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '../../../infra/logger'
 import { removeFileFromDisk } from '../../helpers/fileHelper'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
 type TParams = {
   pokemon1: Pokemon & {
@@ -38,7 +39,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
   const backgroundUrl = './src/assets/sprites/UI/hud/pokemon_breed.png'
 
   // Load the background image
-  const background = await loadImage(backgroundUrl)
+  const background = await loadOrSaveImageFromCache(backgroundUrl)
 
   // Create a canvas with the defined dimensions
   const canvas = createCanvas(canvasWidth, canvasHeight)
@@ -50,7 +51,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
 
   const generatePoke1 = async () => {
     // Load the sprite image
-    const sprite = await loadImage(data.pokemon1.spriteUrl)
+    const sprite = await loadOrSaveImageFromCache(data.pokemon1.spriteUrl)
     // Calculate the position of the sprite in the middle of the canvas
     const spriteWidth = 275 // replace with the actual width of the sprite
     const spriteHeight = 275 // replace with the actual height of the sprite
@@ -61,7 +62,9 @@ export const iGenPokemonBreed = async (data: TParams) => {
     ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight)
 
     ctx.globalAlpha = 1
-    const typeLabel1 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemon1.baseData.type1Name + '.png')
+    const typeLabel1 = await loadOrSaveImageFromCache(
+      './src/assets/sprites/UI/types/' + data.pokemon1.baseData.type1Name + '.png'
+    )
     // Calculate the position of the sprite in the middle of the canvas
     const typeLabel1Width = 80 // replace with the actual width of the typeLabel1
     const typeLabel1Height = 25 // replace with the actual height of the typeLabel1
@@ -71,7 +74,9 @@ export const iGenPokemonBreed = async (data: TParams) => {
     ctx.globalAlpha = 0.8
     ctx.drawImage(typeLabel1, typeLabel1X, typeLabel1Y, typeLabel1Width, typeLabel1Height)
     if (data.pokemon1.baseData.type2Name) {
-      const typeLabel2 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemon1.baseData.type2Name + '.png')
+      const typeLabel2 = await loadOrSaveImageFromCache(
+        './src/assets/sprites/UI/types/' + data.pokemon1.baseData.type2Name + '.png'
+      )
       // Calculate the position of the sprite in the middle of the canvas
       const typeLabel2Width = 80 // replace with the actual width of the typeLabel2
       const typeLabel2Height = 25 // replace with the actual height of the typeLabel2
@@ -98,7 +103,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
     // draw talents
 
     const getTalent = async (name: string) => {
-      return await loadImage('./src/assets/sprites/UI/types/circle/' + name + '.png')
+      return await loadOrSaveImageFromCache('./src/assets/sprites/UI/types/circle/' + name + '.png')
     }
 
     const talents = [
@@ -141,7 +146,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
 
   const generatePoke2 = async () => {
     // Load the sprite image
-    const sprite = await loadImage(data.pokemon2.spriteUrl)
+    const sprite = await loadOrSaveImageFromCache(data.pokemon2.spriteUrl)
     // Calculate the position of the sprite in the middle of the canvas
     const spriteWidth = 275 // replace with the actual width of the sprite
     const spriteHeight = 275 // replace with the actual height of the sprite
@@ -152,7 +157,9 @@ export const iGenPokemonBreed = async (data: TParams) => {
     ctx.drawImage(sprite, spriteX, spriteY, spriteWidth, spriteHeight)
 
     ctx.globalAlpha = 1
-    const typeLabel1 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemon2.baseData.type1Name + '.png')
+    const typeLabel1 = await loadOrSaveImageFromCache(
+      './src/assets/sprites/UI/types/' + data.pokemon2.baseData.type1Name + '.png'
+    )
     // Calculate the position of the sprite in the middle of the canvas
     const typeLabel1Width = 80 // replace with the actual width of the typeLabel1
     const typeLabel1Height = 25 // replace with the actual height of the typeLabel1
@@ -162,7 +169,9 @@ export const iGenPokemonBreed = async (data: TParams) => {
     ctx.globalAlpha = 0.8
     ctx.drawImage(typeLabel1, typeLabel1X, typeLabel1Y, typeLabel1Width, typeLabel1Height)
     if (data.pokemon2.baseData.type2Name) {
-      const typeLabel2 = await loadImage('./src/assets/sprites/UI/types/' + data.pokemon2.baseData.type2Name + '.png')
+      const typeLabel2 = await loadOrSaveImageFromCache(
+        './src/assets/sprites/UI/types/' + data.pokemon2.baseData.type2Name + '.png'
+      )
       // Calculate the position of the sprite in the middle of the canvas
       const typeLabel2Width = 80 // replace with the actual width of the typeLabel2
       const typeLabel2Height = 25 // replace with the actual height of the typeLabel2
@@ -189,7 +198,7 @@ export const iGenPokemonBreed = async (data: TParams) => {
     // draw talents
 
     const getTalent = async (name: string) => {
-      return await loadImage('./src/assets/sprites/UI/types/circle/' + name + '.png')
+      return await loadOrSaveImageFromCache('./src/assets/sprites/UI/types/circle/' + name + '.png')
     }
 
     const talents = [

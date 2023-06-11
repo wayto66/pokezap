@@ -1,4 +1,11 @@
-import { AppError, RouteNotFoundError, RouteNotProvidedError, UnexpectedError } from '../../infra/errors/AppErrors'
+import {
+  AppError,
+  PlayerInRaidIsLockedError,
+  PlayerNotFoundError,
+  RouteNotFoundError,
+  RouteNotProvidedError,
+  UnexpectedError,
+} from '../../infra/errors/AppErrors'
 import { IResponse } from '../../server/models/IResponse'
 import { logger } from '../logger'
 import { battleRoutes } from './battleRoutes'
@@ -17,6 +24,11 @@ import { shopRoutes } from './shopRoutes'
 import { tradeRoutes } from './tradeRoutes'
 import { playerInfo1 } from './userRoutes/info/playerInfo1'
 import { newUser1 } from './userRoutes/newUser/newUser1'
+import { raidRoutes } from './raidRoutes'
+import { BaseItem, Item, Player, PrismaClient } from '@prisma/client'
+import { Pokemon_BaseData } from '../../server/modules/duel/duelNXN'
+import { container } from 'tsyringe'
+import { sellRoutes } from './sellRoutes'
 
 export type TRouteParams = {
   playerPhone: string
@@ -24,6 +36,12 @@ export type TRouteParams = {
   routeParams: string[]
   playerName: string
   fromReact?: boolean
+  player?: Player & {
+    ownedPokemons: Pokemon_BaseData
+    ownedItems: Item & {
+      baseItem: BaseItem
+    }
+  }
 }
 type TRouteType = (data: TRouteParams) => Promise<IResponse>
 
@@ -100,6 +118,13 @@ const routeMap = new Map<string, TRouteType>([
 
   // INVASION ROUTES
   ['INVASION', invasionRoutes],
+
+  // RAID ROUTES
+  ['RAID', raidRoutes],
+
+  // SELL ROUTES
+  ['SELL', sellRoutes],
+  ['VENDER', sellRoutes],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {
@@ -110,17 +135,31 @@ export const router = async (data: TRouteParams): Promise<IResponse> => {
     const route = routeMap.get(routeName.toUpperCase().trim())
     if (!route) throw new RouteNotFoundError(data.playerName, routeName)
 
+    const prismaClient = container.resolve<PrismaClient>('PrismaClient')
+    const player = await prismaClient.player.findFirst({
+      where: {
+        phone: data.playerPhone,
+      },
+    })
+
+    if (!player) throw new PlayerNotFoundError(data.playerPhone)
+    if (player.isInRaid && routeName !== 'RAID') throw new PlayerInRaidIsLockedError(player.name)
+
     return await route(data)
   } catch (error) {
     if (!(error instanceof AppError)) {
       logger.error(error)
-      throw new UnexpectedError('')
+      return {
+        message: `Houve um erro inesperado na solicitação de ${data.playerName}`,
+        status: 400,
+      }
     }
 
     return {
       data: error.data,
       message: error.message,
       status: error.statusCode,
+      actions: error.actions,
     }
   }
 }

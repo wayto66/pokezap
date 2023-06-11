@@ -65,7 +65,7 @@ export const rocketDuoInvasion = async (data: TRocketDuoInvasionParams) => {
   })
 
   const imageUrl = await iGenWildPokemon({
-    pokemonData: rocketPokemon1,
+    pokemon: rocketPokemon1,
   })
   const media = MessageMedia.fromFilePath(imageUrl!)
   const result = await zap.sendMessage(gameRoom.phone, media, {

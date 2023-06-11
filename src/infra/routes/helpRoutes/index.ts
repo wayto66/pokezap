@@ -5,14 +5,14 @@ import { TRouteParams } from '../router'
 const clanText = `PokeZap Wiki: *CLANS*
 [Monte seu time com 6 pokemons de um clã para receber bonus!]
 
-- VOLCANIC: fire + ground
-- TOXIBUG: poison + bug
-- GARDESTRIKE: normal + fighting
-- MASTERMIND: dark + psychic + ghost
-- SEAVELL: ice + water
-- WINGEON: dragon + flying
-- WONDERLEAF: grass + fairy
-- THUNDERFORGE: steel + rock + electric
+- VOLCANIC: fire + ground - bonus de critico
+- TOXIBUG: poison + bug - bonus de lifesteal
+- GARDESTRIKE: normal + fighting - bonus de dano crescente a cada round
+- MASTERMIND: dark + psychic + ghost - bonus de mana regen e accuracy
+- SEAVELL: ice + water - bonus de hp e status cleanse
+- WINGEON: dragon + flying - bonus de speed e evasão crescente a cada round
+- WONDERLEAF: grass + fairy - bonus de hp, cura e efeito de status
+- THUNDERFORGE: steel + rock + electric - bonus de def e spDef
 `
 const pokeballsText = `
 Pokezap Wiki: *POKEBALLS*

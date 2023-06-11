@@ -1,5 +1,5 @@
-import { BasePokemon, Pokemon } from '@prisma/client'
-import { Image, loadImage } from 'canvas'
+import cache from 'memory-cache'
+import { Image } from 'canvas'
 import path from 'path'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import {
@@ -10,36 +10,15 @@ import {
   writeSkills,
 } from '../../../server/helpers/canvasHelper'
 import { initEncoder } from '../../../server/helpers/encoderHelper'
-import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
+import { removeFileFromDisk, saveFileOnDisk } from '../../../server/helpers/fileHelper'
+import { TDuelRoundData } from './iGenDuel2X1Rounds'
+import { RoundPokemonData } from '../duel/duelNXN'
+import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
-type duelPokemon = Pokemon & {
-  baseData: BasePokemon
-  skillName: string
-  skillType: string
-  ultimateType: string
-}
-
-type TDuelRoundData = {
-  winnerPokemon: duelPokemon
-  loserPokemon: duelPokemon
-  roundCount: number
-  duelMap: Map<number, any>
-  winnerDataName: string
-  loserDataName: string
-}
-
-export const iGenDuelRound = async ({
-  winnerPokemon,
-  loserPokemon,
-  winnerDataName,
-  loserDataName,
-  roundCount,
-  duelMap,
-}: TDuelRoundData) => {
-  const random = Math.random()
-
-  const rightPokemon = random >= 0.5 ? winnerPokemon : loserPokemon
-  const leftPokemon = random >= 0.5 ? loserPokemon : winnerPokemon
+export const iGenDuelRound = async (data: TDuelRoundData) => {
+  const rightPokemon = data.rightTeam[0]
+  const leftPokemon = data.leftTeam[0]
+  const { duelMap } = data
 
   const canvas2d = await createCanvas2d(1)
 
@@ -51,125 +30,158 @@ export const iGenDuelRound = async ({
   const pokemonleftSideTalents = getTalents(leftPokemon)
 
   const framesPerRound = 4
-  let round = 1
+  let round = data.staticImage ? data.roundCount : 1
   let roundInfo = duelMap.get(round)
-  let isDuelInProgress = true
 
-  const winnerHpBarXOffset = random >= 0.5 ? 365 : 55
-  const loserHpBarXOffset = random >= 0.5 ? 55 : 365
+  const rightHpBarXOffset = 365
+  const leftHpBarXOffset = 55
 
-  const backgroundImage = await loadImage('./src/assets/sprites/UI/hud/duel_x1_round.png')
-  const rightPokemonImage = await loadImage(rightPokemon.spriteUrl)
-  const leftPokemonImage = await loadImage(leftPokemon.spriteUrl)
+  const bg1 = `./src/assets/sprites/UI/hud/duel_bg/${rightPokemon.type1}.png`
+  const bg2 = `./src/assets/sprites/UI/hud/duel_bg/${rightPokemon.type2 || rightPokemon.type1}.png`
+  const bgs = [bg1, bg2]
 
-  const winnerPokeSkillTypeSprite = await loadImage(`./src/assets/sprites/UI/types/${winnerPokemon.skillType}.png`)
-  const loserPokeSkillTypeSprite = await loadImage(`./src/assets/sprites/UI/types/${loserPokemon.skillType}.png`)
-  const winnerPokeUltimateTypeSprite = await loadImage(
-    `./src/assets/sprites/UI/types/${winnerPokemon.ultimateType}.png`
-  )
-  const loserPokeUltimateTypeSprite = await loadImage(`./src/assets/sprites/UI/types/${loserPokemon.ultimateType}.png`)
+  const backgroundUrl = bgs[Math.floor(Math.random() * bgs.length)]
+  const backgroundImage = await loadOrSaveImageFromCache(backgroundUrl)
+  const hudImage = await loadOrSaveImageFromCache('./src/assets/sprites/UI/hud/duel_x1_round.png')
+  const rightPokemonImage = await loadOrSaveImageFromCache(rightPokemon.spriteUrl)
+  const leftPokemonImage = await loadOrSaveImageFromCache(leftPokemon.spriteUrl)
 
   const talentImageMap = new Map<string, Image>([])
 
   for (const talent of [pokemonRightSideTalents, pokemonleftSideTalents].flat()) {
     if (!talent) continue
-    talentImageMap.set(talent, await loadImage(`./src/assets/sprites/UI/types/circle/${talent}.png`))
+    talentImageMap.set(talent, await loadOrSaveImageFromCache(`./src/assets/sprites/UI/types/circle/${talent}.png`))
   }
 
-  for (let i = 0; i < roundCount * framesPerRound + 40; i++) {
-    if (i > round * framesPerRound && isDuelInProgress) {
+  const skillFlagImagesMap = new Map<string, Image>([])
+
+  for (const poke of [data.leftTeam, data.rightTeam].flat()) {
+    if (!poke.skillMap) continue
+    for (const [, skill] of poke.skillMap) {
+      if (!skillFlagImagesMap.get(skill.typeName)) {
+        skillFlagImagesMap.set(
+          skill.typeName,
+          await loadOrSaveImageFromCache('./src/assets/sprites/UI/types/' + skill.typeName + '.png')
+        )
+      }
+    }
+  }
+
+  const leftPokeCanvas = await createCanvas2d(1, false, 250)
+
+  drawBackground(canvas2d, backgroundImage)
+  drawBackground(canvas2d, hudImage)
+
+  drawTalents(canvas2d, talentImageMap, pokemonRightSideTalents, 305)
+  drawTalents(canvas2d, talentImageMap, pokemonleftSideTalents, 5)
+
+  drawPokemons(canvas2d, rightPokemonImage, 285, 165)
+
+  leftPokeCanvas.invertHorizontally()
+  leftPokeCanvas.draw({
+    height: 250,
+    width: 250,
+    positionX: 0,
+    positionY: 165,
+    image: leftPokemonImage,
+  })
+  canvas2d.draw({
+    height: 500,
+    width: 250,
+    positionX: 0,
+    positionY: 0,
+    image: leftPokeCanvas.canvas,
+  })
+
+  const buffer = canvas2d.toBuffer()
+  const stillBackground = await loadOrSaveImageFromCache(buffer)
+
+  const totalBattleFrames = data.staticImage ? 1 : data.roundCount * framesPerRound + 40
+
+  // Gravar o tempo de início
+  const start = performance.now()
+
+  for (let i = 0; i < totalBattleFrames; i++) {
+    if (i > round * framesPerRound && i < totalBattleFrames) {
       round++
       roundInfo = duelMap.get(round)
+      if (!roundInfo) roundInfo = duelMap.get(round - 1)
     }
     if (!roundInfo) continue
 
     canvas2d.clearArea()
-    drawBackground(canvas2d, backgroundImage)
+    canvas2d.draw({
+      height: 500,
+      width: 500,
+      image: stillBackground,
+      positionX: 0,
+      positionY: 0,
+    })
 
-    drawTalents(canvas2d, talentImageMap, pokemonRightSideTalents, 305)
-    drawTalents(canvas2d, talentImageMap, pokemonleftSideTalents, 5)
+    drawHpBars(canvas2d, rightHpBarXOffset, roundInfo.rightTeamData[0].hp, roundInfo.rightTeamData[0].maxHp)
+    drawHpBars(canvas2d, leftHpBarXOffset, roundInfo.leftTeamData[0].hp, roundInfo.leftTeamData[0].maxHp)
 
-    drawPokemons(canvas2d, rightPokemonImage, 285, 165)
-    drawPokemons(canvas2d, leftPokemonImage, 0, 165)
+    drawManaBars(canvas2d, leftHpBarXOffset, roundInfo.leftTeamData[0].mana)
+    drawManaBars(canvas2d, rightHpBarXOffset, roundInfo.rightTeamData[0].mana)
 
-    drawHpBars(canvas2d, winnerHpBarXOffset, roundInfo[winnerDataName].hp, roundInfo[winnerDataName].maxHp)
-    drawHpBars(canvas2d, loserHpBarXOffset, roundInfo[loserDataName].hp, roundInfo[loserDataName].maxHp)
-
-    drawManaBars(canvas2d, loserHpBarXOffset, roundInfo[loserDataName].mana)
-    drawManaBars(canvas2d, winnerHpBarXOffset, roundInfo[winnerDataName].mana)
-
-    if (i % 6 !== 0) {
-      writeSkills({
-        canvas2d,
-        value: roundInfo[loserDataName].currentSkillName,
-        positionX: rightPokemon === winnerPokemon ? 305 : 15,
-        positionY: 480,
-      })
-
-      writeSkills({
-        canvas2d,
-        value: roundInfo[winnerDataName].currentSkillName,
-        positionX: rightPokemon === winnerPokemon ? 15 : 305,
-        positionY: 480,
-      })
-    }
-
-    drawSkillTypeFlags(
+    writeSkills({
       canvas2d,
-      roundInfo,
-      winnerDataName,
-      loserDataName,
-      rightPokemon,
-      winnerPokemon,
-      winnerPokeSkillTypeSprite,
-      loserPokeSkillTypeSprite,
-      winnerPokeUltimateTypeSprite,
-      loserPokeUltimateTypeSprite
-    )
+      value: roundInfo.leftTeamData[0].currentSkillName ?? '',
+      positionX: 15,
+      positionY: 480,
+    })
+
+    writeSkills({
+      canvas2d,
+      value: roundInfo.rightTeamData[0].currentSkillName ?? '',
+      positionX: 305,
+      positionY: 480,
+    })
+
+    // draw skill types
+    if (i % 6 !== 0 || data.staticImage) {
+      const leftFlag0 = skillFlagImagesMap.get(roundInfo.leftTeamData[0].currentSkillType ?? '')
+      if (leftFlag0) canvas2d.draw({ image: leftFlag0, positionX: 131, positionY: 465, width: 75, height: 25 })
+
+      const rightFlag0 = skillFlagImagesMap.get(roundInfo.rightTeamData[0].currentSkillType ?? '')
+      if (rightFlag0) canvas2d.draw({ image: rightFlag0, positionX: 421, positionY: 465, width: 75, height: 25 })
+    }
     drawTexts(canvas2d, rightPokemon, leftPokemon, round)
 
-    if (roundInfo[winnerDataName].crit && (isDuelInProgress || i < roundCount * framesPerRound)) {
-      drawCriticalText(canvas2d, winnerHpBarXOffset)
+    if (roundInfo.rightTeamData[0].crit && i < totalBattleFrames) {
+      drawCriticalText(canvas2d, rightHpBarXOffset)
     }
 
-    if (roundInfo[loserDataName].crit && (isDuelInProgress || i < roundCount * framesPerRound)) {
-      drawCriticalText(canvas2d, loserHpBarXOffset)
+    if (roundInfo.leftTeamData[0].crit && i < totalBattleFrames) {
+      drawCriticalText(canvas2d, leftHpBarXOffset)
     }
 
-    if (roundInfo[winnerDataName].block && (isDuelInProgress || i < roundCount * framesPerRound)) {
-      drawBlockText(canvas2d, winnerHpBarXOffset)
+    if (roundInfo.rightTeamData[0].block && i < totalBattleFrames) {
+      drawBlockText(canvas2d, rightHpBarXOffset)
     }
 
-    if (roundInfo[loserDataName].block && (isDuelInProgress || i < roundCount * framesPerRound)) {
-      drawBlockText(canvas2d, loserHpBarXOffset)
+    if (roundInfo.leftTeamData[0].block && i < totalBattleFrames) {
+      drawBlockText(canvas2d, leftHpBarXOffset)
     }
 
-    if (
-      roundInfo[winnerDataName].hasUltimate &&
-      roundInfo[winnerDataName].currentSkillName === roundInfo[winnerDataName].ultimateName &&
-      (isDuelInProgress || i < roundCount * framesPerRound)
-    ) {
-      drawUltimateText(canvas2d, winnerHpBarXOffset, roundInfo[winnerDataName].currentSkillName)
+    if (i > data.roundCount * framesPerRound || data.staticImage) {
+      if (data.winnerSide === 'right') drawWinnerText(canvas2d, 365)
+      if (data.winnerSide === 'left') drawWinnerText(canvas2d, 105)
     }
 
-    if (
-      roundInfo[loserDataName].hasUltimate &&
-      roundInfo[loserDataName].currentSkillName === roundInfo[loserDataName].ultimateName &&
-      (isDuelInProgress || i < roundCount * framesPerRound)
-    ) {
-      drawUltimateText(canvas2d, loserHpBarXOffset, roundInfo[loserDataName].currentSkillName)
+    if (data.staticImage) {
+      const filepath = await saveFileOnDisk(canvas2d) // Salvamento do canvas como um arquivo no disco
+      removeFileFromDisk(filepath) // Remoção do arquivo do disco
+      return filepath // Retorno do caminho do arquivo
     }
-
-    const positionXWinner = rightPokemon === winnerPokemon ? 365 : 105
-
-    if (!isDuelInProgress && i > roundCount * framesPerRound) {
-      drawWinnerText(canvas2d, positionXWinner)
-    }
-
     canvas2d.addFrameToEncoder(encoder)
-
-    if (roundInfo.poke1hp <= 0 || roundInfo.poke2hp <= 0) isDuelInProgress = false
   }
+
+  // Gravar o tempo de término
+  const end = performance.now()
+  // Calcular a diferença entre o tempo de término e o tempo de início
+  const executionTime = end - start
+  console.log(`Tempo de execução: ${executionTime} ms`)
 
   encoder.finish()
 
@@ -200,49 +212,16 @@ const drawPokemons = (canvas2d: TCanvas2D, image: Image, positionX: number, posi
   })
 }
 
-const drawSkillTypeFlags = (
+const drawTexts = (
   canvas2d: TCanvas2D,
-  roundInfo: any,
-  winnerDataName: string,
-  loserDataName: string,
-  rightPokemon: duelPokemon,
-  winnerPokemon: duelPokemon,
-  winnerPokeSkillTypeSprite: Image,
-  loserPokeSkillTypeSprite: Image,
-  winnerPokeUltimateTypeSprite: Image,
-  loserPokeUltimateTypeSprite: Image
+  rightPokemon: RoundPokemonData,
+  leftPokemon: RoundPokemonData,
+  round: number
 ) => {
-  const getSkillTypeFlag = (pokeData: any, who: 'winner' | 'loser') => {
-    if (pokeData.pokecurrentSkillName === pokeData.pokeskillName) {
-      if (who === 'winner') return winnerPokeSkillTypeSprite
-      return loserPokeSkillTypeSprite
-    }
-
-    if (who === 'winner') return winnerPokeUltimateTypeSprite
-    return loserPokeUltimateTypeSprite
-  }
-
-  canvas2d.draw({
-    image: getSkillTypeFlag(roundInfo[winnerDataName], 'winner'),
-    positionX: rightPokemon === winnerPokemon ? 421 : 131,
-    positionY: 460,
-    width: 75,
-    height: 25,
-  })
-  canvas2d.draw({
-    image: getSkillTypeFlag(roundInfo[loserDataName], 'loser'),
-    positionX: rightPokemon === winnerPokemon ? 131 : 421,
-    positionY: 460,
-    width: 75,
-    height: 25,
-  })
-}
-
-const drawTexts = (canvas2d: TCanvas2D, rightPokemon: duelPokemon, leftPokemon: duelPokemon, round: number) => {
   canvas2d.write({
     font: '14px Righteous',
     fillStyle: 'white',
-    text: rightPokemon.baseData.name,
+    text: rightPokemon.name,
     textAlign: 'start',
     positionX: 350,
     positionY: 135,
@@ -251,7 +230,7 @@ const drawTexts = (canvas2d: TCanvas2D, rightPokemon: duelPokemon, leftPokemon: 
   canvas2d.write({
     font: '14px Righteous',
     fillStyle: 'white',
-    text: leftPokemon.baseData.name,
+    text: leftPokemon.name,
     textAlign: 'start',
     positionX: 65,
     positionY: 135,

@@ -18,6 +18,9 @@ export const shopDisplay = async (data: TRouteParams): Promise<IResponse> => {
         { name: 'water-stone' },
         { name: 'fire-stone' },
         { name: 'leaf-stone' },
+        { name: 'shiny-incense' },
+        { name: 'elemental-incense' },
+        { name: 'revive' },
       ],
     },
   })
@@ -32,7 +35,8 @@ export const shopDisplay = async (data: TRouteParams): Promise<IResponse> => {
     message: `${data.playerName} acessou PokeMart!
     
     Para comprar um item envie:
-    [pz] loja + posição do item + quantidade`,
+    [pz] loja + posição do item + quantidade
+    ou buy + nome do item + quantidade`,
     status: 200,
     data: null,
     imageUrl: imageUrl,

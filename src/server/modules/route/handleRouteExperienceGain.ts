@@ -1,4 +1,4 @@
-import { BasePokemon, GameRoom, Pokemon, PrismaClient } from '@prisma/client'
+import { BasePokemon, GameRoom, Player, Pokemon, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { UnexpectedError } from '../../../infra/errors/AppErrors'
 import { logger } from '../../../infra/logger'
@@ -9,11 +9,15 @@ type TParams = {
     baseData: BasePokemon
   }
   bonusExpMultiplier?: number
-  route: GameRoom
+  route: GameRoom & {
+    players: Player[]
+  }
 }
 
 type TResponse = {
-  route: GameRoom
+  route: GameRoom & {
+    players: Player[]
+  }
   leveledUp: boolean
 }
 
@@ -33,6 +37,9 @@ export const handleRouteExperienceGain = async (data: TParams): Promise<TRespons
       data: {
         experience: newExp,
         level: newLevel,
+      },
+      include: {
+        players: true,
       },
     })
     .catch(e => {
@@ -54,6 +61,12 @@ const getExperienceGain = (data: TParams) => {
   const a = targetPokemon.ownerId === null ? 1 : 1.5
   const e = bonusExpMultiplier ? 1 + bonusExpMultiplier : 1
   const t = 1
+  const lowPopulatedRoomHandicap = () => {
+    if (data.route.players.length <= 2) return 2.7
+    if (data.route.players.length <= 4) return 2.2
+    if (data.route.players.length <= 5) return 1.5
+    return 1
+  }
 
-  return Math.round(((b * L) / 7) * e * a * t)
+  return Math.round(((b * L) / 7) * e * a * t * lowPopulatedRoomHandicap())
 }

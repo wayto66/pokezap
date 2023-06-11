@@ -4,6 +4,7 @@ import { IResponse } from '../../../server/models/IResponse'
 import {
   MissingParameterError,
   PlayerDoestNotOwnThePokemonError,
+  PlayerInRaidIsLockedError,
   PlayerNotFoundError,
   PokemonNotFoundError,
   TypeMissmatchError,
@@ -51,6 +52,7 @@ export const sendPoke = async (data: TRouteParams): Promise<IResponse> => {
 
   if (!targetPlayer) throw new PlayerNotFoundError(targetPlayerIdString)
   if (pokemon.ownerId === targetPlayer.id) throw new UnexpectedError('sendPoke')
+  if (targetPlayer.isInRaid) throw new PlayerInRaidIsLockedError(targetPlayer.name)
 
   await prisma.pokemon.update({
     where: {

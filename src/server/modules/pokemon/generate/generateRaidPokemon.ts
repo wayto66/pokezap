@@ -5,21 +5,17 @@ import { talentNameMap } from '../../../constants/talentNameMap'
 import { getRandomBetween2 } from '../../../helpers/getRandomBetween2'
 import { generateGeneralStats } from '../generateGeneralStats'
 import { generateHpStat } from '../generateHpStat'
+import { RaidPokemon_BaseData_Skills } from '../../duel/duelNXN'
 
 type TParams = {
   name: string
   level: number
-  shinyChance: number
-  savage: false
-  isAdult: boolean
   talentIds?: number[]
-  gameRoomId?: number
-  fromIncense?: boolean
 }
 
-export const generateRaidPokemon = async (data: TParams) => {
+export const generateRaidPokemon = async (data: TParams): Promise<RaidPokemon_BaseData_Skills> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
-  const { name, level, shinyChance, savage, isAdult, gameRoomId } = data
+  const { name, level } = data
 
   const baseData = await prismaClient.basePokemon.findFirst({
     where: {
@@ -29,7 +25,7 @@ export const generateRaidPokemon = async (data: TParams) => {
 
   if (!baseData) throw new UnexpectedError('No basePokemon found for : ' + name)
 
-  const isShiny = Math.random() < shinyChance
+  const isShiny = Math.random() < 0.05
   const talentIds = data.talentIds
     ? data.talentIds
     : [
@@ -47,14 +43,10 @@ export const generateRaidPokemon = async (data: TParams) => {
   if (isShiny) {
     const talentId1 = talentNameMap.get(baseData.type1Name)
     const talentId2 = talentNameMap.get(baseData.type2Name || baseData.type1Name)
-    return await prismaClient.pokemon.create({
+    return await prismaClient.raidPokemon.create({
       data: {
         basePokemonId: baseData.id,
-        gameRoomId,
-        savage: savage,
         level: level,
-        experience: level ** 3,
-        isMale: Math.random() > 0.5,
         isShiny: true,
         spriteUrl: baseData.shinySpriteUrl,
         hp: Math.round(generateHpStat(baseData.BaseHp, level) * 1.1),
@@ -63,7 +55,6 @@ export const generateRaidPokemon = async (data: TParams) => {
         spAtk: Math.round(generateGeneralStats(baseData.BaseSpAtk, level) * 1.1),
         spDef: Math.round(generateGeneralStats(baseData.BaseSpDef, level) * 1.1),
         speed: Math.round(generateGeneralStats(baseData.BaseSpeed, level) * 1.1),
-        isAdult: isAdult,
         talentId1: getRandomBetween2({ obj1: [talentId1, 0.5], obj2: [talentId2, 0.5] }),
         talentId2: getRandomBetween2({ obj1: [talentId1, 0.5], obj2: [talentId2, 0.5] }),
         talentId3: getRandomBetween2({ obj1: [talentId1, 0.5], obj2: [talentId2, 0.5] }),
@@ -75,28 +66,19 @@ export const generateRaidPokemon = async (data: TParams) => {
         talentId9: getRandomBetween2({ obj1: [talentId1, 0.5], obj2: [talentId2, 0.5] }),
       },
       include: {
-        baseData: true,
-        talent1: true,
-        talent2: true,
-        talent3: true,
-        talent4: true,
-        talent5: true,
-        talent6: true,
-        talent7: true,
-        talent8: true,
-        talent9: true,
+        baseData: {
+          include: {
+            skills: true,
+          },
+        },
       },
     })
   }
 
-  return await prismaClient.pokemon.create({
+  return await prismaClient.raidPokemon.create({
     data: {
       basePokemonId: baseData.id,
-      gameRoomId,
-      savage: savage,
       level: level,
-      experience: level ** 3,
-      isMale: Math.random() > 0.5,
       spriteUrl: baseData.defaultSpriteUrl,
       hp: generateHpStat(baseData.BaseHp, level),
       atk: generateGeneralStats(baseData.BaseAtk, level),
@@ -104,7 +86,6 @@ export const generateRaidPokemon = async (data: TParams) => {
       spAtk: generateGeneralStats(baseData.BaseSpAtk, level),
       spDef: generateGeneralStats(baseData.BaseSpDef, level),
       speed: generateGeneralStats(baseData.BaseSpeed, level),
-      isAdult: isAdult,
       talentId1: talentIds[0],
       talentId2: talentIds[1],
       talentId3: talentIds[2],
@@ -116,16 +97,11 @@ export const generateRaidPokemon = async (data: TParams) => {
       talentId9: talentIds[8],
     },
     include: {
-      baseData: true,
-      talent1: true,
-      talent2: true,
-      talent3: true,
-      talent4: true,
-      talent5: true,
-      talent6: true,
-      talent7: true,
-      talent8: true,
-      talent9: true,
+      baseData: {
+        include: {
+          skills: true,
+        },
+      },
     },
   })
 }

@@ -17,6 +17,8 @@ export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
   const [, , pokemonIdString] = data.routeParams
   if (!pokemonIdString) throw new MissingParametersBreedRouteError()
 
+  if (pokemonIdString === 'CHECK') return await pokemonHatchCheck(data)
+
   const pokemonId = Number(pokemonIdString.slice(pokemonIdString.indexOf('#') + 1))
   if (isNaN(pokemonId)) throw new TypeMissmatchError(pokemonIdString, 'número')
 
@@ -65,14 +67,40 @@ export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
     include: { baseData: true },
   })
 
-  const imageUrl = await iGenPokemonAnalysis({
-    pokemonData: bornPokemon,
-  })
+  const imageUrl = await iGenPokemonAnalysis(bornPokemon)
 
   return {
     message: `#${pokemon.id} ${pokemon.baseData.name} nasceu! `,
     status: 200,
     data: null,
     imageUrl: imageUrl,
+  }
+}
+
+export const pokemonHatchCheck = async (data: TRouteParams): Promise<IResponse> => {
+  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
+
+  const player = await prismaClient.player.findFirst({
+    where: {
+      phone: data.playerPhone,
+    },
+    include: {
+      ownedPokemons: {
+        include: {
+          baseData: true,
+        },
+      },
+    },
+  })
+
+  if (!player) throw new PlayerNotFoundError(data.playerPhone)
+
+  return {
+    message: `Ovos prontos para serem chocados: \n \n ${player?.ownedPokemons
+      .map(p => {
+        if (getHoursDifference(p.createdAt, new Date()) > 24) return p.id
+      })
+      .join(', ')}`,
+    status: 200,
   }
 }

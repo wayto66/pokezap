@@ -180,9 +180,7 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
         data: updateChildrenData(updatedPoke2ChildrenCount),
       })
 
-      const imageUrl = await iGenPokemonAnalysis({
-        pokemonData: newBaby,
-      })
+      const imageUrl = await iGenPokemonAnalysis(newBaby)
 
       const zapClient = container.resolve<Client>('ZapClientInstance1')
 

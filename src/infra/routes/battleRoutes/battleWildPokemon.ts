@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { IResponse } from '../../../server/models/IResponse'
-import { duelX1 } from '../../../server/modules/duel/duelX1'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
 import { handleRouteExperienceGain } from '../../../server/modules/route/handleRouteExperienceGain'
 import {
@@ -20,9 +19,12 @@ import {
   UnexpectedError,
 } from '../../errors/AppErrors'
 import { TRouteParams } from '../router'
+import { SendEmptyMessageError } from '../../errors/AppErrors'
+import { duelNXN } from '../../../server/modules/duel/duelNXN'
 
 export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , wildPokemonIdString] = data.routeParams
+  const [, , wildPokemonIdString, fast] = data.routeParams
+  if (!data.fromReact) throw new SendEmptyMessageError()
   if (!wildPokemonIdString) throw new MissingParametersBattleRouteError()
 
   const wildPokemonId = Number(wildPokemonIdString)
@@ -52,6 +54,11 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
           skills: true,
         },
       },
+      heldItem: {
+        include: {
+          baseItem: true,
+        },
+      },
     },
   })
 
@@ -65,6 +72,11 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
       baseData: {
         include: {
           skills: true,
+        },
+      },
+      heldItem: {
+        include: {
+          baseItem: true,
         },
       },
       ranAwayFrom: true,
@@ -85,20 +97,26 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
     where: {
       id: wildPokemon.gameRoomId,
     },
+    include: {
+      players: true,
+    },
   })
 
   if (!route) throw new RouteNotFoundError(player.name, `Rota: ${wildPokemon.gameRoomId}`)
 
-  const duel = await duelX1({
-    poke1: playerPokemon,
-    poke2: wildPokemon,
-    againstWildPokemon: true,
+  const staticImage = fast && fast === 'FAST' ? true : false
+
+  const duel = await duelNXN({
+    leftTeam: [playerPokemon],
+    rightTeam: [wildPokemon],
+    wildBattle: true,
+    staticImage,
   })
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
 
-  if (!duel.winner) throw new NoDuelWinnerFoundError()
-  if (!duel.loser) throw new NoDuelLoserFoundError()
+  if (!duel.winnerTeam) throw new NoDuelWinnerFoundError()
+  if (!duel.loserTeam) throw new NoDuelLoserFoundError()
 
   const displayName = wildPokemon.isShiny ? `shiny ${wildPokemon.baseData.name}` : wildPokemon.baseData.name
 
@@ -106,7 +124,7 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
     25 + Math.random() * 15 + (((wildPokemon.baseData.BaseExperience / 340) * wildPokemon.level) / 20) * 220
   )
 
-  if (duel.loser.id === player.teamPoke1.id) {
+  if (duel.loserTeam[0].id === player.teamPoke1.id) {
     await prismaClient.pokemon.update({
       where: {
         id: wildPokemon.id,
@@ -130,6 +148,18 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
         },
       },
     })
+    if (fast && fast === 'FAST') {
+      return {
+        message: `*${player.name}* foi derrotado por ${wildPokemon.baseData.name} e perdeu ${cashGain} POKECOINS.`,
+        status: 200,
+        imageUrl: duel.imageUrl,
+        actions: [
+          `pz. catch pokeball ${wildPokemon.id}`,
+          `pz. catch greatball ${wildPokemon.id}`,
+          `pz. catch ultraball ${wildPokemon.id}`,
+        ],
+      }
+    }
 
     return {
       message: `*${player.name}* e seu *${playerPokemon.baseData.name}*
@@ -141,7 +171,7 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
       imageUrl: duel.imageUrl,
       afterMessage: `*${player.name}* foi derrotado por ${wildPokemon.baseData.name} e perdeu ${cashGain} POKECOINS.`,
       afterMessageActions: [`pz. catch pokeball ${wildPokemon.id}`],
-      isAnimated: true,
+      isAnimated: !staticImage,
     }
   }
 
@@ -173,7 +203,7 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
     ? `*${playerPokemon.baseData.name}* subiu para o nível ${handleWinExp.pokemon.level}!`
     : ''
 
-  const afterMessage = `*${player.name}* vence o duelo e recebe +${cashGain} POKECOINS.
+  const afterMessage = `*${player.name}* vence ${wildPokemon.baseData.name} e recebe +${cashGain} POKECOINS.
 ${winnerLevelUpMessage}
 👍 - Jogar poke-ball
 ❤ - Jogar great-ball
@@ -193,10 +223,23 @@ ${winnerLevelUpMessage}
     },
   })
 
+  if (fast && fast === 'FAST') {
+    return {
+      message: afterMessage,
+      status: 200,
+      imageUrl: duel.imageUrl,
+      actions: [
+        `pz. catch pokeball ${wildPokemon.id}`,
+        `pz. catch greatball ${wildPokemon.id}`,
+        `pz. catch ultraball ${wildPokemon.id}`,
+      ],
+      isAnimated: false,
+    }
+  }
+
   return {
     message: `*${player.name}* e *${playerPokemon.baseData.name}* VS *${displayName}*!`,
     status: 200,
-    data: null,
     imageUrl: duel.imageUrl,
     afterMessage,
     afterMessageActions: [
@@ -204,6 +247,6 @@ ${winnerLevelUpMessage}
       `pz. catch greatball ${wildPokemon.id}`,
       `pz. catch ultraball ${wildPokemon.id}`,
     ],
-    isAnimated: true,
+    isAnimated: !staticImage,
   }
 }

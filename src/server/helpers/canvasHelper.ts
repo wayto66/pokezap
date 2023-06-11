@@ -1,4 +1,4 @@
-import { Image, PNGStream, createCanvas, loadImage } from 'canvas'
+import { Canvas, Image, JpegConfig, PNGStream, createCanvas, loadImage } from 'canvas'
 import GIFEncoder from 'gifencoder'
 
 export const CANVAS_WIDTH = 500
@@ -13,7 +13,7 @@ type TDrawBar = {
 }
 
 type TDraw = {
-  image: Image
+  image: Image | Canvas
   positionX: number
   positionY: number
   width: number
@@ -47,6 +47,7 @@ type TWrite = {
 }
 
 export type TCanvas2D = {
+  canvas: Canvas
   draw: (data: TDraw) => Promise<void>
   fillRect: (data: TFillRect) => void
   drawCircle: (data: TDrawCircle) => void
@@ -58,6 +59,7 @@ export type TCanvas2D = {
   toBuffer: () => Buffer
   getImageData: () => Uint8ClampedArray
   toDataURL: () => string
+  invertHorizontally: () => void
 }
 
 type TDrawPlayerData = {
@@ -92,8 +94,12 @@ type TWriteSkills = {
   positionY: number
 }
 
-export const createCanvas2d = async (globalAlpha: number, isSmoothing = false): Promise<TCanvas2D> => {
-  const canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
+export const createCanvas2d = async (
+  globalAlpha: number,
+  isSmoothing = false,
+  width?: number
+): Promise<Canvas & TCanvas2D> => {
+  const canvas = createCanvas(width ?? CANVAS_WIDTH, CANVAS_HEIGHT)
   const context = canvas.getContext('2d')
 
   context.globalAlpha = globalAlpha
@@ -162,7 +168,18 @@ export const createCanvas2d = async (globalAlpha: number, isSmoothing = false): 
 
   const toDataURL = () => canvas.toDataURL()
 
+  const invertHorizontally = () => {
+    context.translate(width ?? 500, 0)
+    context.scale(-1, 1)
+  }
+
+  const createJPEGStream = canvas.createJPEGStream
+  const createPDFStream = canvas.createPDFStream
+  const createPNGStream = canvas.createPNGStream
+  const getContext = canvas.getContext
+
   return {
+    invertHorizontally,
     fillRect,
     draw,
     drawBar,
@@ -174,10 +191,26 @@ export const createCanvas2d = async (globalAlpha: number, isSmoothing = false): 
     toBuffer,
     getImageData,
     toDataURL,
+    width: CANVAS_WIDTH,
+    height: CANVAS_HEIGHT,
+    type: 'image',
+    stride: 0,
+    PNG_FILTER_AVG: 0,
+    PNG_ALL_FILTERS: 0,
+    PNG_FILTER_NONE: 0,
+    PNG_FILTER_PAETH: 0,
+    PNG_FILTER_SUB: 0,
+    PNG_FILTER_UP: 0,
+    PNG_NO_FILTERS: 0,
+    createJPEGStream,
+    createPDFStream,
+    createPNGStream,
+    getContext,
+    canvas,
   }
 }
 
-export const drawBackground = (canvas2d: TCanvas2D, backgroundImage: Image) => {
+export const drawBackground = (canvas2d: TCanvas2D, backgroundImage: Image | Canvas) => {
   const backgroundPositionX = 0
   const backgroundPositionY = 0
 

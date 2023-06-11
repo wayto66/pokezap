@@ -6,7 +6,13 @@ import { IResponse } from '../../../../server/models/IResponse'
 import { iGenInventoryItems } from '../../../../server/modules/imageGen/iGenInventoryItems'
 
 export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , , names] = data.routeParams
+  const [, , , namesOrPage, names] = data.routeParams
+
+  const numberPage = () => {
+    if (typeof Number(namesOrPage) === 'number' && !isNaN(Number(namesOrPage))) return Number(namesOrPage)
+    return 1
+  }
+
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const player = await prismaClient.player.findFirst({
     where: {
@@ -14,8 +20,20 @@ export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> =>
     },
     include: {
       ownedItems: {
+        skip: Math.max(0, (numberPage() - 1) * 19),
+        take: 19,
         include: {
           baseItem: true,
+        },
+      },
+      ownedPokemons: {
+        include: {
+          baseData: true,
+          heldItem: {
+            include: {
+              baseItem: true,
+            },
+          },
         },
       },
     },
@@ -26,7 +44,7 @@ export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> =>
     playerData: player,
   })
 
-  if (names && ['NAMES', 'NOMES'].includes(names)) {
+  if (names || (namesOrPage && ['NAMES', 'NOMES', 'NOME', 'INFO', 'NAME'].includes(names || namesOrPage))) {
     const validItems = player.ownedItems.filter(item => item.amount > 0)
     const itemNameArray: string[] = []
     for (const item of validItems) {
@@ -34,7 +52,7 @@ export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> =>
     }
 
     return {
-      message: `Inventário de *${player.name}*
+      message: `Inventário de *${player.name} - página ${numberPage()}*
       ${itemNameArray.join(', ')}`,
       status: 200,
       data: null,

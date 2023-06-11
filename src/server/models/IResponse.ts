@@ -1,7 +1,7 @@
 export type IResponse = {
   status: number
   message: string
-  data: any
+  data?: any
   imageUrl?: string
   actions?: string[]
   react?: string

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { BasePokemon, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import {
   InsufficientLevelToEvolveError,
@@ -27,6 +27,8 @@ export const checkEvolutionPermition = async (
   status: string
 }> => {
   const client = container.resolve<PrismaClient>('PrismaClient')
+
+  const { preferredPokemonName } = data
 
   const poke = await client.pokemon.findFirst({
     where: {
@@ -82,6 +84,12 @@ export const checkEvolutionPermition = async (
   if (currentPosition === 0) evoData = evData
   if (currentPosition === 1) evoData = evData.evolves_to[0]
 
+  if (preferredPokemonName && currentPosition === 0) {
+    console.log(evData.evolves_to)
+    evoData = fullData.evolutionChain.find((data: any) => data.species.name === preferredPokemonName)
+    if (!evoData) throw new PokemonNotFoundError(preferredPokemonName)
+  }
+
   if (evoData === null) {
     return {
       message: '',
@@ -111,7 +119,7 @@ export const checkEvolutionPermition = async (
     throw new InsufficientLevelToEvolveError(poke.id, poke.baseData.name, evoData.evolution_details[0].min_level || 15)
 
   if (evoTrigger.name === 'use-item' || (evoTrigger.name === 'trade' && evoData.evolution_details[0].held_item?.name)) {
-    const requiredItemName = evoData.evolution_details[0].item.name
+    const requiredItemName = evoData?.evolution_details[0]?.item?.name ?? evoData.evolution_details[0].held_item?.name
     if (!requiredItemName) throw new UnexpectedError('Não foi possível obter o nome do item requirido para evolução.')
     const requiredItem = await client.item.findFirst({
       where: {
