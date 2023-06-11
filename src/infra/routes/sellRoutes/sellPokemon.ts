@@ -1,22 +1,17 @@
-import { Pokemon, PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { getPokemonRequestData } from '../../../server/helpers/getPokemonRequestData'
 import { IResponse } from '../../../server/models/IResponse'
 import {
   CantSellAllPokemonsError,
   CantSellPokemonInTeamError,
   MissingParameterError,
-  MissingParametersBuyAmountError,
   PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
-  PlayerOnlyHasOnePokemonError,
-  PokemonNotFoundError,
   UnexpectedError,
   ZeroPokemonsFoundError,
 } from '../../errors/AppErrors'
 import { TRouteParams } from '../router'
-import { getPokemonRequestData } from '../../../server/helpers/getPokemonRequestData'
-import { pokemonSell } from '../pokemonRoutes/sell/pokemonSell'
-import { Pokemon_BaseData } from '../../../server/modules/duel/duelNXN'
 
 export const sellPokemon = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , pokemonIdString] = data.routeParams

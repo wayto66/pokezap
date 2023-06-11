@@ -1,4 +1,4 @@
-import { BasePokemon, PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import {
   InsufficientLevelToEvolveError,

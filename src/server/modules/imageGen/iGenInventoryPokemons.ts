@@ -3,14 +3,14 @@ import fs from 'fs'
 import path from 'path'
 import { logger } from '../../../infra/logger'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
-import { Pokemon_BaseData, Pokemon_BaseData_Skills_Held } from '../duel/duelNXN'
 import { pokemonTypes } from '../../constants/pokemonTypes'
 import { talentIdMap } from '../../constants/talentIdMap'
 import { getHoursDifference } from '../../helpers/getHoursDifference'
 import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
+import { PokemonBaseDataSkillsHeld } from '../duel/duelNXN'
 
 type TParams = {
-  pokemons: Pokemon_BaseData_Skills_Held[]
+  pokemons: PokemonBaseDataSkillsHeld[]
 }
 
 export const iGenInventoryPokemons = async (data: TParams) => {

@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { IResponse } from '../../../server/models/IResponse'
+import { duelNXN } from '../../../server/modules/duel/duelNXN'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
 import { handleRouteExperienceGain } from '../../../server/modules/route/handleRouteExperienceGain'
 import {
@@ -15,12 +16,11 @@ import {
   PokemonAlreadyRanAwayError,
   PokemonNotFoundError,
   RouteNotFoundError,
+  SendEmptyMessageError,
   TypeMissmatchError,
   UnexpectedError,
 } from '../../errors/AppErrors'
 import { TRouteParams } from '../router'
-import { SendEmptyMessageError } from '../../errors/AppErrors'
-import { duelNXN } from '../../../server/modules/duel/duelNXN'
 
 export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> => {
   const [, , wildPokemonIdString, fast] = data.routeParams
@@ -104,7 +104,7 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
 
   if (!route) throw new RouteNotFoundError(player.name, `Rota: ${wildPokemon.gameRoomId}`)
 
-  const staticImage = fast && fast === 'FAST' ? true : false
+  const staticImage = !!(fast && fast === 'FAST')
 
   const duel = await duelNXN({
     leftTeam: [playerPokemon],

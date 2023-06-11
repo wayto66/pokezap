@@ -1,5 +1,4 @@
-import { Player, Prisma, PrismaClient } from '@prisma/client'
-import { DateExpressionOperatorReturningNumber } from 'mongoose'
+import { Player, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 
 export type TQuestCheckData = {
@@ -13,7 +12,7 @@ export type TQuestCheckResponse = {
   remaining?: number
 }
 
-const questCheck = async ({
+export const questCheck = async ({
   player,
   requestedAmount,
   requestedElement,

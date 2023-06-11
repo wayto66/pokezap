@@ -1,3 +1,4 @@
+import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import {
   MissingParametersDuelRouteError,
@@ -11,7 +12,6 @@ import { duelAccept } from './duelAccept'
 import { duelAcceptX2 } from './duelAcceptX2'
 import { duelX1Route } from './duelX1Route'
 import { duelX2Route } from './duelX2Route'
-import { PrismaClient } from '@prisma/client'
 
 const subRouteMap = new Map<string, any>([
   // DUEL X1 ROUTES

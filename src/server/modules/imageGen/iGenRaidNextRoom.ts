@@ -1,15 +1,15 @@
 import { Raid } from '@prisma/client'
-import { Image, createCanvas } from 'canvas'
+import { createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '../../../infra/logger'
-import { removeFileFromDisk } from '../../helpers/fileHelper'
-import { RaidPokemon_BaseData } from '../duel/duelNXN'
 import { talentIdMap } from '../../constants/talentIdMap'
+import { removeFileFromDisk } from '../../helpers/fileHelper'
 import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
+import { RaidPokemonBaseData } from '../duel/duelNXN'
 
 type TParams = {
-  enemyPokemons: RaidPokemon_BaseData[]
+  enemyPokemons: RaidPokemonBaseData[]
   raid: Raid
 }
 

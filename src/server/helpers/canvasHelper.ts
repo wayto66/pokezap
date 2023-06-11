@@ -1,4 +1,4 @@
-import { Canvas, Image, JpegConfig, PNGStream, createCanvas, loadImage } from 'canvas'
+import { Canvas, Image, PNGStream, createCanvas, loadImage } from 'canvas'
 import GIFEncoder from 'gifencoder'
 
 export const CANVAS_WIDTH = 500

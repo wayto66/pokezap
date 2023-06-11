@@ -2,6 +2,7 @@ import { InvasionSession, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { DuelPlayer } from '../../../../infra/routes/duelRoutes/duelAccept'
 import { IResponse } from '../../../../server/models/IResponse'
+import { TDuelNXNResponse, duelNXN } from '../../../../server/modules/duel/duelNXN'
 import { handleExperienceGain } from '../../../../server/modules/pokemon/handleExperienceGain'
 import {
   InsufficentPlayersForInvasionError,
@@ -13,7 +14,6 @@ import {
   UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { TDuelNXNResponse, duelNXN } from '../../../../server/modules/duel/duelNXN'
 
 export const battleInvasionX2 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , invasionSessionIdString] = data.routeParams

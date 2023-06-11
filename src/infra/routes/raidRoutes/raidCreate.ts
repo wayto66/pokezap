@@ -2,6 +2,9 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { raidsDataMap } from '../../../server/constants/raidsDataMap'
 import { IResponse } from '../../../server/models/IResponse'
+import { RaidPokemonBaseDataSkills } from '../../../server/modules/duel/duelNXN'
+import { iGenRaidCreate } from '../../../server/modules/imageGen/iGenRaidCreate'
+import { generateMegaPokemon } from '../../../server/modules/pokemon/generate/generateMegaPokemon'
 import { generateRaidPokemon } from '../../../server/modules/pokemon/generate/generateRaidPokemon'
 import {
   InvalidDifficultError,
@@ -16,9 +19,6 @@ import {
   UnexpectedError,
 } from '../../errors/AppErrors'
 import { TRouteParams } from '../router'
-import { RaidPokemon_BaseData_Skills } from '../../../server/modules/duel/duelNXN'
-import { generateMegaPokemon } from '../../../server/modules/pokemon/generate/generateMegaPokemon'
-import { iGenRaidCreate } from '../../../server/modules/imageGen/iGenRaidCreate'
 
 export type TRaidDifficultData = {
   shinyChance: number
@@ -167,7 +167,7 @@ export const raidCreate = async (data: TRouteParams): Promise<IResponse> => {
       },
     })
 
-    const enemiesDataPromises: Promise<RaidPokemon_BaseData_Skills>[] = []
+    const enemiesDataPromises: Promise<RaidPokemonBaseDataSkills>[] = []
 
     for (const enemy of raidData.enemies) {
       enemiesDataPromises.push(
@@ -192,7 +192,7 @@ export const raidCreate = async (data: TRouteParams): Promise<IResponse> => {
 
     const enemiesData = await Promise.all(enemiesDataPromises)
 
-    const getRandomPokemons = (array: RaidPokemon_BaseData_Skills[], amount: number) => {
+    const getRandomPokemons = (array: RaidPokemonBaseDataSkills[], amount: number) => {
       const shuffledArray = array.slice() // Create a copy of the array
       let currentIndex = shuffledArray.length
 
@@ -269,7 +269,7 @@ export const raidCreate = async (data: TRouteParams): Promise<IResponse> => {
 
     console.log('passed?')
 
-    const raid_readAgain = await prismaClient.raid.findUnique({
+    const raidReadAgain = await prismaClient.raid.findUnique({
       where: {
         id: raid.id,
       },
@@ -278,16 +278,16 @@ export const raidCreate = async (data: TRouteParams): Promise<IResponse> => {
       },
     })
 
-    if (!raid_readAgain) throw new RaidNotFoundError(raid.id)
-    if (raid_readAgain.raidRooms.length === 0)
-      throw new UnexpectedError('failed to create rooms in raid: ' + raid_readAgain.id)
+    if (!raidReadAgain) throw new RaidNotFoundError(raid.id)
+    if (raidReadAgain.raidRooms.length === 0)
+      throw new UnexpectedError('failed to create rooms in raid: ' + raidReadAgain.id)
 
     await prismaClient.raid.update({
       where: {
         id: raid.id,
       },
       data: {
-        currentRoomIndex: raid_readAgain.raidRooms[0].id,
+        currentRoomIndex: raidReadAgain.raidRooms[0].id,
       },
     })
     return {

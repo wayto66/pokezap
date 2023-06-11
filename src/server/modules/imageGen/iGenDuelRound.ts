@@ -1,4 +1,3 @@
-import cache from 'memory-cache'
 import { Image } from 'canvas'
 import path from 'path'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
@@ -11,9 +10,9 @@ import {
 } from '../../../server/helpers/canvasHelper'
 import { initEncoder } from '../../../server/helpers/encoderHelper'
 import { removeFileFromDisk, saveFileOnDisk } from '../../../server/helpers/fileHelper'
-import { TDuelRoundData } from './iGenDuel2X1Rounds'
-import { RoundPokemonData } from '../duel/duelNXN'
 import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
+import { RoundPokemonData } from '../duel/duelNXN'
+import { TDuelRoundData } from './iGenDuel2X1Rounds'
 
 export const iGenDuelRound = async (data: TDuelRoundData) => {
   const rightPokemon = data.rightTeam[0]
@@ -286,19 +285,6 @@ const drawBlockText = (canvas2d: TCanvas2D, xOffset: number) => {
     textAlign: 'start',
     positionX: xOffset,
     positionY: 215,
-    strokeText: true,
-  })
-}
-
-const drawUltimateText = (canvas2d: TCanvas2D, xOffset: number, text: string) => {
-  canvas2d.write({
-    font: '24px Righteous',
-    fillStyle: 'white',
-    strokeStyle: 'black',
-    text,
-    textAlign: 'start',
-    positionX: xOffset,
-    positionY: 235,
     strokeText: true,
   })
 }

@@ -124,7 +124,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'scizor-mega',
     {
-      enemies: ['heracross', 'pinsir', 'skarmory', 'scizor','forretress','scyther'],
+      enemies: ['heracross', 'pinsir', 'skarmory', 'scizor', 'forretress', 'scyther'],
       rooms: 6,
       difficult: 'expert',
       loot: [
@@ -141,7 +141,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'heracross-mega',
     {
-      enemies: ['heracross', 'pinsir', 'ariados', 'ledian','scyther','machamp'],
+      enemies: ['heracross', 'pinsir', 'ariados', 'ledian', 'scyther', 'machamp'],
       rooms: 4,
       difficult: 'medium',
       loot: [
@@ -190,7 +190,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'sceptile-mega',
     {
-      enemies: ['grovyle', 'sceptile', 'ludicolo', 'tropius','bellossom', 'shiftry'],
+      enemies: ['grovyle', 'sceptile', 'ludicolo', 'tropius', 'bellossom', 'shiftry'],
       rooms: 4,
       difficult: 'medium',
       loot: [
@@ -206,7 +206,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'blaziken-mega',
     {
-      enemies: ['blaziken', 'magcargo', 'magmar', 'ninetales','torkoal','hariyama'],
+      enemies: ['blaziken', 'magcargo', 'magmar', 'ninetales', 'torkoal', 'hariyama'],
       rooms: 4,
       difficult: 'medium',
       loot: [
@@ -256,7 +256,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'sableye-mega',
     {
-      enemies: ['sableye','banette','rotom', 'chandelure', 'drifblim', 'misdreavus'],
+      enemies: ['sableye', 'banette', 'rotom', 'chandelure', 'drifblim', 'misdreavus'],
       rooms: 4,
       difficult: 'medium',
       loot: [
@@ -272,7 +272,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'mawile-mega',
     {
-      enemies: ['mawile', 'wigglytuff', 'metang','whimsicott','bronzong','clefable'],
+      enemies: ['mawile', 'wigglytuff', 'metang', 'whimsicott', 'bronzong', 'clefable'],
       rooms: 4,
       difficult: 'medium',
       loot: [
@@ -289,7 +289,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'aggron-mega',
     {
-      enemies: ['lairon', 'aggron', 'sudowoodo','skarmory','lucario','bastiodon'],
+      enemies: ['lairon', 'aggron', 'sudowoodo', 'skarmory', 'lucario', 'bastiodon'],
       rooms: 4,
       difficult: 'medium',
       loot: [
@@ -306,7 +306,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'medicham-mega',
     {
-      enemies: ['medicham', 'machamp', 'blaziken', 'hariyama','grumpig', 'claydol'],
+      enemies: ['medicham', 'machamp', 'blaziken', 'hariyama', 'grumpig', 'claydol'],
       rooms: 4,
       difficult: 'medium',
       loot: [
@@ -323,7 +323,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'manectric-mega',
     {
-      enemies: ['manectric', 'raichu', 'magnezone', 'electabuzz','luxray', 'rotom'],
+      enemies: ['manectric', 'raichu', 'magnezone', 'electabuzz', 'luxray', 'rotom'],
       rooms: 4,
       difficult: 'medium',
       loot: [
@@ -355,7 +355,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'camerupt-mega',
     {
-      enemies: ['camerupt', 'magmar', 'donphan', 'donphan','magcargo','torkoal'],
+      enemies: ['camerupt', 'magmar', 'donphan', 'donphan', 'magcargo', 'torkoal'],
       rooms: 4,
       difficult: 'medium',
       loot: [
@@ -387,7 +387,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'banette-mega',
     {
-      enemies: ['sableye','banette','rotom', 'chandelure', 'drifblim', 'misdreavus'],
+      enemies: ['sableye', 'banette', 'rotom', 'chandelure', 'drifblim', 'misdreavus'],
       rooms: 4,
       difficult: 'medium',
       loot: [
@@ -402,7 +402,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'absol-mega',
     {
-      enemies: ['absol', 'mightyena', 'umbreon','shiftry','houndoom'],
+      enemies: ['absol', 'mightyena', 'umbreon', 'shiftry', 'houndoom'],
       rooms: 4,
       difficult: 'medium',
       loot: [
@@ -450,7 +450,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'metagross-mega',
     {
-      enemies: ['bronzong', 'metang', 'shieldon', 'metagross', 'grumpig','claydol'],
+      enemies: ['bronzong', 'metang', 'shieldon', 'metagross', 'grumpig', 'claydol'],
       rooms: 6,
       difficult: 'insane',
       loot: [
@@ -467,7 +467,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'lopunny-mega',
     {
-      enemies: ['lopunny', 'zangoose', 'ursaring', 'machamp','ambipom'],
+      enemies: ['lopunny', 'zangoose', 'ursaring', 'machamp', 'ambipom'],
       rooms: 3,
       difficult: 'easy',
       loot: [
@@ -483,7 +483,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'garchomp-mega',
     {
-      enemies: ['druddigon', 'flygon', 'fraxure', 'haxorus','claydol'],
+      enemies: ['druddigon', 'flygon', 'fraxure', 'haxorus', 'claydol'],
       rooms: 4,
       difficult: 'hard',
       loot: [
@@ -583,7 +583,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'pidgeot-mega',
     {
-      enemies: ['swellow', 'staraptor', 'fearow', 'noctowl','miltank','ursaring'],
+      enemies: ['swellow', 'staraptor', 'fearow', 'noctowl', 'miltank', 'ursaring'],
       rooms: 4,
       difficult: 'medium',
       loot: [

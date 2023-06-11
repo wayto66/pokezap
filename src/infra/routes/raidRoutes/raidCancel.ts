@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { IResponse } from '../../../server/models/IResponse'
-import { NoRaidRunningError, PlayerNotFoundError, RouteNotFoundError } from '../../errors/AppErrors'
+import { PlayerNotFoundError, RouteNotFoundError } from '../../errors/AppErrors'
 import { TRouteParams } from '../router'
 
 export const raidCancel = async (data: TRouteParams): Promise<IResponse> => {

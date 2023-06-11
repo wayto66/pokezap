@@ -11,8 +11,6 @@ export const readyProcess = (zapIstanceName: string) => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const zapClient = container.resolve<Client>(zapIstanceName)
 
-
-
   cron.schedule(`*/${metaValues.wildPokemonFleeTimeInMinutes} * * * *`, () => {
     logger.info(`Running a task every ${metaValues.wildPokemonFleeTimeInMinutes} minutes`)
 

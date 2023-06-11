@@ -1,11 +1,10 @@
-import { BasePokemon, Pokemon } from '@prisma/client'
 import { Image, createCanvas, registerFont } from 'canvas'
 import fs from 'fs'
 import GIFEncoder from 'gifencoder'
 import path from 'path'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
-import { TDuelRoundData } from './iGenDuel2X1Rounds'
 import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
+import { TDuelRoundData } from './iGenDuel2X1Rounds'
 
 export const iGenDuelX2Rounds = async (data: TDuelRoundData): Promise<string> => {
   const filepath = await new Promise<string>(resolve => {

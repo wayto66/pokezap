@@ -1,6 +1,6 @@
-import { Pokemon_BaseData } from '../modules/duel/duelNXN'
+import { PokemonBaseData } from '../modules/duel/duelNXN'
 
-export const getActiveClanBonus = (team: (Pokemon_BaseData | null)[]): string => {
+export const getActiveClanBonus = (team: (PokemonBaseData | null)[]): string => {
   if (team.length < 6) return 'Nenhum'
   if (
     team?.every(

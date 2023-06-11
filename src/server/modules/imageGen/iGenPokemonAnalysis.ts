@@ -1,4 +1,4 @@
-import { BaseItem, BasePokemon, HeldItem, Item, Pokemon, PrismaClient } from '@prisma/client'
+import { BaseItem, BasePokemon, HeldItem, Pokemon, PrismaClient } from '@prisma/client'
 import { createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'

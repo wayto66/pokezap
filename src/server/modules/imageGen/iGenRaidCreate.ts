@@ -1,10 +1,8 @@
-import { BaseItem, BasePokemon, Item, Pokemon, PrismaClient } from '@prisma/client'
+import { BaseItem, BasePokemon } from '@prisma/client'
 import { Image, createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
-import { container } from 'tsyringe'
 import { logger } from '../../../infra/logger'
-import { talentIdMap } from '../../constants/talentIdMap'
 import { removeFileFromDisk } from '../../helpers/fileHelper'
 import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 

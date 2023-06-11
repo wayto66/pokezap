@@ -1,23 +1,23 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { IResponse } from '../../../../server/models/IResponse'
-import {
-  MissingParametersPokemonInformationError,
-  PlayerNotFoundError,
-  UnexpectedError,
-  PokemonNotFoundError,
-  PlayerDoestNotOwnThePokemonError,
-  RouteNotFoundError,
-  RouteDoesNotHaveUpgradeError,
-  PokemonInDaycare_RemainingTime,
-  PokemonAboveDaycareLevelLimit,
-  CantProceedWithPokemonInTeamError,
-  PokemonHasNotBornYetError,
-  DaycareIsFullError,
-} from '../../../errors/AppErrors'
-import { TRouteParams } from '../../router'
 import { getHoursDifference } from '../../../../server/helpers/getHoursDifference'
 import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
+import { IResponse } from '../../../../server/models/IResponse'
+import {
+  CantProceedWithPokemonInTeamError,
+  DaycareIsFullError,
+  MissingParametersPokemonInformationError,
+  PlayerDoestNotOwnThePokemonError,
+  PlayerNotFoundError,
+  PokemonAboveDaycareLevelLimit,
+  PokemonHasNotBornYetError,
+  PokemonInDaycareRemainingTime,
+  PokemonNotFoundError,
+  RouteDoesNotHaveUpgradeError,
+  RouteNotFoundError,
+  UnexpectedError,
+} from '../../../errors/AppErrors'
+import { TRouteParams } from '../../router'
 
 export const daycareIn = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
@@ -88,7 +88,7 @@ export const daycareIn = async (data: TRouteParams): Promise<IResponse> => {
   if (pokemon.isInDaycare) {
     if (!pokemon.daycareEntry) throw new UnexpectedError('Pokemon está no daycare e não possui registro de entrada.')
     const hoursLeft = getHoursDifference(pokemon.daycareEntry, new Date())
-    throw new PokemonInDaycare_RemainingTime(pokemon.id, pokemon.baseData.name, hoursLeft.toFixed(2))
+    throw new PokemonInDaycareRemainingTime(pokemon.id, pokemon.baseData.name, hoursLeft.toFixed(2))
   }
   if (pokemon.level >= route.level / 2)
     throw new PokemonAboveDaycareLevelLimit(pokemon.id, pokemon.baseData.name, route.level)
@@ -104,7 +104,7 @@ export const daycareIn = async (data: TRouteParams): Promise<IResponse> => {
   )
     throw new CantProceedWithPokemonInTeamError(pokemon.id, pokemon.baseData.name)
 
-  const updatedPokemon = await prismaClient.pokemon.update({
+  await prismaClient.pokemon.update({
     where: {
       id: pokemon.id,
     },

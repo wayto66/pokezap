@@ -1,21 +1,21 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { IResponse } from '../../../../server/models/IResponse'
-import {
-  MissingParametersPokemonInformationError,
-  PlayerNotFoundError,
-  UnexpectedError,
-  PokemonNotFoundError,
-  PlayerDoestNotOwnThePokemonError,
-  RouteNotFoundError,
-  RouteDoesNotHaveUpgradeError,
-  PokemonInDaycare_RemainingTime,
-  PokemonNotInDaycareError,
-} from '../../../errors/AppErrors'
-import { TRouteParams } from '../../router'
 import { getHoursDifference } from '../../../../server/helpers/getHoursDifference'
 import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
+import { IResponse } from '../../../../server/models/IResponse'
 import { handleLevelSet } from '../../../../server/modules/pokemon/handleLevelSet'
+import {
+  MissingParametersPokemonInformationError,
+  PlayerDoestNotOwnThePokemonError,
+  PlayerNotFoundError,
+  PokemonInDaycareRemainingTime,
+  PokemonNotFoundError,
+  PokemonNotInDaycareError,
+  RouteDoesNotHaveUpgradeError,
+  RouteNotFoundError,
+  UnexpectedError,
+} from '../../../errors/AppErrors'
+import { TRouteParams } from '../../router'
 
 export const daycareOut = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
@@ -80,11 +80,11 @@ export const daycareOut = async (data: TRouteParams): Promise<IResponse> => {
   if (!pokemon.daycareEntry) throw new UnexpectedError('Pokemon está no daycare e não possui registro de entrada.')
 
   const hoursLeft = 24 - getHoursDifference(pokemon.daycareEntry, new Date())
-  if (hoursLeft > 0) throw new PokemonInDaycare_RemainingTime(pokemon.id, pokemon.baseData.name, hoursLeft.toFixed(2))
+  if (hoursLeft > 0) throw new PokemonInDaycareRemainingTime(pokemon.id, pokemon.baseData.name, hoursLeft.toFixed(2))
 
   const targetLevel = Math.ceil(route.level / 2)
 
-  const updatedPokemon = await handleLevelSet({
+  await handleLevelSet({
     pokemon,
     targetLevel,
     removeFromDaycare: true,

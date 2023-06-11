@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { logger } from '../../../infra/logger'
 import { IResponse } from '../../../server/models/IResponse'
+import { duelNXN } from '../../../server/modules/duel/duelNXN'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
 import {
   CouldNotUpdatePlayerError,
@@ -17,7 +18,6 @@ import {
   UnexpectedError,
 } from '../../errors/AppErrors'
 import { TRouteParams } from '../router'
-import { duelNXN } from '../../../server/modules/duel/duelNXN'
 
 export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , sessionIdString] = data.routeParams

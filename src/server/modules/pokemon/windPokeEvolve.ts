@@ -1,24 +1,14 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import {
-  InsufficientLevelToEvolveError,
-  PlayerDoesNotHaveItemError,
-  PlayerDoestNotOwnThePokemonError,
-  PlayerNotFoundError,
-  PokemonAlreadyOnLastEvolution,
-  PokemonNotFoundError,
-  UnexpectedError,
-  UnknownEvolutionMethodError,
-} from '../../../infra/errors/AppErrors'
+import { bossPokemonNames } from '../../constants/bossPokemonNames'
+import { PokemonBaseData } from '../duel/duelNXN'
 import { generateGeneralStats } from './generateGeneralStats'
 import { generateHpStat } from './generateHpStat'
-import { Pokemon_BaseData } from '../duel/duelNXN'
-import { bossPokemonNames } from '../../constants/bossPokemonNames'
 
 export const windPokeEvolve = async (
-  poke: Pokemon_BaseData,
+  poke: PokemonBaseData,
   maximumBaseExperience: number
-): Promise<Pokemon_BaseData> => {
+): Promise<PokemonBaseData> => {
   const client = container.resolve<PrismaClient>('PrismaClient')
 
   const fullData: any = poke.baseData.evolutionData

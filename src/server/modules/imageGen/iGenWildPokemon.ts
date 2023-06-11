@@ -4,11 +4,11 @@ import path from 'path'
 import { logger } from '../../../infra/logger'
 import { talentIdMap } from '../../../server/constants/talentIdMap'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
-import { Pokemon_BaseData } from '../duel/duelNXN'
 import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
+import { PokemonBaseData } from '../duel/duelNXN'
 
 type TParams = {
-  pokemon: Pokemon_BaseData
+  pokemon: PokemonBaseData
 }
 
 export const iGenWildPokemon = async (data: TParams) => {

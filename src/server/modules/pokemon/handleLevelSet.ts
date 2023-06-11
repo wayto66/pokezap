@@ -2,12 +2,12 @@ import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { PokemonNotFoundError, UnexpectedError } from '../../../infra/errors/AppErrors'
 import { logger } from '../../../infra/logger'
+import { PokemonBaseData } from '../duel/duelNXN'
 import { generateGeneralStats } from './generateGeneralStats'
 import { generateHpStat } from './generateHpStat'
-import { Pokemon_BaseData } from '../duel/duelNXN'
 
 type TParams = {
-  pokemon: Pokemon_BaseData
+  pokemon: PokemonBaseData
   targetLevel: number
   removeFromDaycare?: boolean
 }

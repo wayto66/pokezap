@@ -1,4 +1,4 @@
-import { loadImage, Image } from 'canvas'
+import { Image, loadImage } from 'canvas'
 import cache from 'memory-cache'
 
 export const loadOrSaveImageFromCache = async (imageUrl: string | Buffer): Promise<Image> => {

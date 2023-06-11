@@ -1,22 +1,17 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { Client } from 'whatsapp-web.js'
+import { getHoursDifference } from '../../../../server/helpers/getHoursDifference'
 import { IResponse } from '../../../../server/models/IResponse'
 import {
-  MissingParametersPokemonInformationError,
-  PlayerNotFoundError,
-  MissingParameterError,
+  AlreadyTravelingError,
+  MissingTravelRegionError,
   RouteDoesNotHaveUpgradeError,
   RouteNotFoundError,
-  MissingTravelRegionError,
-  UnexpectedError,
   UpgradeNotFoundError,
-  AlreadyTravelingError,
   XIsInCooldownError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { getHoursDifference } from '../../../../server/helpers/getHoursDifference'
-import { set } from 'mongoose'
-import { Client } from 'whatsapp-web.js'
 
 export const shipRoute = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
