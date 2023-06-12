@@ -13,6 +13,7 @@ import { pokemonTeam } from './team/pokemonTeam'
 const subRouteMap = new Map<string, any>([
   // POKEMON INFO ROUTES
   ['INFO', pokemonInfo1],
+  ['INFORMATION', pokemonInfo1],
 
   // POKEMON TEAM ROUTES
   ['TEAM', pokemonTeam],
@@ -38,7 +39,9 @@ const subRouteMap = new Map<string, any>([
   ['SKILLS', pokemonSkills],
   ['MOVE', pokemonSkills],
   ['MOVES', pokemonSkills],
+  ['GOLPE', pokemonSkills],
   ['GOLPES', pokemonSkills],
+  ['PODER', pokemonSkills],
   ['PODERES', pokemonSkills],
 
   // POKEMON GIVE-ITEM ROUTES

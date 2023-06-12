@@ -144,8 +144,186 @@ export class SubRouteNotFoundError extends AppError {
 
 export class MissingParametersCatchRouteError extends AppError {
   constructor() {
-    const message = `Por favor, forneca o nome da pokebola utilizada e o ID do pokemon à ser capturado. Exemplo:
-        poke**p. catch pokebola 25`
+    const message = `Por favor, informe o nome da pokebola utilizada e o ID do pokemon à ser capturado. Exemplo: poke**p. catch pokebola 25`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingParametersBuyAmountError extends AppError {
+  constructor() {
+    const message = 'Por favor, especifique a quantidade que deseja comprar ao enviar o comando de compra.'
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingParametersInvasionRouteError extends AppError {
+  constructor() {
+    const message = `Informe a categoria da invasão:
+👍 - Defend`
+    const statusCode = 300
+    const actions = ['pz. invasion defend']
+
+    super(message, statusCode, undefined, actions)
+  }
+}
+
+export class MissingParametersInventoryRouteError extends AppError {
+  constructor() {
+    const message = `Informe a categoria do inventário:
+👍 - Pokemons
+❤ - Items
+😂 - Items + nomes`
+    const statusCode = 300
+    const actions = ['pz. inventory poke', 'pz. inventory items', 'pz. inventory items names']
+
+    super(message, statusCode, undefined, actions)
+  }
+}
+
+export class MissingParametersHelpRouteError extends AppError {
+  constructor() {
+    const message = `Informe a categoria que deseja ajuda:
+👍 - Comandos disponíveis
+❤ - Clans
+😂 - Pokeballs
+😮 - Plates`
+    const statusCode = 404
+    const actions = ['pz. help commands', 'pz. help clans', 'pz. help pokeballs', 'pz. help plates']
+
+    super(message, statusCode, undefined, actions)
+  }
+}
+
+export class MissingParametersPokemonRouteError extends AppError {
+  constructor() {
+    const message = `Por favor, especifique uma ação após o comando "pokemon":
+- _info_
+- _team_
+- _evolve_ 
+- _mega-evolve_ 
+- _skills_
+- _give-item_
+- _drop-item_`
+    const statusCode = 404
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingParametersRouteRouteError extends AppError {
+  constructor() {
+    const message = `Por favor, especifique uma ação após o comando "route":
+- _start_
+- _enter_
+- _leave_ 
+- _info_ 
+- _upgrade_
+- _incense_
+- _lock_
+- _verify_ 
+- _forfeit_
+- _poke-ranch_ 
+- _day-care_
+- _travel_
+    `
+    const statusCode = 404
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingParametersBreedRouteError extends AppError {
+  constructor() {
+    const message = `Você deve fornecer o id dos pokemons à serem cruzados. (Ex. poke**p. breed 25 24)`
+    const statusCode = 400
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingParametersRankRouteError extends AppError {
+  constructor() {
+    const message = `Informe a categoria do ranking:
+👍 - elo
+❤ - catch
+    `
+    const statusCode = 300
+    const actions = ['pz. rank elo', 'pz. rank catch']
+
+    super(message, statusCode, undefined, actions)
+  }
+}
+
+export class MissingParametersPokemonInformationError extends AppError {
+  constructor() {
+    const message = `Forneca o id ou nome do pokemon. `
+
+    super(message)
+  }
+}
+
+export class MissingParametersSendRouteError extends AppError {
+  constructor() {
+    const message = `Por favor, especifique após o comando "send":
+- _items_
+- _poke_
+- _cash_`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingParametersTradeRouteError extends AppError {
+  constructor() {
+    const message = `Por favor, especifique após o comando "trade":
+- _items_
+- _poke_`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingParameterError extends AppError {
+  constructor(parameterName: string) {
+    const message = `Por favor, informe o(a): ${parameterName}`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingTravelRegionError extends AppError {
+  constructor() {
+    const message = `Para onde iremos viajar?
+👍 - Alola 
+❤ - Galar
+😂 - Voltar`
+    const statusCode = 300
+    const actions = ['pz. rota travel alola', 'pz. rota travel galar', 'pz. rota travel return']
+
+    super(message, statusCode, undefined, actions)
+  }
+}
+
+export class MissingParametersDuelRouteError extends AppError {
+  constructor() {
+    const message =
+      'Por favor, especifique o tipo de duelo e o ID do player à ser enfrentado. (Ex. poke**p. duel x1 25).'
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingParametersBattleRouteError extends AppError {
+  constructor() {
+    const message = 'Por favor, especifique o ID do pokemon selvagem à ser enfrentado. (Ex. poke**p battle 25)'
     const statusCode = 300
 
     super(message, statusCode)
@@ -155,24 +333,6 @@ export class MissingParametersCatchRouteError extends AppError {
 export class InvalidPokeBallName extends AppError {
   constructor(ballName: string) {
     const message = `*${ballName}* não é um nome válido de pokebola.`
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class MissingParametersDuelRouteError extends AppError {
-  constructor() {
-    const message = 'DUMMY: This is the duel route, specify a sub route.'
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class MissingParametersBattleRouteError extends AppError {
-  constructor() {
-    const message = 'Por favor, especifique o ID do pokemon selvagem à ser enfrentado.'
     const statusCode = 300
 
     super(message, statusCode)
@@ -206,105 +366,6 @@ export class PlayerDoesNotResideOnTheRoute extends AppError {
     super(message, statusCode, undefined, actions)
   }
 }
-
-export class MissingParametersBuyAmountError extends AppError {
-  constructor() {
-    const message = 'Por favor, especifique a quantidade que deseja comprar ao enviar o comando de compra.'
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class MissingParametersInventoryRouteError extends AppError {
-  constructor() {
-    const message = `Deseja ver itens ou pokemons?
-    👍 - Pokemons
-    ❤ - Items
-    😂 - Items + nomes`
-    const statusCode = 300
-    const actions = ['pz. inventory poke', 'pz. inventory item', 'pz. inventory item names']
-
-    super(message, statusCode, undefined, actions)
-  }
-}
-
-export class MissingParametersPokemonRouteError extends AppError {
-  constructor() {
-    const message = 'Por favor, especifique uma ação.'
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class MissingParametersRouteRouteError extends AppError {
-  constructor() {
-    const message = 'Por favor, especifique uma ação.'
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class MissingParametersBreedRouteError extends AppError {
-  constructor() {
-    const message = `Você deve fornecer o id dos pokemons à serem cruzados.`
-    const statusCode = 400
-
-    super(message, statusCode)
-  }
-}
-
-export class MissingParametersRankRouteError extends AppError {
-  constructor() {
-    const message = `Esta é a rota de ranking. Você deve especificar qual ranking deseja ver.
-    👍 - Elo
-    ❤ - Capturas
-    `
-    const statusCode = 300
-    const actions = ['pz. rank elo', 'pz. rank catch']
-
-    super(message, statusCode, undefined, actions)
-  }
-}
-
-export class MissingParametersPokemonInformationError extends AppError {
-  constructor() {
-    const message = `Forneca o id ou nome do pokemon. `
-
-    super(message)
-  }
-}
-
-export class MissingParametersTradeRouteError extends AppError {
-  constructor() {
-    const message = `Esta é a rota de trade/trocas. Especifique se deseja trocar Pokemon ou item.s`
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class MissingParameterError extends AppError {
-  constructor(parameterName: string) {
-    const message = `Por favor, informe o(a): ${parameterName}`
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class MissingTravelRegionError extends AppError {
-  constructor() {
-    const message = `Para onde iremos viajar? \n \n 👍 - Alola \n ❤ - Galar \n 😂 - Voltar `
-    const statusCode = 300
-    const actions = ['pz. rota travel alola', 'pz. rota travel galar', 'pz. rota travel return']
-
-    super(message, statusCode, undefined, actions)
-  }
-}
-
 export class XIsInCooldownError extends AppError {
   constructor(xName: string, hoursCooldown: string) {
     const message = `Desculpe, o ${xName} não está disponível no momento. Estará disponível daqui ${hoursCooldown} horas.`

@@ -56,9 +56,9 @@ const routeMap = new Map<string, TRouteType>([
   ['PLAYER', playerInfo1],
 
   // POKEMON ROUTES
-  ['POKEMON', pokemonRoutes],
   ['POKE', pokemonRoutes],
-  ['POKEMÓN', pokemonRoutes],
+  ['POKÉMON', pokemonRoutes],
+  ['POKEMON', pokemonRoutes],
 
   // ROUTE ROUTES
   ['ROUTE', routeRoutes],
@@ -103,6 +103,7 @@ const routeMap = new Map<string, TRouteType>([
 
   // BREED ROUTES
   ['BREED', pokemonBreed1],
+  ['COMBINAR', pokemonBreed1],
   ['HATCH', pokemonHatch],
   ['CHOCAR', pokemonHatch],
 

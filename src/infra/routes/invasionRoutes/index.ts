@@ -1,4 +1,4 @@
-import { MissingParametersInventoryRouteError, SubRouteNotFoundError } from '../../../infra/errors/AppErrors'
+import { MissingParametersInvasionRouteError, SubRouteNotFoundError } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { invasionDefendLobbyRoute } from './invasionDefendLobbyRoute'
@@ -10,7 +10,7 @@ const subRouteMap = new Map<string, any>([
 
 export const invasionRoutes = async (data: TRouteParams): Promise<IResponse> => {
   const [, , subRoute] = data.routeParams
-  if (!subRoute) throw new MissingParametersInventoryRouteError()
+  if (!subRoute) throw new MissingParametersInvasionRouteError()
 
   const route = subRouteMap.get(subRoute)
   if (!route) throw new SubRouteNotFoundError(subRoute)
