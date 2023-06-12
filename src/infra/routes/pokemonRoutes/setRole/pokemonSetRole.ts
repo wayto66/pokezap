@@ -1,17 +1,15 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
+import { IResponse } from '../../../../server/models/IResponse'
 import {
-  ItemNotFoundError,
   MissingParameterError,
-  MissingParametersPokemonInformationError,
   PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
   PokemonNotFoundError,
   UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { IResponse } from '../../../../server/models/IResponse'
-import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
 
 export const pokemonSetRole = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')

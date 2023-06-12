@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { MessageMedia } from 'whatsapp-web.js'
 import { IResponse } from '../../../../server/models/IResponse'
+import { iGenRouteInfo } from '../../../../server/modules/imageGen/iGenRouteInfo'
 import {
   InsufficientFundsError,
   PlayerNotFoundError,
@@ -10,7 +11,6 @@ import {
   UpgradeNotFoundError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { iGenRouteInfo } from '../../../../server/modules/imageGen/iGenRouteInfo'
 
 export const routeUpgrade = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')

@@ -1,11 +1,11 @@
 import { Pokemon, RaidPokemon, Skill } from '@prisma/client'
-import { Pokemon_BaseData, RaidPokemon_BaseData } from '../modules/duel/duelNXN'
 import { typeEffectivenessMap } from '../constants/atkEffectivenessMap'
+import { PokemonBaseData, RaidPokemonBaseData } from '../modules/duel/duelNXN'
 
 export function getBestSkillSet(
   map: Map<number, Skill>,
   attacker: Pokemon | RaidPokemon,
-  defenderTeam: Pokemon_BaseData[] | RaidPokemon_BaseData[]
+  defenderTeam: PokemonBaseData[] | RaidPokemonBaseData[]
 ): Map<string, Skill & { processedAttackPower: number }> {
   const skillMap = new Map<string, Skill & { preProcessedPower: number }>([])
 
@@ -20,13 +20,13 @@ export function getBestSkillSet(
 
   for (const defender of defenderTeam) {
     if (finalSkillMap.get(defender.baseData.name)) continue
-    const patkPower_Skills: [number, Skill][] = []
-    for (const [type, skill] of skillMap) {
+    const patkPowerSkills: [number, Skill][] = []
+    for (const [, skill] of skillMap) {
       // calculate the damage this skill does to the enemy
-      patkPower_Skills.push(calculateDamageAgainstPokemonX(attacker, defender, skill))
+      patkPowerSkills.push(calculateDamageAgainstPokemonX(attacker, defender, skill))
     }
 
-    const strongerSkillAgainstDefender = patkPower_Skills.reduce((max, curr) => {
+    const strongerSkillAgainstDefender = patkPowerSkills.reduce((max, curr) => {
       if (curr[0] > max[0]) {
         return curr
       }
@@ -44,7 +44,7 @@ export function getBestSkillSet(
 
 const calculateDamageAgainstPokemonX = (
   attacker: Pokemon | RaidPokemon,
-  defender: Pokemon_BaseData | RaidPokemon_BaseData,
+  defender: PokemonBaseData | RaidPokemonBaseData,
   skill: Skill & { preProcessedPower: number }
 ): [number, Skill] => {
   const adRatio = () => {

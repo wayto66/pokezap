@@ -1,20 +1,20 @@
-import { BaseItem, BasePokemon, HeldItem, Item, Pokemon, PrismaClient, RaidPokemon, Skill } from '@prisma/client'
+import { BaseItem, BasePokemon, HeldItem, Pokemon, PrismaClient, RaidPokemon, Skill } from '@prisma/client'
 import { container } from 'tsyringe'
 import { UnexpectedError } from '../../../infra/errors/AppErrors'
+import { logger } from '../../../infra/logger'
 import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
+import { plateTypeMap } from '../../constants/plateTypeMap'
 import { talentIdMap } from '../../constants/talentIdMap'
 import { findKeyByValue } from '../../helpers/findKeyByValue'
+import { getBestSkillSet } from '../../helpers/getBestSkillSet'
 import { TDuelRoundData, iGenDuel2X1Rounds } from '../imageGen/iGenDuel2X1Rounds'
 import { iGenDuel3X1Rounds } from '../imageGen/iGenDuel3X1Rounds'
-import { DuelPokemonExtra, getTeamBonuses } from './getTeamBonuses'
-import { logger } from '../../../infra/logger'
-import { getBestSkillSet } from '../../helpers/getBestSkillSet'
-import { iGenDuelX2Rounds } from '../imageGen/iGenDuelX2Rounds'
-import { plateTypeMap } from '../../constants/plateTypeMap'
-import { iGenDuelRound } from '../imageGen/iGenDuelRound'
 import { iGenDuel3X2Rounds } from '../imageGen/iGenDuel3X2Rounds'
 import { iGenDuel3X3Rounds } from '../imageGen/iGenDuel3X3Rounds'
 import { iGenDuel3X4Rounds } from '../imageGen/iGenDuel3X4Rounds'
+import { iGenDuelRound } from '../imageGen/iGenDuelRound'
+import { iGenDuelX2Rounds } from '../imageGen/iGenDuelX2Rounds'
+import { DuelPokemonExtra, getTeamBonuses } from './getTeamBonuses'
 
 export type RoundPokemonData = {
   name: string
@@ -58,21 +58,21 @@ export type DuelNxNRoundData = {
   rightTeamData: RoundPokemonData[]
 }
 
-export type Pokemon_BaseData = Pokemon & {
+export type PokemonBaseData = Pokemon & {
   baseData: BasePokemon
 }
 
-export type RaidPokemon_BaseData = RaidPokemon & {
+export type RaidPokemonBaseData = RaidPokemon & {
   baseData: BasePokemon
 }
 
-export type Pokemon_BaseData_Skills = Pokemon & {
+export type PokemonBaseDataSkills = Pokemon & {
   baseData: BasePokemon & {
     skills: Skill[]
   }
 }
 
-export type Pokemon_BaseData_Skills_Held = Pokemon & {
+export type PokemonBaseDataSkillsHeld = Pokemon & {
   baseData: BasePokemon & {
     skills: Skill[]
   }
@@ -84,7 +84,7 @@ export type Pokemon_BaseData_Skills_Held = Pokemon & {
     | undefined
 }
 
-export type RaidPokemon_BaseData_Skills_Held = RaidPokemon & {
+export type RaidPokemonBaseDataSkillsHeld = RaidPokemon & {
   baseData: BasePokemon & {
     skills: Skill[]
   }
@@ -96,15 +96,15 @@ export type RaidPokemon_BaseData_Skills_Held = RaidPokemon & {
     | undefined
 }
 
-export type RaidPokemon_BaseData_Skills = RaidPokemon & {
+export type RaidPokemonBaseDataSkills = RaidPokemon & {
   baseData: BasePokemon & {
     skills: Skill[]
   }
 }
 
 type TParams = {
-  leftTeam: Pokemon_BaseData_Skills_Held[]
-  rightTeam: Pokemon_BaseData_Skills_Held[] | RaidPokemon_BaseData_Skills_Held[]
+  leftTeam: PokemonBaseDataSkillsHeld[]
+  rightTeam: PokemonBaseDataSkillsHeld[] | RaidPokemonBaseDataSkillsHeld[]
   wildBattle?: true
   staticImage?: boolean
   returnOnlyPlayerPokemonDefeatedIds?: boolean
@@ -549,7 +549,7 @@ export type TypeScoreObject = {
   worse: string[]
 }
 
-const getBestTypes = (defenders: Pokemon_BaseData[] | RaidPokemon_BaseData[]): TypeScoreObject => {
+const getBestTypes = (defenders: PokemonBaseData[] | RaidPokemonBaseData[]): TypeScoreObject => {
   const efDatas: EffectivenessData[] = []
 
   for (const defender of defenders) {
@@ -613,8 +613,8 @@ const getBestTypes = (defenders: Pokemon_BaseData[] | RaidPokemon_BaseData[]): T
 }
 
 type TGetBestSkillsParams = {
-  attacker: Pokemon_BaseData_Skills | RaidPokemon_BaseData_Skills_Held
-  defenders: Pokemon_BaseData[] | RaidPokemon_BaseData[]
+  attacker: PokemonBaseDataSkills | RaidPokemonBaseDataSkillsHeld
+  defenders: PokemonBaseData[] | RaidPokemonBaseData[]
 }
 
 const getBestSkills = async ({ attacker, defenders }: TGetBestSkillsParams) => {
@@ -661,7 +661,7 @@ const getBestSkills = async ({ attacker, defenders }: TGetBestSkillsParams) => {
   return getBestSkillSet(finalSkillMap, attacker, defenders)
 }
 
-export const verifyTalentPermission = async (poke: Pokemon_BaseData | RaidPokemon_BaseData, skill: Skill) => {
+export const verifyTalentPermission = async (poke: PokemonBaseData | RaidPokemonBaseData, skill: Skill) => {
   const talents = [
     poke.talentId1,
     poke.talentId2,

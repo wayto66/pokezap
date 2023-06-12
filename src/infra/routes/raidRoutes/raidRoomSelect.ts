@@ -1,12 +1,10 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { Client } from 'whatsapp-web.js'
 import { IResponse } from '../../../server/models/IResponse'
-import { duelNXN } from '../../../server/modules/duel/duelNXN'
+import { iGenRaidNextRoom } from '../../../server/modules/imageGen/iGenRaidNextRoom'
 import {
-  InvasionAlreadyFinishedError,
-  InvasionNotFoundError,
   MissingParameterError,
-  MissingParametersBattleRouteError,
   PlayerDoesNotBelongToRaidTeamError,
   PlayerDoesNotHaveReviveForPokemonInRaidError,
   PlayerDoesNotHaveThePokemonInTheTeamError,
@@ -21,8 +19,6 @@ import {
 } from '../../errors/AppErrors'
 import { TRouteParams } from '../router'
 import { raidProgress } from './raidProgress'
-import { Client } from 'whatsapp-web.js'
-import { iGenRaidNextRoom } from '../../../server/modules/imageGen/iGenRaidNextRoom'
 
 export const raidRoomSelect = async (data: TRouteParams): Promise<IResponse> => {
   const [, , selectType, raidIdString, roomIdString, confirm] = data.routeParams
@@ -122,7 +118,7 @@ export const raidRoomSelect = async (data: TRouteParams): Promise<IResponse> => 
     })
 
     const revive = keyItems.find(item => item.baseItem.name === 'revive')
-    const potion = keyItems.find(item => item.baseItem.name === 'potion')
+
     if (raid.defeatedPokemons.map(poke => poke.id).includes(player.teamPoke1.id)) {
       if (!revive || revive.amount <= 0)
         throw new PlayerDoesNotHaveReviveForPokemonInRaidError(player.name, player.teamPoke1.baseData.name)

@@ -99,6 +99,8 @@ export const pokemonHatchCheck = async (data: TRouteParams): Promise<IResponse> 
     message: `Ovos prontos para serem chocados: \n \n ${player?.ownedPokemons
       .map(p => {
         if (getHoursDifference(p.createdAt, new Date()) > 24) return p.id
+
+        return undefined
       })
       .join(', ')}`,
     status: 200,

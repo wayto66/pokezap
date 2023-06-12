@@ -1,23 +1,22 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
 import { checkEvolutionPermition } from '../../../../server/modules/pokemon/checkEvolutionPermition'
 import {
+  getRegionalEvolutionData,
+  handleAlolaGalarEvolution,
+} from '../../../../server/modules/pokemon/handleAlolaGalarEvolution'
+import {
   MissingParametersPokemonInformationError,
   PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
-  PokemonHasNotBornYetError,
   PokemonNotFoundError,
   RouteNotFoundError,
   UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
-import {
-  getRegionalEvolutionData,
-  handleAlolaGalarEvolution,
-} from '../../../../server/modules/pokemon/handleAlolaGalarEvolution'
 
 export const pokemonEvolve = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')

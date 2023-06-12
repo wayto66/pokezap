@@ -3,21 +3,18 @@ import { container } from 'tsyringe'
 import {
   InsufficientLevelToEvolveError,
   PlayerDoesNotHaveItemError,
-  PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
-  PokemonAlreadyOnLastEvolution,
   PokemonDoesNotHaveOwnerError,
-  PokemonNotFoundError,
   UnexpectedError,
   UnknownEvolutionMethodError,
   WrongRegionToEvolveError,
 } from '../../../infra/errors/AppErrors'
+import { PokemonBaseData } from '../duel/duelNXN'
 import { generateGeneralStats } from './generateGeneralStats'
 import { generateHpStat } from './generateHpStat'
-import { Pokemon_BaseData } from '../duel/duelNXN'
 
 type TParams = {
-  pokemon: Pokemon_BaseData
+  pokemon: PokemonBaseData
   fromTrade?: boolean
   currentRegion: string
 }
@@ -26,7 +23,7 @@ export const handleAlolaGalarEvolution = async (
   data: TParams
 ): Promise<{
   evolved: boolean
-  pokemon?: Pokemon_BaseData
+  pokemon?: PokemonBaseData
   errorMessage?: string
 }> => {
   const { pokemon, fromTrade } = data

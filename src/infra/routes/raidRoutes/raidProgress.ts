@@ -1,25 +1,24 @@
 import { PrismaClient, PrismaPromise } from '@prisma/client'
 import { container } from 'tsyringe'
+import { raidsDataMap } from '../../../server/constants/raidsDataMap'
 import { IResponse } from '../../../server/models/IResponse'
 import { duelNXN } from '../../../server/modules/duel/duelNXN'
+import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
 import {
   InvasionAlreadyFinishedError,
   InvasionNotFoundError,
   MissingParameterError,
   PlayerNotFoundError,
   RoomDoesNotExistsInRaidError,
-  SendEmptyMessageError,
   TypeMissmatchError,
   UnexpectedError,
 } from '../../errors/AppErrors'
-import { TRouteParams } from '../router'
-import { raidsDataMap } from '../../../server/constants/raidsDataMap'
-import { raidDifficultyDataMap } from './raidCreate'
 import { logger } from '../../logger'
-import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
+import { TRouteParams } from '../router'
+import { raidDifficultyDataMap } from './raidCreate'
 
 export const raidProgress = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , selectType, raidIdString, roomIdString] = data.routeParams
+  const [, , , raidIdString, roomIdString] = data.routeParams
   if (!data.fromReact) throw new UnexpectedError('Rota não permitida.')
   if (!raidIdString) throw new MissingParameterError('raid id')
   if (!roomIdString) throw new MissingParameterError('room id')

@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import express from 'express'
+import ffmpegPath from 'ffmpeg-static'
 import 'reflect-metadata'
 import { container } from 'tsyringe'
 import { Client, LocalAuth } from 'whatsapp-web.js'
@@ -7,7 +8,6 @@ import { logger } from './infra/logger'
 import { router } from './infra/routes/router'
 import { registerFonts } from './server/helpers/registerFonts'
 import { handleAllProcess } from './server/process'
-import ffmpegPath from 'ffmpeg-static'
 
 process.on('uncaughtException', error => {
   logger.error(error)

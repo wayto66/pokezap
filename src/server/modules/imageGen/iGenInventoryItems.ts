@@ -2,9 +2,9 @@ import { BaseItem, BasePokemon, HeldItem, Item, Player, Pokemon } from '@prisma/
 import { createCanvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
+import { UnexpectedError } from '../../../infra/errors/AppErrors'
 import { logger } from '../../../infra/logger'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
-import { UnexpectedError } from '../../../infra/errors/AppErrors'
 import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 
 type TParams = {
@@ -60,6 +60,8 @@ export const iGenInventoryItems = async (data: TParams) => {
         isHeld: true,
         amount: 1,
       }
+
+    return null
   })
 
   const totalItems: any = [items, heldItems].flat().filter(item => item !== undefined)

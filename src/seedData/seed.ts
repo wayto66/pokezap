@@ -1,12 +1,12 @@
 import { PrismaClient } from '@prisma/client'
 import { writeFileSync } from 'fs'
 import fetch from 'node-fetch'
+import 'reflect-metadata'
 import { container } from 'tsyringe'
 import { logger } from '../infra/logger'
 import { pokemonData } from './data'
 import { itemsData } from './items'
 import { skillsData } from './moves'
-import 'reflect-metadata'
 import { specialPokemons } from './specialPokemons'
 
 thiefTime()

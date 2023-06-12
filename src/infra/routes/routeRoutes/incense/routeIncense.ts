@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { pokemonTypes } from '../../../../server/constants/pokemonTypes'
 import { IResponse } from '../../../../server/models/IResponse'
 import {
   PlayerDoesNotHaveItemError,
@@ -9,7 +10,6 @@ import {
   UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { pokemonTypes } from '../../../../server/constants/pokemonTypes'
 
 export const routeIncense = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , givenIncenseName, element1, element2, element3, element4, element5, element6] = data.routeParams

@@ -1,8 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
 import { IResponse } from '../../../../server/models/IResponse'
-import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
-import { checkEvolutionPermition } from '../../../../server/modules/pokemon/checkEvolutionPermition'
 import {
   MissingParametersPokemonInformationError,
   PlayerDoestNotOwnThePokemonError,
@@ -13,12 +12,11 @@ import {
   UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
 
 export const pokemonMegaEvolve = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
-  const [, , , pokemonIdString, targetPokemonName] = data.routeParams
+  const [, , , pokemonIdString] = data.routeParams
   if (!pokemonIdString) throw new MissingParametersPokemonInformationError()
 
   let searchMode = 'string'

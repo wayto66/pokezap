@@ -1,21 +1,20 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { getHoursDifference } from '../../../../server/helpers/getHoursDifference'
+import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
 import { IResponse } from '../../../../server/models/IResponse'
+import { iGenWildPokemon } from '../../../../server/modules/imageGen/iGenWildPokemon'
 import {
   MissingParametersPokemonInformationError,
   PlayerNotFoundError,
-  UnexpectedError,
-  PokemonNotFoundError,
-  PlayerDoestNotOwnThePokemonError,
-  RouteNotFoundError,
-  RouteDoesNotHaveUpgradeError,
-  TypeMissmatchError,
   PokemonExceededRanchTimeLimit,
+  PokemonNotFoundError,
+  RouteDoesNotHaveUpgradeError,
+  RouteNotFoundError,
+  TypeMissmatchError,
+  UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { getHoursDifference } from '../../../../server/helpers/getHoursDifference'
-import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
-import { iGenWildPokemon } from '../../../../server/modules/imageGen/iGenWildPokemon'
 
 export const pokeranchRoute = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
@@ -23,7 +22,7 @@ export const pokeranchRoute = async (data: TRouteParams): Promise<IResponse> => 
   const [, , , pokemonIdString] = data.routeParams
   if (!pokemonIdString) throw new MissingParametersPokemonInformationError()
 
-  let searchMode = 'string'
+  const searchMode = 'string'
 
   const pokemonId = Number(pokemonIdString.slice(pokemonIdString.indexOf('#') + 1))
   if (isNaN(pokemonId)) throw new TypeMissmatchError(pokemonIdString, 'número')

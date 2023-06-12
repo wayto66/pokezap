@@ -3,9 +3,9 @@ import { container } from 'tsyringe'
 import { UnexpectedError } from '../../../../infra/errors/AppErrors'
 import { talentNameMap } from '../../../constants/talentNameMap'
 import { getRandomBetween2 } from '../../../helpers/getRandomBetween2'
+import { RaidPokemonBaseDataSkills } from '../../duel/duelNXN'
 import { generateGeneralStats } from '../generateGeneralStats'
 import { generateHpStat } from '../generateHpStat'
-import { Pokemon_BaseData_Skills, RaidPokemon_BaseData_Skills } from '../../duel/duelNXN'
 
 type TParams = {
   name: string
@@ -13,7 +13,7 @@ type TParams = {
   shinyChance: number
 }
 
-export const generateMegaPokemon = async (data: TParams): Promise<RaidPokemon_BaseData_Skills> => {
+export const generateMegaPokemon = async (data: TParams): Promise<RaidPokemonBaseDataSkills> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const { name, level, shinyChance } = data
 

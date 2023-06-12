@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
+import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
 import { IResponse } from '../../../../server/models/IResponse'
 import {
   CantSellPokemonInTeamError,
@@ -8,11 +9,9 @@ import {
   PlayerNotFoundError,
   PlayerOnlyHasOnePokemonError,
   PokemonNotFoundError,
-  TypeMissmatchError,
   UnexpectedError,
 } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
-import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
 
 export const pokemonSell = async (data: TRouteParams): Promise<IResponse> => {
   const [, , , pokemonIdString, confirm] = data.routeParams

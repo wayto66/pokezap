@@ -82,7 +82,7 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
     }
 
     const filePath = response.isAnimated
-      ? await new Promise<string>((resolve, reject) => {
+      ? await new Promise<string>(resolve => {
           if (!response.isAnimated) resolve(response.imageUrl!)
 
           const outputPath = `./src/server/modules/imageGen/images/video-${Math.random().toFixed(5)}.mp4`

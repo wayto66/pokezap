@@ -2,9 +2,9 @@ import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { PokemonNotFoundError, UnexpectedError } from '../../../infra/errors/AppErrors'
 import { logger } from '../../../infra/logger'
+import { RaidPokemonBaseData } from '../duel/duelNXN'
 import { generateGeneralStats } from './generateGeneralStats'
 import { generateHpStat } from './generateHpStat'
-import { RaidPokemon_BaseData } from '../duel/duelNXN'
 
 type TParams = {
   pokemon: Pokemon
@@ -12,7 +12,7 @@ type TParams = {
     | (Pokemon & {
         baseData: BasePokemon
       })
-    | RaidPokemon_BaseData
+    | RaidPokemonBaseData
   bonusExp?: number
   divide?: boolean
 }

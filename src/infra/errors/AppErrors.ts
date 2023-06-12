@@ -134,14 +134,6 @@ export class AlreadyTravelingError extends AppError {
   }
 }
 
-export class UpgradeAlreadyOnRouteError extends AppError {
-  constructor(routeId: number, upgradeName: string) {
-    const message = ``
-
-    super(message)
-  }
-}
-
 export class SubRouteNotFoundError extends AppError {
   constructor(subrouteName: string) {
     const message = `ERROR: Nenhuma rota encontrada para ${subrouteName}, verifique a ortografia e a sintáxe do comando.`
@@ -187,15 +179,6 @@ export class MissingParametersBattleRouteError extends AppError {
   }
 }
 
-export class PokemonAlreadyDefeated extends AppError {
-  constructor(id: number, playerName: string) {
-    const message = `O Pokemon com id: ${id} já foi derrotado por ${playerName}.`
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
 export class PokemonAlreadyRanAwayError extends AppError {
   constructor(id: number, playerName: string) {
     const message = `*${playerName}* já enfrentou o Pokemon ${id} e este fugiu.`
@@ -227,15 +210,6 @@ export class PlayerDoesNotResideOnTheRoute extends AppError {
 export class MissingParametersBuyAmountError extends AppError {
   constructor() {
     const message = 'Por favor, especifique a quantidade que deseja comprar ao enviar o comando de compra.'
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class MissingParametersSellPokemonError extends AppError {
-  constructor() {
-    const message = 'Por favor, especifique o id do pokemon à ser vendido.'
     const statusCode = 300
 
     super(message, statusCode)
@@ -313,15 +287,6 @@ export class MissingParametersTradeRouteError extends AppError {
 }
 
 export class MissingParameterError extends AppError {
-  constructor(parameterName: string) {
-    const message = `Por favor, informe o(a): ${parameterName}`
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class MissingParameter_DemonstrationError extends AppError {
   constructor(parameterName: string) {
     const message = `Por favor, informe o(a): ${parameterName}`
     const statusCode = 300
@@ -420,17 +385,8 @@ export class ItemNotFoundError extends AppError {
 }
 
 export class RequiredItemNotFoundError extends AppError {
-  constructor(itemName?: string) {
+  constructor() {
     const message = `Você não possui um item necessário para realizar esta ação.`
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class PlayerDoesNotHaveRequiredItemError extends AppError {
-  constructor(playerName: string, itemName: string) {
-    const message = `${playerName} não possui ${itemName} para realizar esta ação.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -491,15 +447,6 @@ export class PokemonDoesNotHasMegaEvolutionError extends AppError {
   }
 }
 
-export class PokemonInDaycareError extends AppError {
-  constructor(pokemonId: number, pokemonName: string) {
-    const message = `#${pokemonId} ${pokemonName} está no daycare.`
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
 export class PokemonNotInDaycareError extends AppError {
   constructor(pokemonId: number, pokemonName: string) {
     const message = `#${pokemonId} ${pokemonName} não está no daycare.`
@@ -527,7 +474,7 @@ export class CantProceedWithPokemonInTeamError extends AppError {
   }
 }
 
-export class PokemonInDaycare_RemainingTime extends AppError {
+export class PokemonInDaycareRemainingTime extends AppError {
   constructor(pokemonId: number, pokemonName: string, remainingTime: string) {
     const message = `#${pokemonId} ${pokemonName} está no daycare. Faltam ainda: ${remainingTime} horas.`
     const statusCode = 300
@@ -575,24 +522,6 @@ export class CantSellAllPokemonsError extends AppError {
 export class CantSellPokemonInTeamError extends AppError {
   constructor(id: number) {
     const message = `O pokemon #${id} faz parte do seu time e não pode ser vendido. Retire-o do seu time primeiro.`
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class CantTradePokemonInTeamError extends AppError {
-  constructor(id: number) {
-    const message = `O pokemon #${id} faz parte do seu time e não pode ser trocado. Retire-o do seu time primeiro.`
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class CantSendPokemonInTeamError extends AppError {
-  constructor(id: number) {
-    const message = `O pokemon #${id} faz parte do seu time e não pode ser enviado. Retire-o do seu time primeiro.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -655,15 +584,6 @@ export class PokemonDoesNotHaveOwnerError extends AppError {
 export class PokemonAlreadyHasChildrenError extends AppError {
   constructor(pokemonId: number, pokemonName: string, amount: number) {
     const message = `Pokemon: #${pokemonId} ${pokemonName} já possui ${amount} filhotes.`
-    const statusCode = 300
-
-    super(message, statusCode)
-  }
-}
-
-export class PlayerDoesNotHavePokeballsError extends AppError {
-  constructor(pokemonId: number, pokemonName: string) {
-    const message = `Pokemon: #${pokemonId} - ${pokemonName} já foi capturado por outro jogador.`
     const statusCode = 300
 
     super(message, statusCode)

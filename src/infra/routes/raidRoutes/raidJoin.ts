@@ -3,18 +3,14 @@ import { container } from 'tsyringe'
 import { Client } from 'whatsapp-web.js'
 import { IResponse } from '../../../server/models/IResponse'
 import {
-  InvasionAlreadyFinishedError,
   InvasionNotFoundError,
   MissingParametersBattleRouteError,
   NoEnergyError,
-  PlayerDoesNotHaveRequiredItemError,
   PlayerDoesNotHaveThePokemonInTheTeamError,
   PlayerNotFoundError,
   PokemonNotFoundError,
   RaidAlreadyFinishedError,
   RaidAlreadyInProgressError,
-  RequiredItemNotFoundError,
-  SendEmptyMessageError,
   TypeMissmatchError,
 } from '../../errors/AppErrors'
 import { TRouteParams } from '../router'

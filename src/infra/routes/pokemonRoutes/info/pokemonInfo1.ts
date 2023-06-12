@@ -7,9 +7,9 @@ import {
   UnexpectedError,
 } from '../../../../infra/errors/AppErrors'
 import { TRouteParams } from '../../../../infra/routes/router'
+import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokemonAnalysis } from '../../../../server/modules/imageGen/iGenPokemonAnalysis'
-import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequestData'
 
 export const pokemonInfo1 = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')

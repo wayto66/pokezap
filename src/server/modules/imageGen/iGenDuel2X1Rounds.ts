@@ -4,8 +4,8 @@ import GIFEncoder from 'gifencoder'
 import path from 'path'
 import { createCanvas2d } from '../../../server/helpers/canvasHelper'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
-import { DuelNxNRoundData, RoundPokemonData } from '../duel/duelNXN'
 import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
+import { DuelNxNRoundData, RoundPokemonData } from '../duel/duelNXN'
 
 export type TDuelRoundData = {
   leftTeam: RoundPokemonData[]

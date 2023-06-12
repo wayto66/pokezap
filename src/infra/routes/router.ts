@@ -1,12 +1,14 @@
+import { BaseItem, Item, Player, PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
 import {
   AppError,
   PlayerInRaidIsLockedError,
   PlayerNotFoundError,
   RouteNotFoundError,
   RouteNotProvidedError,
-  UnexpectedError,
 } from '../../infra/errors/AppErrors'
 import { IResponse } from '../../server/models/IResponse'
+import { PokemonBaseData } from '../../server/modules/duel/duelNXN'
 import { logger } from '../logger'
 import { battleRoutes } from './battleRoutes'
 import { pokemonBreed1 } from './breedRoutes/pokemonBreed1'
@@ -17,18 +19,15 @@ import { helpRoutes } from './helpRoutes'
 import { invasionRoutes } from './invasionRoutes'
 import { inventoryRoutes } from './inventoryRoutes'
 import { pokemonRoutes } from './pokemonRoutes'
+import { raidRoutes } from './raidRoutes'
 import { rankRoutes } from './rankingRoutes'
 import { routeRoutes } from './routeRoutes'
+import { sellRoutes } from './sellRoutes'
 import { sendRoutes } from './sendRoutes'
 import { shopRoutes } from './shopRoutes'
 import { tradeRoutes } from './tradeRoutes'
 import { playerInfo1 } from './userRoutes/info/playerInfo1'
 import { newUser1 } from './userRoutes/newUser/newUser1'
-import { raidRoutes } from './raidRoutes'
-import { BaseItem, Item, Player, PrismaClient } from '@prisma/client'
-import { Pokemon_BaseData } from '../../server/modules/duel/duelNXN'
-import { container } from 'tsyringe'
-import { sellRoutes } from './sellRoutes'
 
 export type TRouteParams = {
   playerPhone: string
@@ -37,7 +36,7 @@ export type TRouteParams = {
   playerName: string
   fromReact?: boolean
   player?: Player & {
-    ownedPokemons: Pokemon_BaseData
+    ownedPokemons: PokemonBaseData
     ownedItems: Item & {
       baseItem: BaseItem
     }

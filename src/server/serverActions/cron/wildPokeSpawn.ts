@@ -4,7 +4,6 @@ import { Client, MessageMedia } from 'whatsapp-web.js'
 import { metaValues } from '../../../constants/metaValues'
 import { iGenWildPokemon } from '../../modules/imageGen/iGenWildPokemon'
 import { generateWildPokemon } from '../../modules/pokemon/generate/generateWildPokemon'
-import { checkEvolutionPermition } from '../../modules/pokemon/checkEvolutionPermition'
 import { windPokeEvolve } from '../../modules/pokemon/windPokeEvolve'
 
 type TParams = {

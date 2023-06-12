@@ -15,10 +15,10 @@ import {
   UnexpectedError,
 } from '../../../infra/errors/AppErrors'
 import { IResponse } from '../../../server/models/IResponse'
+import { duelNXN } from '../../../server/modules/duel/duelNXN'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
 import { logger } from '../../logger'
 import { TRouteParams } from '../router'
-import { duelNXN } from '../../../server/modules/duel/duelNXN'
 
 export type DuelPokemon = Pokemon & {
   baseData: BasePokemon & {
