@@ -15,6 +15,7 @@ model Player {
   phone                String            @unique
   name                 String
   nickname             String?
+  clan                 String?
   spriteUrl            String            @default("")
   elo                  Int               @default(1200)
   cash                 Int               @default(500)
@@ -34,11 +35,15 @@ model Player {
   questId              Int?              @unique
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @default(now())
+  lastGymTry           DateTime?
+  lastEliteFourTry     DateTime?
   caughtDbIds          Int[]
   caughtDexIds         Int[]
   ownedPokemons        Pokemon[]
   ownedItems           Item[]
+  ownedBadges          Badge[]
   gameRooms            GameRoom[]
+  pokeTeams            PokeTeam[]
   teamPoke1            Pokemon?          @relation(name: "team-poke-1", fields: [teamPokeId1], references: [id])
   teamPoke2            Pokemon?          @relation(name: "team-poke-2", fields: [teamPokeId2], references: [id])
   teamPoke3            Pokemon?          @relation(name: "team-poke-3", fields: [teamPokeId3], references: [id])
@@ -53,6 +58,34 @@ model Player {
   winnedInvasions      InvasionSession[] @relation(name: "invasion-winner-players")
   lobbdyInvasions      InvasionSession[] @relation(name: "invasion-lobby-players")
   quest                Quest?            @relation(fields: [questId], references: [id])
+}
+
+model Badge {
+  id           Int      @id @default(autoincrement())
+  name         String
+  owners       Player[]
+}
+
+model GymLeader {
+   id                   Int               @id @default(autoincrement())
+   name String
+   pokemons GymPokemon[]   
+}
+
+model PokeTeam {
+  @@unique([name,ownerId])
+  id                   Int               @id @default(autoincrement())
+  name String
+  ownerId Int
+  slot1Id Int
+  slot2Id Int?
+  slot3Id Int?
+  slot4Id Int?
+  slot5Id Int?
+  slot6Id Int?
+  pokeIds Int[]
+
+  owner Player @relation(fields: [ownerId], references: [id])
 }
 
 model Quest {
@@ -137,6 +170,7 @@ model Pokemon {
   isMale            Boolean
   isShiny           Boolean          @default(false)
   isInDaycare       Boolean          @default(false)
+  isAnnouncedInMarket Boolean @default(false)
   talentId1         Int
   talentId2         Int
   talentId3         Int
@@ -158,6 +192,7 @@ model Pokemon {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @default(now())
   daycareEntry      DateTime?
+  lastGymTry        DateTime?
   teamSlot1         Player?          @relation(name: "team-poke-1")
   teamSlot2         Player?          @relation(name: "team-poke-2")
   teamSlot3         Player?          @relation(name: "team-poke-3")
@@ -185,13 +220,15 @@ model Pokemon {
   defeatedRaids     Raid[]           @relation(name: "raid-defeated-pokemons")
   winnedRaids       Raid[]           @relation(name: "raid-winner-pokemons")
   lobbdyRaids       Raid[]           @relation(name: "raid-lobby-pokemons")
+  marketOffers      MarketOffer[]
+  maretDemans       MarketOffer[]    @relation(name: "demand")
   baseData          BasePokemon      @relation(fields: [basePokemonId], references: [id])
 }
 
 model GymPokemon {
   id                Int              @id @default(autoincrement())
   ownerId           Int
-  basePokemonId     Int
+  basePokemonName     String
   gameRoomId        Int?
   level             Int
   spriteUrl         String           @default("")
@@ -223,7 +260,8 @@ model GymPokemon {
   talent7           Talent           @relation(name: "gym-pokemon-talent-7", fields: [talentId7], references: [id])
   talent8           Talent           @relation(name: "gym-pokemon-talent-8", fields: [talentId8], references: [id])
   talent9           Talent           @relation(name: "gym-pokemon-talent-9", fields: [talentId9], references: [id])
-  baseData          BasePokemon      @relation(fields: [basePokemonId], references: [id])
+  baseData          BasePokemon      @relation(fields: [basePokemonName], references: [name])
+  owner             GymLeader         @relation(fields: [ownerId], references: [id])
 }
 
 model RaidPokemon {
@@ -342,6 +380,8 @@ model Item {
   name     String
   amount   Int
   owner    Player   @relation(fields: [ownerId], references: [id])
+  marketOffer MarketOffer[]
+  marketDemand MarketOffer[] @relation(name: "demand")
   baseItem BaseItem @relation(fields: [name], references: [name])
 
   @@unique([ownerId, name])
@@ -524,3 +564,24 @@ model RaidRoom {
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @default(now())
 }
+
+model MarketOffer {
+  id                 Int           @id @default(autoincrement())
+  creatorId          Int      
+  demandPlayerId     Int                
+
+  cashOffer          Int           @default(0)
+  pokemonOffer       Pokemon[]    
+  itemOffer          Item[]
+
+  cashDemand         Int           @default(0)
+  itemDemand         Item[]       @relation(name: "demand") 
+  pokemonDemand      Pokemon[]     @relation(name: "demand")  
+  
+  accepted         Boolean       @default(false)
+  active      Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @default(now())
+}
+
+

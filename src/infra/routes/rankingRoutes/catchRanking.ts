@@ -21,7 +21,7 @@ export const catchRanking = async (data: TRouteParams): Promise<IResponse> => {
   const sortedPlayers = players.sort((a, b) => {
     const catchesA = [...new Set(a.caughtDexIds)]
     const catchesB = [...new Set(b.caughtDexIds)]
-    return catchesA.length - catchesB.length
+    return catchesB.length - catchesA.length
   })
 
   const rankEntries: any = []
@@ -39,11 +39,11 @@ export const catchRanking = async (data: TRouteParams): Promise<IResponse> => {
     rankEntries,
     rankingTitle: 'Ranking Capturas Únicas',
     playerName: player.name,
-    playerValue: player.elo.toString(),
+    playerValue: [...new Set(player.caughtDexIds)].length.toString(),
   })
 
   return {
-    message: `TOP 10 - Capturas Únicas [não implementado]`,
+    message: `TOP 10 - Capturas Únicas`,
     status: 200,
     data: null,
     imageUrl,

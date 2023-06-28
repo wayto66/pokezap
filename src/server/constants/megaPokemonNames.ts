@@ -1,7 +1,7 @@
 export const megaPokemonNames = [
-  'venusaur-mega',
-  'charizard-mega-x',
-  'charizard-mega-y',
+  'venusaur',
+  'charizard',
+  'charizard',
   'blastoise',
   'beedrill',
   'ampharos',

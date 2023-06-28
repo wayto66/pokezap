@@ -23,7 +23,7 @@ export const routeUpgrade = async (data: TRouteParams): Promise<IResponse> => {
       - poke-ranch: $5000
       - minivan : $7000
       - daycare : $5000
-      - bazar : $5000
+      - cassino : $5000
       - lab : $10000
       - bikeshop : $5000
       - barco : $12000

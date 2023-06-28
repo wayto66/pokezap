@@ -1,0 +1,23 @@
+novos items para loja
+
+old-rod
+good-rod
+super-rod
+
+
+gyms
+
+misty [seavel] = mantine, lapras, blastoise mega, quagsire, swampert, cloyster
+brock [thunderforge] = onix, rhydon, mega steelix, armaldo, omastar, aerodactyl
+lt surge [thunderforge] = galvantula, lanturn, luxray, raichu, mega ampharos, magnezone
+erika [wonderleaf] = meganium, abomasnow, mega gardevoir, ludicolo, mawile, alola exegutor
+koga [toxibug] = mega scizor, heracross, nidoking, crobat, tentacruel, volcarona
+sabrina [mastermind] = mega gallade, sableye, alolan raichu, alakazam, mega absol, girafarig
+blaine [volcanic] = mega camerupt, infernape, volcarona, mega houndoom, chandelure, delphox
+
+
+
+lorelei [seavel] = lapras, alolan slash, mega swampert, slowking, mega blastoise, mamoswine 
+bruno [garde] = snorlax, slaking, machamp, hitmonlee, mega medicham, mega kangas 
+agatha [mastermind] = mega gengar, alola wak, mega absol, froslass, dusknoir, umbreon
+lance [dragon] = mega-zard-x, mega aero, mega gya, dragalge, dragonite, crobat

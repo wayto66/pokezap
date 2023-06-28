@@ -110,6 +110,14 @@ export class DaycareIsFullError extends AppError {
   }
 }
 
+export class ItemNotEligibleForBazarError extends AppError {
+  constructor() {
+    const message = `Sinto muito, este item não é aceito no Bazar.`
+
+    super(message)
+  }
+}
+
 export class RouteHasADifferentIncenseActiveError extends AppError {
   constructor(incenseName: string) {
     const message = `Esta ação não é possível pois a rota atual possui um incenso diferente ativo: ${incenseName}`
@@ -173,12 +181,19 @@ export class MissingParametersInvasionRouteError extends AppError {
 
 export class MissingParametersInventoryRouteError extends AppError {
   constructor() {
-    const message = `Informe a categoria do inventário:
-👍 - Pokemons
-❤ - Items
-😂 - Items + nomes`
+    const message = `Informe a categoria do inventário: \n👍 - Pokemons \n❤ - Items`
     const statusCode = 300
-    const actions = ['pz. inventory poke', 'pz. inventory items', 'pz. inventory items names']
+    const actions = ['pz. inventory poke', 'pz. inventory items']
+
+    super(message, statusCode, undefined, actions)
+  }
+}
+
+export class MissingParametersMarketRouteError extends AppError {
+  constructor() {
+    const message = `Bem vindo(a) ao Mercado! Aqui você pode anunciar seus pokemons para receber ofertas de trocas, ou fazer ofertas nos que já estão anunciados! \n\n 👍 - Ver Ofertas em seus anúncios \n\n Para anunciar: pz market announce id-do-pokemon \n Para remover: pz market announce idpoke remove \n `
+    const statusCode = 300
+    const actions = ['pz. market offers']
 
     super(message, statusCode, undefined, actions)
   }
@@ -311,6 +326,16 @@ export class MissingTravelRegionError extends AppError {
   }
 }
 
+export class MissingParameterLabRouteError extends AppError {
+  constructor() {
+    const message = `Bem vindo(a) ao Laboratório! Aqui você pode re-ensinar os talentos de seu pokemon *shiny* ou `
+    const statusCode = 300
+    const actions = ['pz. rota travel alola', 'pz. rota travel galar', 'pz. rota travel return']
+
+    super(message, statusCode, undefined, actions)
+  }
+}
+
 export class MissingParametersDuelRouteError extends AppError {
   constructor() {
     const message =
@@ -392,6 +417,22 @@ export class PlayerNotFoundError extends AppError {
   }
 }
 
+export class OfferNotFoundError extends AppError {
+  constructor(id: string) {
+    const message = `ERRO: Oferta não encontrado com o código ${id}`
+
+    super(message)
+  }
+}
+
+export class PokeTeamNotFoundError extends AppError {
+  constructor(teamName: string) {
+    const message = `Não foi encontrado nenhum time salvo com o nome: "${teamName}".`
+
+    super(message)
+  }
+}
+
 export class PlayerInRaidIsLockedError extends AppError {
   constructor(playerName: string) {
     const message = `${playerName} está em uma raid. Não é possível realizar operações. Se for necessário, utilize "raid cancel" para cancelar a raid.`
@@ -418,9 +459,36 @@ export class ZeroPokemonsFoundError extends AppError {
   }
 }
 
+export class PokemonMustBeShinyError extends AppError {
+  constructor() {
+    const message = `Só é permitido pokemon shiny.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class PokemonIsNotHoldingItemError extends AppError {
   constructor(pokemonId: number | string) {
     const message = `Pokemon ${pokemonId} não está segurando um item.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonCantMegaEvolveError extends AppError {
+  constructor(pokemonId: number | string) {
+    const message = `Pokemon ${pokemonId} não pode mega-evoluir.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonIsNotMegaError extends AppError {
+  constructor(pokemonId: number | string) {
+    const message = `Pokemon ${pokemonId} não pode mega-reverter.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -535,6 +603,22 @@ export class CantProceedWithPokemonInTeamError extends AppError {
   }
 }
 
+export class OfferIsNotForPlayerError extends AppError {
+  constructor(id: string | number) {
+    const message = `ERRO: O anúncio com o código "${id}" não é destinado à você.`
+
+    super(message)
+  }
+}
+
+export class OfferAlreadyFinishedError extends AppError {
+  constructor(id: string | number) {
+    const message = `ERRO: O anúncio com o código "${id}" já se encerrou.`
+
+    super(message)
+  }
+}
+
 export class PokemonInDaycareRemainingTime extends AppError {
   constructor(pokemonId: number, pokemonName: string, remainingTime: string) {
     const message = `#${pokemonId} ${pokemonName} está no daycare. Faltam ainda: ${remainingTime} horas.`
@@ -645,6 +729,15 @@ export class PokemonDoesNotHaveOwnerError extends AppError {
 export class PokemonAlreadyHasChildrenError extends AppError {
   constructor(pokemonId: number, pokemonName: string, amount: number) {
     const message = `Pokemon: #${pokemonId} ${pokemonName} já possui ${amount} filhotes.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class CantBreedShiniesError extends AppError {
+  constructor() {
+    const message = `Sinto muito, não é possivel cruzar pokemon shiny.`
     const statusCode = 300
 
     super(message, statusCode)

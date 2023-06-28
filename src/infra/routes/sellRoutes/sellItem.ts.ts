@@ -6,6 +6,7 @@ import {
   ItemNotFoundError,
   MissingParameterError,
   PlayerNotFoundError,
+  TypeMissmatchError,
 } from '../../errors/AppErrors'
 import { TRouteParams } from '../router'
 
@@ -15,7 +16,8 @@ export const sellItem = async (data: TRouteParams): Promise<IResponse> => {
   if (!itemNameUppercase) throw new MissingParameterError('Nome do item')
   const itemName = itemNameUppercase.toLowerCase()
 
-  const amount = Number(amountString) ?? 1
+  const amount = amountString ? Number(amountString) : 1
+  if (isNaN(amount)) throw new TypeMissmatchError(amountString, 'Número')
 
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 

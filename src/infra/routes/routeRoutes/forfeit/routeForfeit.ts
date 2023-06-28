@@ -37,15 +37,15 @@ export const routeForfeit = async (data: TRouteParams): Promise<IResponse> => {
   if (!invasionSession) throw new InvasionNotFoundError(gameRoom.invasorId)
 
   if (confirm && confirm === 'CONFIRM') {
-    if (player.cash < (invasionSession.forfeitCost || 0))
-      throw new InsufficientFundsError(player.name, player.cash, invasionSession.forfeitCost || 0)
+    if (player.cash < (invasionSession.forfeitCost ?? 0))
+      throw new InsufficientFundsError(player.name, player.cash, invasionSession.forfeitCost ?? 0)
     await prismaClient.player.update({
       where: {
         id: player.id,
       },
       data: {
         cash: {
-          decrement: invasionSession.forfeitCost || 0,
+          decrement: Math.round(invasionSession.forfeitCost ?? 0),
         },
       },
     })

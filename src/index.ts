@@ -8,6 +8,7 @@ import { logger } from './infra/logger'
 import { router } from './infra/routes/router'
 import { registerFonts } from './server/helpers/registerFonts'
 import { handleAllProcess } from './server/process'
+import { generateGymPokemons } from './server/modules/pokemon/generate/generateGymPokemons'
 
 process.on('uncaughtException', error => {
   logger.error(error)

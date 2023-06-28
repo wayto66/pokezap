@@ -30,7 +30,7 @@ export const wildPokeSpawn = async (data: TParams) => {
       data.zapClient.sendMessage(
         gameRoom.phone,
         `Um pokemon selvagem apareceu na rota, mas foi afugentado por algum invasor.
-    (utilize o comando: route verify.)`
+    (utilize o comando: "route verify" ou "route forfeit")`
       )
       continue
     }

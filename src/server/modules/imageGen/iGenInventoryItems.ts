@@ -46,7 +46,7 @@ export const iGenInventoryItems = async (data: TParams) => {
   let j = 0
   let k = 0
 
-  const items = data.playerData.ownedItems.filter((item: Item) => item.amount > 0)
+  const items = data.playerData.ownedItems
   const heldItems = data.playerData.ownedPokemons.map(poke => {
     if (poke.heldItem)
       return {
@@ -64,8 +64,8 @@ export const iGenInventoryItems = async (data: TParams) => {
     return null
   })
 
-  const totalItems: any = [items, heldItems].flat().filter(item => item !== undefined)
-
+  let totalItems: any = items
+  if (items.length < 19 - heldItems.length) totalItems = [items, heldItems].flat().filter(item => item !== undefined)
   if (!totalItems) throw new UnexpectedError('igenvinetoryitems')
 
   for (let i = 0; i < totalItems.length; i++) {

@@ -82,7 +82,7 @@ export const pokeranchRoute = async (data: TRouteParams): Promise<IResponse> => 
   })
   if (!pokemon) throw new PokemonNotFoundError(pokemonRequestData.identifier)
   const hoursDiff = getHoursDifference(pokemon.createdAt, new Date())
-  if (hoursDiff > 6) throw new PokemonExceededRanchTimeLimit(pokemon.id, pokemon.baseData.name)
+  if (hoursDiff > 12) throw new PokemonExceededRanchTimeLimit(pokemon.id, pokemon.baseData.name)
 
   const imageUrl = await iGenWildPokemon({
     pokemon,

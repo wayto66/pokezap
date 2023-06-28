@@ -28,6 +28,11 @@ import { shopRoutes } from './shopRoutes'
 import { tradeRoutes } from './tradeRoutes'
 import { playerInfo1 } from './userRoutes/info/playerInfo1'
 import { newUser1 } from './userRoutes/newUser/newUser1'
+import { teamRoutes } from './teamRoutes'
+import { casinoRoutes } from './casinoRoutes'
+import { megaRoutes } from './megaRoutes'
+import { admRoutes } from './admRoutes'
+import { marketRoutes } from './marketRoutes'
 
 export type TRouteParams = {
   playerPhone: string
@@ -125,6 +130,26 @@ const routeMap = new Map<string, TRouteType>([
   // SELL ROUTES
   ['SELL', sellRoutes],
   ['VENDER', sellRoutes],
+
+  // TEAM ROUTES
+  ['TEAM', teamRoutes],
+  ['TIME', teamRoutes],
+  ['POKETEAM', teamRoutes],
+  ['POKE-TIME', teamRoutes],
+
+  // BAZAR ROUTES
+  ['CASINO', casinoRoutes],
+  ['CASSINO', casinoRoutes],
+
+  // MEGA ROUTES
+  ['MEGA', megaRoutes],
+
+  // ADM ROUTES
+  ['ADM', admRoutes],
+
+  // MARKET ROUTES
+  ['MARKET', marketRoutes],
+  ['MERCADO', marketRoutes],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {
@@ -135,7 +160,7 @@ export const router = async (data: TRouteParams): Promise<IResponse> => {
     const route = routeMap.get(routeName.toUpperCase().trim())
     if (!route) throw new RouteNotFoundError(data.playerName, routeName)
 
-    const prismaClient = container.resolve<PrismaClient>('PrismaClient')
+    /*  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
     const player = await prismaClient.player.findFirst({
       where: {
         phone: data.playerPhone,
@@ -143,7 +168,7 @@ export const router = async (data: TRouteParams): Promise<IResponse> => {
     })
 
     if (!player) throw new PlayerNotFoundError(data.playerPhone)
-    if (player.isInRaid && routeName !== 'RAID') throw new PlayerInRaidIsLockedError(player.name)
+    if (player.isInRaid && routeName !== 'RAID') throw new PlayerInRaidIsLockedError(player.name) */
 
     return await route(data)
   } catch (error) {

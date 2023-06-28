@@ -197,7 +197,7 @@ export const bossInvasion = async (data: TRouteParams): Promise<IResponse> => {
         }
       }
       if (Math.random() * shinyMultipler < 0.15) {
-        const bonusItems = ['sun-stone', 'dusk-stone', 'dawn-stone', 'shiny-stone']
+        const bonusItems = ['sun-stone', 'dusk-stone', 'dawn-stone', 'shiny-stone', 'moon-stone']
         const itemName = bonusItems[Math.floor(Math.random() * bonusItems.length)]
         const item = await prismaClient.item.findFirst({
           where: {

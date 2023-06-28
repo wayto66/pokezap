@@ -6,8 +6,10 @@ import { metaValues } from '../../constants/metaValues'
 import { logger } from '../../infra/logger'
 import { pokeBossInvasion } from '../../server/serverActions/cron/pokeBossInvasion'
 import { wildPokeSpawn } from '../../server/serverActions/cron/wildPokeSpawn'
+import { generateGymPokemons } from '../modules/pokemon/generate/generateGymPokemons'
+import { npcMarketOffers } from '../serverActions/cron/npcMarketOffers'
 
-export const readyProcess = (zapIstanceName: string) => {
+export const readyProcess = async (zapIstanceName: string) => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const zapClient = container.resolve<Client>(zapIstanceName)
 
@@ -69,6 +71,7 @@ export const readyProcess = (zapIstanceName: string) => {
         energy: 10,
       },
     })
+    await npcMarketOffers()
   })
 
   cron.schedule(`0 0 */6 * * *`, async () => {
@@ -76,4 +79,6 @@ export const readyProcess = (zapIstanceName: string) => {
       zapClient,
     })
   })
+
+  await prismaClient.$transaction([])
 }

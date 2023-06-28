@@ -106,13 +106,14 @@ export const handleExperienceGain = async (data: TParams): Promise<TResponse> =>
 }
 
 const getExperienceGain = (data: TParams) => {
-  const { targetPokemon, bonusExp } = data
+  const { targetPokemon, bonusExp, pokemon } = data
 
   const b = targetPokemon.baseData.BaseExperience
   const L = targetPokemon.level
   const a = 'ownerId' in targetPokemon ? 1 : 1.5
   const e = bonusExp ? 1 + bonusExp : 1
   const t = 1
+  const highLevelPenalty = ((100 - pokemon.level) / 100) ** 0.5 * 0.95 - Math.max(0, (pokemon.level - 50) / 1100)
 
-  return Math.round(((b * L) / 7) * e * a * t)
+  return Math.round(((b * L) / 7) * e * a * t * highLevelPenalty)
 }

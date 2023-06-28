@@ -180,14 +180,11 @@ export const pokemonBreed2 = async (data: TRouteParams): Promise<IResponse> => {
         data: updateChildrenData(updatedPoke2ChildrenCount),
       })
 
-      const imageUrl = await iGenPokemonAnalysis(newBaby)
-
       const zapClient = container.resolve<Client>('ZapClientInstance1')
-
-      const media = MessageMedia.fromFilePath(imageUrl as string)
-      await zapClient.sendMessage(data.groupCode, media, {
-        caption: `#${newBaby.id} foi gerado por breed de #${pokemon1.id} ${pokemon1.baseData.name} e #${pokemon2.id} ${pokemon2.baseData.name}`,
-      })
+      await zapClient.sendMessage(
+        data.groupCode,
+        `#${newBaby.id} foi gerado por breed de #${pokemon1.id} ${pokemon1.baseData.name} e #${pokemon2.id} ${pokemon2.baseData.name}`
+      )
 
       updatedPoke1ChildrenCount++
       updatedPoke2ChildrenCount++

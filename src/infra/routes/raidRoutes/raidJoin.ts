@@ -99,23 +99,6 @@ export const raidJoin = async (data: TRouteParams): Promise<IResponse> => {
   })
 
   if (updatedRaid.lobbyPokemons.length === raid.requiredPlayers) {
-    await prismaClient
-      .$transaction(
-        raid.lobbyPokemons.map(poke =>
-          prismaClient.player.update({
-            where: {
-              id: poke.ownerId ?? 0,
-            },
-            data: {
-              isInRaid: true,
-              energy: {
-                decrement: 2,
-              },
-            },
-          })
-        )
-      )
-      .catch(e => console.log(e))
     const zapClient = container.resolve<Client>('ZapClientInstance1')
     await zapClient.sendMessage(
       data.groupCode,

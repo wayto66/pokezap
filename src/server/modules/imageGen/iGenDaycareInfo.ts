@@ -35,7 +35,7 @@ export const iGenDaycareInfo = async (data: TParams) => {
   let k = 0
 
   for (let i = 0; i < pokemons.length; i++) {
-    if (i === 5 || i === 10 || i === 15) {
+    if (i === 3 || i === 9 || i === 12) {
       j++
       k = 0
     }

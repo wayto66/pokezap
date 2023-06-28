@@ -57,7 +57,7 @@ export const raidDifficultyDataMap = new Map<string, TRaidDifficultData>([
     {
       shinyChance: 0.11,
       bossLevel: 130,
-      enemiesLevel: 65,
+      enemiesLevel: 70,
       cashReward: 2300,
       dropRate: 2.2,
       roomCount: 6,
@@ -67,8 +67,8 @@ export const raidDifficultyDataMap = new Map<string, TRaidDifficultData>([
     'expert',
     {
       shinyChance: 0.15,
-      bossLevel: 160,
-      enemiesLevel: 80,
+      bossLevel: 210,
+      enemiesLevel: 85,
       cashReward: 4000,
       dropRate: 3,
       roomCount: 7,
@@ -78,9 +78,9 @@ export const raidDifficultyDataMap = new Map<string, TRaidDifficultData>([
     'insane',
     {
       shinyChance: 0.25,
-      bossLevel: 200,
+      bossLevel: 300,
       enemiesLevel: 100,
-      cashReward: 7000,
+      cashReward: 8000,
       dropRate: 4,
       roomCount: 8,
     },

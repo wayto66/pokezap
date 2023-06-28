@@ -99,7 +99,6 @@ Para utilizar um comando no jogo é obrigatório informar o prefixo pokezap ou p
 
 *INVENTÁRIO*
 ➡️ *inventory items -* _Exibir inventário de items_
-➡️ *inventory items names -* _Exibir inventário de items informando os nomes_
 ➡️ *inventory poke -* _Exibir inventário de pokémons_
 
 *DUELO*

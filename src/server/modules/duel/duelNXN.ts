@@ -413,9 +413,7 @@ export const duelNXN = async (data: TParams): Promise<TDuelNXNResponse | void> =
         logger.error(`error: cant get skill for: ${attacker.name} vs ${target.name}`)
         return
       }
-      if (attacker.heldItemName && plateTypeMap.get(attacker.heldItemName) === currentSkill?.typeName) {
-        currentSkill.processedAttackPower = currentSkill.processedAttackPower * 1.1
-      }
+
       if (attacker.crescentBonuses?.damage)
         currentSkill.processedAttackPower =
           currentSkill.processedAttackPower * attacker.crescentBonuses.damage * roundCount
@@ -613,7 +611,7 @@ const getBestTypes = (defenders: PokemonBaseData[] | RaidPokemonBaseData[]): Typ
 }
 
 type TGetBestSkillsParams = {
-  attacker: PokemonBaseDataSkills | RaidPokemonBaseDataSkillsHeld
+  attacker: PokemonBaseDataSkillsHeld | RaidPokemonBaseDataSkillsHeld
   defenders: PokemonBaseData[] | RaidPokemonBaseData[]
 }
 
@@ -654,7 +652,16 @@ const getBestSkills = async ({ attacker, defenders }: TGetBestSkillsParams) => {
       return 1
     }
 
-    const power = skill.attackPower * getEffectivenessMultiplier() * stab() * (1 + talentBonus)
+    const getHeldItemMultiplier = () => {
+      if (attacker.heldItem?.baseItem.name && plateTypeMap.get(attacker.heldItem?.baseItem.name) === skill.typeName)
+        return 1.07
+      if (attacker.heldItem?.baseItem.name && attacker.heldItem?.baseItem.name === skill.typeName + '-gem') return 1.15
+      if (attacker.heldItem?.baseItem.name && attacker.heldItem?.baseItem.name === 'x-attack') return 1.11
+      return 1
+    }
+
+    const power =
+      skill.attackPower * getEffectivenessMultiplier() * stab() * (1 + talentBonus) * getHeldItemMultiplier()
     finalSkillMap.set(power, skill)
   }
 

@@ -6,7 +6,7 @@ import { IResponse } from '../../../../server/models/IResponse'
 import { iGenInventoryItems } from '../../../../server/modules/imageGen/iGenInventoryItems'
 
 export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , , namesOrPage, names] = data.routeParams
+  const [, , , namesOrPage] = data.routeParams
 
   const numberPage = () => {
     if (typeof Number(namesOrPage) === 'number' && !isNaN(Number(namesOrPage))) return Number(namesOrPage)
@@ -20,6 +20,11 @@ export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> =>
     },
     include: {
       ownedItems: {
+        where: {
+          amount: {
+            gt: 0,
+          },
+        },
         skip: Math.max(0, (numberPage() - 1) * 19),
         take: 19,
         include: {
@@ -44,26 +49,19 @@ export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> =>
     playerData: player,
   })
 
-  if (names || (namesOrPage && ['NAMES', 'NOMES', 'NOME', 'INFO', 'NAME'].includes(names || namesOrPage))) {
-    const validItems = player.ownedItems.filter(item => item.amount > 0)
-    const itemNameArray: string[] = []
-    for (const item of validItems) {
-      itemNameArray.push(item.name)
-    }
-
-    return {
-      message: `Inventário de *${player.name} - página ${numberPage()}*
-      ${itemNameArray.join(', ')}`,
-      status: 200,
-      data: null,
-      imageUrl: imageUrl,
-    }
+  const validItems = player.ownedItems.filter(item => item.amount > 0)
+  const itemNameArray: string[] = []
+  for (const item of validItems) {
+    itemNameArray.push(item.name)
   }
 
   return {
-    message: 'Inventário de ' + player.name,
+    message: `Inventário de *${player.name} - página ${numberPage()}* \n \n ${itemNameArray.join(
+      ', '
+    )} \n\n👍 - Próxima página.`,
     status: 200,
     data: null,
     imageUrl: imageUrl,
+    actions: ['pz. inventory item ' + numberPage() + 1],
   }
 }

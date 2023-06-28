@@ -12,6 +12,8 @@ import { IResponse } from '../../server/models/IResponse'
 
 export const messageCreateProcess = async (msg: Message, instanceName: string) => {
   try {
+    console.log('msg create')
+
     const prismaClient = container.resolve<PrismaClient>('PrismaClient')
     const zapClient = container.resolve<Client>(instanceName)
 
