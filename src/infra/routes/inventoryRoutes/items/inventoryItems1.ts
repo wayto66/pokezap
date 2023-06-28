@@ -62,6 +62,6 @@ export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> =>
     status: 200,
     data: null,
     imageUrl: imageUrl,
-    actions: ['pz. inventory item ' + numberPage() + 1],
+    actions: [`pz. inventory poke ${numberPage() + 1}`],
   }
 }
