@@ -35,27 +35,64 @@ SORA-BALL           Flying/Ice
 
 const platesText = `
 📖 PokeZap Wiki - *PLATES*
-Plates são um tipo de item que seu pokemon pode segurar.
-(A função de segurar itens não está disponivel, mas ja pode ser obtido as plates.)
+Plate é um tipo de item que seu pokemon pode segurar.
 
-*NOME*                 *TIPAGEM - DANO FORTALECIDO*
+BÔNUS: *7% ATK* AO *ELEMENTO*
+
+*NOME*                 *TIPAGEM*
 Draco Plate          Dragon
-Flame Plate          Fire
-Splash Plate         Water
-Meadow Plate      Grass
-Zap Plate              Electric
-Icicle Plate            Ice
-Fist Plate              Fighting
-Toxic Plate            Poison
-Earth Plate           Ground
-Sky Plate              Flying
-Mind Plate           Psychic
-Stone Plate          Rock
-Insect Plate          Bug
-Spooky Plate       Ghost
-Iron Plate             Steel
 Dread Plate          Dark
+Earth Plate           Ground
+Fist Plate              Fighting
+Flame Plate          Fire
+Icicle Plate            Ice
+Insect Plate          Bug
+Iron Plate             Steel
+Meadow Plate      Grass
+Mind Plate           Psychic
 Pixie Plate            Fairy
+Sky Plate              Flying
+Splash Plate         Water
+Spooky Plate       Ghost
+Stone Plate          Rock
+Toxic Plate            Poison
+Zap Plate              Electric
+Normal Plate        Normal
+`
+
+const gemText = `
+📖 PokeZap Wiki - *GEMS*
+Gema é um tipo de item que seu pokémon pode segurar.
+
+BÔNUS: *15% ATK* AO *ELEMENTO*
+
+*NOME*                 *TIPAGEM*
+Dragon Gem          Dragon
+Fire Gem          Fire
+Water Gem         Water
+Grass Gem      Grass
+Electric Gem              Electric
+Ice Gem            Ice
+Fighting Gem              Fighting
+Poison Gem            Poison
+Ground Gem           Ground
+Flying Gem              Flying
+Psychic Gem           Psychic
+Rock Gem          Rock
+Bug Gem          Bug
+Ghost Gem       Ghost
+Steel Gem             Steel
+Dark Gem          Dark
+Fairy Gem            Fairy
+Normal Gem      Normal
+`
+
+const heldXText = `
+📖 PokeZap Wiki - HELD X
+HELD X é um tipo de item que seu pokémon pode segurar.
+
+X-ATTACK   - 11% DE ATK À TODOS OS ELEMENTOS
+X-DEFENSE - 11% DE DEFESA
 `
 
 const commandsText = `
@@ -163,9 +200,9 @@ minivan                  (Em desenvolvimento)
 daycare                  Treinar pokémons, limitado ao nível da sua rota
 bazar                     (Em desenvolvimento)
 lab                         (Em desenvolvimento)
-bikeshop               (Em desenvolvimento)
+bikeshop               Possibilidade de raid na rota
 barco                     Viajar para outras localidades de pokémons especificos
-pokemon-center   (Em desenvolvimento)
+pokemon-center   +2 energia bônus de tempo em tempo
 `
 
 const subRouteMap = new Map<string, any>([
@@ -202,6 +239,16 @@ const subRouteMap = new Map<string, any>([
   ['PLATES', platesText],
   ['PLACA', platesText],
   ['PLACAS', platesText],
+
+  // GEM ROUTES
+  ['GEM', gemText],
+  ['GEMS', gemText],
+  ['GEMA', gemText],
+  ['GEMAS', gemText],
+
+  // HELD X ROUTES
+  ['HELDX', heldXText],
+  ['HELD-X', heldXText],
 ])
 
 export const helpRoutes = async (data: TRouteParams): Promise<IResponse> => {

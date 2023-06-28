@@ -4962,4 +4962,11 @@ export const itemsData = [
     sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lucarionite.png',
     cost: 0,
   },
+  {
+    name: 'fairy-gem',
+    id: 713,
+    category: 'jewels',
+    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fairy-gem.png',
+    cost: 200,
+  },
 ]
