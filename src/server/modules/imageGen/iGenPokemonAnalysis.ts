@@ -37,8 +37,8 @@ export const iGenPokemonAnalysis = async (pokemon: TParams) => {
   ctx.drawImage(background, 0, 0, canvasWidth, canvasHeight)
 
   // Calculate the position of the sprite in the middle of the canvas
-  const spriteWidth = 350 // replace with the actual width of the sprite
-  const spriteHeight = 350 // replace with the actual height of the sprite
+  const spriteWidth = 350 * (pokemon.isGiant ? 1.5 : 1) // replace with the actual width of the sprite
+  const spriteHeight = 350 * (pokemon.isGiant ? 1.5 : 1) // replace with the actual height of the sprite
   const spriteX = (canvasWidth - spriteWidth) / 2
   const spriteY = (canvasHeight - spriteHeight) / 2 - 20
 
@@ -91,7 +91,7 @@ export const iGenPokemonAnalysis = async (pokemon: TParams) => {
     ctx.textAlign = 'start'
 
     ctx.fillText(
-      `${pokemon.baseData.name.toUpperCase()}
+      `${pokemon.nickName?.toUpperCase() ?? pokemon.baseData.name.toUpperCase()}
  `,
       10,
       70
@@ -99,7 +99,7 @@ export const iGenPokemonAnalysis = async (pokemon: TParams) => {
     ctx.strokeStyle = 'rgba(0,0,0,0.5) 10px solid'
     ctx.lineWidth = 2
     ctx.strokeText(
-      `${pokemon.baseData.name.toUpperCase()}
+      `${pokemon.nickName?.toUpperCase() ?? pokemon.baseData.name.toUpperCase()}
  `,
       10,
       70
@@ -215,6 +215,17 @@ export const iGenPokemonAnalysis = async (pokemon: TParams) => {
 
         ctx.drawImage(await getTalent(talent), x, y, 30, 30)
       }
+    }
+    if (pokemon.isGiant) {
+      const giantLabel = await loadOrSaveImageFromCache('./src/assets/sprites/UI/types/giant.png')
+      // Calculate the position of the sprite in the middle of the canvas
+      const giantLabelWidth = 100 // replace with the actual width of the giantLabel
+      const giantLabelHeight = 31 // replace with the actual height of the giantLabel
+      const giantLabelX = canvas.width - 100
+      const giantLabelY = 175
+      // Draw the giantLabel on the canvas
+      ctx.globalAlpha = 1
+      ctx.drawImage(giantLabel, giantLabelX, giantLabelY, giantLabelWidth, giantLabelHeight)
     }
   }
 

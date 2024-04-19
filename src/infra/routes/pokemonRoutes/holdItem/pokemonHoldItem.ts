@@ -67,52 +67,95 @@ export const pokemonHoldItem = async (data: TRouteParams): Promise<IResponse> =>
 
   if (!item || item.amount <= 0) throw new ItemNotFoundError(itemNameUppercase)
 
-  const updatePokemon = await prismaClient.pokemon.update({
-    where: {
-      id: pokemon.id,
-    },
-    data: {
-      heldItem: {
-        connectOrCreate: {
-          where: {
-            holderId_name: {
-              holderId: pokemon.id,
+  if (pokemon.heldItem) {
+    await prismaClient.$transaction([
+      prismaClient.item.upsert({
+        create: {
+          amount: 1,
+          name: pokemon.heldItem.baseItem.name,
+          ownerId: player.id,
+        },
+        update: {
+          amount: {
+            increment: 1,
+          },
+        },
+        where: {
+          ownerId_name: {
+            ownerId: player.id,
+            name: pokemon.heldItem.baseItem.name,
+          },
+        },
+      }),
+
+      prismaClient.pokemon.update({
+        where: {
+          id: pokemon.id,
+        },
+        data: {
+          heldItemId: null,
+          heldItem: {
+            disconnect: true,
+          },
+        },
+        include: {
+          baseData: true,
+          heldItem: {
+            include: {
+              baseItem: true,
+            },
+          },
+        },
+      }),
+    ])
+  }
+
+  await prismaClient.$transaction([
+    prismaClient.pokemon.update({
+      where: {
+        id: pokemon.id,
+      },
+      data: {
+        heldItem: {
+          connectOrCreate: {
+            where: {
+              holderId_name: {
+                holderId: pokemon.id,
+                name: item.name,
+              },
+            },
+            create: {
               name: item.name,
             },
           },
-          create: {
-            name: item.name,
+        },
+      },
+      include: {
+        baseData: true,
+        heldItem: {
+          include: {
+            baseItem: true,
           },
         },
       },
-    },
-    include: {
-      baseData: true,
-      heldItem: {
-        include: {
-          baseItem: true,
+    }),
+
+    prismaClient.item.update({
+      where: {
+        id: item.id,
+      },
+      data: {
+        amount: {
+          decrement: 1,
         },
       },
-    },
-  })
-
-  await prismaClient.item.update({
-    where: {
-      id: item.id,
-    },
-    data: {
-      amount: {
-        decrement: 1,
-      },
-    },
-  })
-
-  const imageUrl = await iGenPokemonAnalysis(updatePokemon)
+    }),
+  ])
 
   return {
-    message: `#${updatePokemon.id} ${updatePokemon.baseData.name.toUpperCase()} de *${player.name}* !`,
+    message: ``,
+    react: '👌',
     status: 200,
     data: null,
-    imageUrl: imageUrl,
   }
 }

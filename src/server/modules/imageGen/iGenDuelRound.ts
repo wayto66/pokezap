@@ -56,7 +56,13 @@ export const iGenDuelRound = async (data: TDuelRoundData) => {
 
   for (const poke of [data.leftTeam, data.rightTeam].flat()) {
     if (!poke.skillMap) continue
-    for (const [, skill] of poke.skillMap) {
+    const skillMap = [
+      ...poke.skillMap.supportSkills,
+      ...poke.skillMap.tankerSkills,
+      ...Array.from(poke.skillMap.damageSkills.keys()),
+    ]
+    console.log(skillMap.map(s => s.name))
+    for (const skill of skillMap) {
       if (!skillFlagImagesMap.get(skill.typeName)) {
         skillFlagImagesMap.set(
           skill.typeName,
@@ -74,12 +80,12 @@ export const iGenDuelRound = async (data: TDuelRoundData) => {
   drawTalents(canvas2d, talentImageMap, pokemonRightSideTalents, 305)
   drawTalents(canvas2d, talentImageMap, pokemonleftSideTalents, 5)
 
-  drawPokemons(canvas2d, rightPokemonImage, 285, 165)
+  drawPokemons(canvas2d, rightPokemonImage, 285, 165, rightPokemon.isGiant)
 
   leftPokeCanvas.invertHorizontally()
   leftPokeCanvas.draw({
-    height: 250,
-    width: 250,
+    height: 250 * (leftPokemon.isGiant ? 1.5 : 1),
+    width: 250 * (leftPokemon.isGiant ? 1.5 : 1),
     positionX: 0,
     positionY: 165,
     image: leftPokemonImage,
@@ -201,13 +207,13 @@ const drawManaBars = (canvas2d: TCanvas2D, xOffset: number, mana: number) => {
   canvas2d.drawBar({ type: 'mana', xOffset, value: mana / 100 })
 }
 
-const drawPokemons = (canvas2d: TCanvas2D, image: Image, positionX: number, positionY: number) => {
+const drawPokemons = (canvas2d: TCanvas2D, image: Image, positionX: number, positionY: number, isGiant: boolean) => {
   canvas2d.draw({
     image,
     positionX,
     positionY,
-    width: 250,
-    height: 250,
+    width: 250 * (isGiant ? 1.5 : 1),
+    height: 250 * (isGiant ? 1.5 : 1),
   })
 }
 

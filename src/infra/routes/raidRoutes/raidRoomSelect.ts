@@ -167,14 +167,17 @@ export const raidRoomSelect = async (data: TRouteParams): Promise<IResponse> => 
       const client = container.resolve<Client>('ZapClientInstance1')
       await client.sendMessage(
         data.groupCode,
-        `${player.name} e ${player.teamPoke1.baseData.name} estão prontos para a próxima sala.
-      A batalha era iniciar.`
+        `${player.name} e ${
+          player.teamPoke1.nickName ?? player.teamPoke1.baseData.name
+        } estão prontos para a próxima sala.\nA batalha irá iniciar.`
       )
       return await raidProgress(data)
     }
 
     return {
-      message: `${player.name} e ${player.teamPoke1.baseData.name} estão prontos para a próxima sala.`,
+      message: `${player.name} e ${
+        player.teamPoke1.nickName ?? player.teamPoke1.baseData.name
+      } estão prontos para a próxima sala.`,
       status: 200,
     }
   }
@@ -184,9 +187,12 @@ export const raidRoomSelect = async (data: TRouteParams): Promise<IResponse> => 
     raid,
   })
 
+  const currentRoomIndex = raid.raidRooms.findIndex(r => r.id === currentRoom.id)
+
   return {
-    message: `${raid.name.toUpperCase()} - ${raid.difficulty} - ${raid.currentRoomIndex}/${raid.raidRooms.length}
-    👍 - Pronto para próxima sala`,
+    message: `${raid.name.toUpperCase()} - ${raid.difficulty}\nSALA: ${
+      currentRoomIndex + 1
+    }/4 \n\n👍 - Pronto para próxima sala`,
     status: 200,
     imageUrl,
     actions: [`pz. raid select ${raid.id} ${roomId} confirm`],

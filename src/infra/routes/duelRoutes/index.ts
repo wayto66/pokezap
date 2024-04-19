@@ -12,6 +12,9 @@ import { duelAccept } from './duelAccept'
 import { duelAcceptX2 } from './duelAcceptX2'
 import { duelX1Route } from './duelX1Route'
 import { duelX2Route } from './duelX2Route'
+import { duelX6Route } from './duelX6Route'
+import { duelAcceptX6 } from './duelAcceptX6'
+import { duelRandom } from './duelRandom'
 
 const subRouteMap = new Map<string, any>([
   // DUEL X1 ROUTES
@@ -20,9 +23,15 @@ const subRouteMap = new Map<string, any>([
   // DUEL X2 ROUTES
   ['X2', duelX2Route],
 
+  ['X6', duelX6Route],
+
   // DUEL ACCEPT ROUTES
   ['ACCEPTX1', duelAccept],
   ['ACCEPTX2', duelAcceptX2],
+  ['ACCEPTX6', duelAcceptX6],
+
+  // DUEL RANDOM
+  ['RANDOM', duelRandom],
 ])
 
 export const duelRoutes = async (data: TRouteParams): Promise<IResponse> => {

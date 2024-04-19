@@ -30,6 +30,7 @@ const routesMap = new Map<string, (data: TRouteParams) => Promise<IResponse>>([
 
   // ROUTE INFO ROUTES
   ['INFO', routeInfo],
+  ['INDO', routeInfo],
 
   // ROUTE START ROUTES
   ['START', routeStart],

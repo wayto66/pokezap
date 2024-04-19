@@ -85,6 +85,7 @@ type TDrawPokemonData = {
   idPositionX: number
   idPositionY: number
   textAlign: CanvasTextAlign
+  isGiant: boolean
 }
 
 type TWriteSkills = {
@@ -273,6 +274,7 @@ export const drawPokemon = async ({
   idPositionX,
   idPositionY,
   textAlign,
+  isGiant,
 }: TDrawPokemonData) => {
   const pokemonPlayer1Image = await loadImage(imageUrl)
 
@@ -280,8 +282,8 @@ export const drawPokemon = async ({
     image: pokemonPlayer1Image,
     positionX,
     positionY,
-    width: SPRITE_AVATAR_WIDTH,
-    height: SPRITE_AVATAR_HEIGHT,
+    width: SPRITE_AVATAR_WIDTH * (isGiant ? 1.5 : 1),
+    height: SPRITE_AVATAR_HEIGHT * (isGiant ? 1.5 : 1),
   })
   canvas2d.write({
     font: '16px Righteous',

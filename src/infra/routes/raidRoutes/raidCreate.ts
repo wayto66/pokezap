@@ -34,8 +34,8 @@ export const raidDifficultyDataMap = new Map<string, TRaidDifficultData>([
     'easy',
     {
       shinyChance: 0.05,
-      bossLevel: 70,
-      enemiesLevel: 40,
+      bossLevel: 100,
+      enemiesLevel: 50,
       cashReward: 750,
       dropRate: 1,
       roomCount: 4,
@@ -45,10 +45,10 @@ export const raidDifficultyDataMap = new Map<string, TRaidDifficultData>([
     'medium',
     {
       shinyChance: 0.08,
-      bossLevel: 85,
-      enemiesLevel: 55,
+      bossLevel: 110,
+      enemiesLevel: 65,
       cashReward: 1400,
-      dropRate: 1.5,
+      dropRate: 2,
       roomCount: 5,
     },
   ],
@@ -56,10 +56,10 @@ export const raidDifficultyDataMap = new Map<string, TRaidDifficultData>([
     'hard',
     {
       shinyChance: 0.11,
-      bossLevel: 130,
-      enemiesLevel: 70,
+      bossLevel: 175,
+      enemiesLevel: 80,
       cashReward: 2300,
-      dropRate: 2.2,
+      dropRate: 3.2,
       roomCount: 6,
     },
   ],
@@ -67,10 +67,10 @@ export const raidDifficultyDataMap = new Map<string, TRaidDifficultData>([
     'expert',
     {
       shinyChance: 0.15,
-      bossLevel: 210,
-      enemiesLevel: 85,
+      bossLevel: 240,
+      enemiesLevel: 90,
       cashReward: 4000,
-      dropRate: 3,
+      dropRate: 4,
       roomCount: 7,
     },
   ],
@@ -78,10 +78,10 @@ export const raidDifficultyDataMap = new Map<string, TRaidDifficultData>([
     'insane',
     {
       shinyChance: 0.25,
-      bossLevel: 300,
-      enemiesLevel: 100,
+      bossLevel: 320,
+      enemiesLevel: 120,
       cashReward: 8000,
-      dropRate: 4,
+      dropRate: 6,
       roomCount: 8,
     },
   ],
@@ -215,7 +215,7 @@ export const raidCreate = async (data: TRouteParams): Promise<IResponse> => {
     const createRoomsData: any[] = []
 
     for (let i = 0; i < raidData.rooms - 1; i++) {
-      const enemyAmount = Math.ceil(Math.random() * 4)
+      const enemyAmount = 4
       const enemies = getRandomPokemons(enemiesData, enemyAmount)
       console.log(enemies)
       console.log(enemiesData)

@@ -2,66 +2,63 @@ import { Pokemon, RaidPokemon, Skill } from '@prisma/client'
 import { typeEffectivenessMap } from '../constants/atkEffectivenessMap'
 import { PokemonBaseData, RaidPokemonBaseData } from '../modules/duel/duelNXN'
 
+export type enemyName = string
+export type attackPower = number
+
 export function getBestSkillSet(
-  map: Map<number, Skill>,
+  pokemonSkillMap: [number, Skill][],
   attacker: Pokemon | RaidPokemon,
   defenderTeam: PokemonBaseData[] | RaidPokemonBaseData[]
-): Map<string, Skill & { processedAttackPower: number }> {
-  const skillMap = new Map<string, Skill & { preProcessedPower: number }>([])
+): {
+  damageSkills: Map<Skill, Map<enemyName, attackPower>>
+  tankerSkills: Skill[]
+  supportSkills: Skill[]
+} {
+  const damageSkillsFinalMap = new Map<Skill, Map<enemyName, attackPower>>([])
 
-  for (const [power, skill] of map) {
-    const skillInMap = skillMap.get(skill.typeName)
-    if (!skillInMap || skillInMap.preProcessedPower < power) {
-      skillMap.set(skill.typeName, { ...skill, preProcessedPower: power })
+  for (const [power, skill] of pokemonSkillMap) {
+    if (power <= 0) continue
+    const defenderNameXSkillPowerMap = new Map<enemyName, attackPower>([])
+    for (const defender of defenderTeam) {
+      const skillPower = calculateDamageAgainstPokemonX(attacker, defender, { ...skill, preProcessedPower: power })
+      defenderNameXSkillPowerMap.set(defender.baseData.name, skillPower)
     }
+    damageSkillsFinalMap.set(skill, defenderNameXSkillPowerMap)
   }
 
-  const finalSkillMap = new Map<string, Skill & { processedAttackPower: number }>([])
-
-  for (const defender of defenderTeam) {
-    if (finalSkillMap.get(defender.baseData.name)) continue
-    const patkPowerSkills: [number, Skill][] = []
-    for (const [, skill] of skillMap) {
-      // calculate the damage this skill does to the enemy
-      patkPowerSkills.push(calculateDamageAgainstPokemonX(attacker, defender, skill))
-    }
-
-    const strongerSkillAgainstDefender = patkPowerSkills.reduce((max, curr) => {
-      if (curr[0] > max[0]) {
-        return curr
-      }
-      return max
-    })
-
-    finalSkillMap.set(defender.baseData.name, {
-      ...strongerSkillAgainstDefender[1],
-      processedAttackPower: strongerSkillAgainstDefender[0],
-    })
+  const tankerSkills: Skill[] = []
+  for (const [power, skill] of pokemonSkillMap) {
+    if (!checkIfSkillIsTankerSkill(skill)) continue
+    tankerSkills.push(skill)
   }
 
-  return finalSkillMap
+  const supportSkills: Skill[] = []
+  for (const [power, skill] of pokemonSkillMap) {
+    if (!checkIfSkillIsSupportSkill(skill)) continue
+    supportSkills.push(skill)
+  }
+
+  return {
+    damageSkills: damageSkillsFinalMap,
+    supportSkills,
+    tankerSkills,
+  }
 }
 
 const calculateDamageAgainstPokemonX = (
   attacker: Pokemon | RaidPokemon,
   defender: PokemonBaseData | RaidPokemonBaseData,
   skill: Skill & { preProcessedPower: number }
-): [number, Skill] => {
-  const adRatio = () => {
-    if (skill.isPhysical) return attacker.atk / defender.def
-    return attacker.spAtk / defender.spDef
-  }
-
+): number => {
   const efMultiplier = getAttackEffectivenessMultiplier(
     skill.typeName,
     defender.baseData.type1Name,
     defender.baseData.type2Name
   )
 
-  const processedAttackPower =
-    (((attacker.level * 0.4 + 2) * skill.preProcessedPower * adRatio()) / 50 + 2) * efMultiplier
+  const processedAttackPower = (((attacker.level * 0.4 + 2) * skill.preProcessedPower) / 50 + 2) * efMultiplier
 
-  return [processedAttackPower, skill]
+  return processedAttackPower
 }
 
 const getAttackEffectivenessMultiplier = (atkType: string, defType1: string, defType2?: string | null) => {
@@ -78,4 +75,19 @@ const getAttackEffectivenessMultiplier = (atkType: string, defType1: string, def
 
   if (factor1 === 'no-damage' || factor2 === 'no-damage') return 0.25
   return factor1 * factor2
+}
+
+export const checkIfSkillIsTankerSkill = (skill: Skill): boolean => {
+  if (['defense', 'special-defense'].includes(skill.statChangeName)) return true
+  if (skill.category === 'net-good-stats' && skill.target === 'user' && skill.statChangeName === 'evasion') return true
+  if (['damage+heal'].includes(skill.category)) return true
+  return false
+}
+
+export const checkIfSkillIsSupportSkill = (skill: Skill): boolean => {
+  if (skill.category === 'net-good-stats' && ['selected-pokemon', 'user-and-allies', 'ally'].includes(skill.target))
+    return true
+  if (['heal'].includes(skill.category)) return true
+
+  return false
 }

@@ -1,6 +1,3 @@
-import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
-// @ts-ignore
-import ffprobe from '@ffprobe-installer/ffprobe'
 import { PrismaClient } from '@prisma/client'
 import ffmpeg from 'fluent-ffmpeg'
 import { container } from 'tsyringe'
@@ -72,33 +69,30 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
         return
       }
 
-      const filePath = await new Promise<string>((resolve, reject) => {
-        if (!response.isAnimated) resolve(response.imageUrl!)
-        const outputPath = `./src/server/modules/imageGen/images/video-${Math.random().toFixed(5)}.mp4`
+      const filePath = response.isAnimated
+        ? await new Promise<string>(resolve => {
+            if (!response.isAnimated) resolve(response.imageUrl!)
 
-        if (!response.imageUrl) return
+            const outputPath = `./src/server/modules/imageGen/images/video-${Math.random().toFixed(5)}.mp4`
 
-        ffmpeg
-          .setFfprobePath(ffprobe.path)
-          .setFfmpegPath(ffmpegInstaller.path)
-          .input(response.imageUrl)
-          .outputOptions([
-            '-pix_fmt yuv420p',
-            '-c:v libx264',
-            '-movflags +faststart',
-            "-filter:v crop='floor(in_w/2)*2:floor(in_h/2)*2'",
-          ])
-          .noAudio()
-          .output(outputPath)
-          .on('end', () => {
-            resolve(outputPath)
+            if (!response.imageUrl) return
+
+            ffmpeg(response.imageUrl)
+              .output(outputPath)
+              .noAudio()
+              .on('end', () => {
+                console.log('Conversão concluída!')
+                resolve(outputPath)
+              })
+              .on('error', err => {
+                console.log('Ocorreu um erro durante a conversão:', err)
+              })
+              .run()
+          }).catch(err => {
+            logger.error(err)
+            return ''
           })
-          .on('error', (e: Error) => {
-            logger.info(e)
-            reject(new Error('error on ffmpeg'))
-          })
-          .run()
-      })
+        : response.imageUrl
 
       const media = MessageMedia.fromFilePath(filePath)
       const result = await zapClient.sendMessage(msg.id.remote, response.message, {

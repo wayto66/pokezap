@@ -67,6 +67,12 @@ export const tradePoke1 = async (data: TRouteParams): Promise<IResponse> => {
     include: {
       baseData: true,
       owner: true,
+      teamSlot1: true,
+      teamSlot2: true,
+      teamSlot3: true,
+      teamSlot4: true,
+      teamSlot5: true,
+      teamSlot6: true,
     },
   })
 

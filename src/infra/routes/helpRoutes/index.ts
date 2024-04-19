@@ -1,6 +1,8 @@
 import { IResponse } from '../../../server/models/IResponse'
 import { MissingParametersHelpRouteError, SubRouteNotFoundError } from '../../errors/AppErrors'
+import { pokemonSkills } from '../pokemonRoutes/skills/pokemonSkills'
 import { TRouteParams } from '../router'
+import { helpSkill } from './helpSkill'
 
 const clanText = `
 📖 PokeZap Wiki - *CLANS*
@@ -32,7 +34,6 @@ JANGURU-BALL    Grass/Poison
 NET-BALL              Water/Bug
 SORA-BALL           Flying/Ice
 `
-
 const platesText = `
 📖 PokeZap Wiki - *PLATES*
 Plate é um tipo de item que seu pokemon pode segurar.
@@ -59,7 +60,6 @@ Toxic Plate            Poison
 Zap Plate              Electric
 Normal Plate        Normal
 `
-
 const gemText = `
 📖 PokeZap Wiki - *GEMS*
 Gema é um tipo de item que seu pokémon pode segurar.
@@ -86,7 +86,6 @@ Dark Gem          Dark
 Fairy Gem            Fairy
 Normal Gem      Normal
 `
-
 const heldXText = `
 📖 PokeZap Wiki - HELD X
 HELD X é um tipo de item que seu pokémon pode segurar.
@@ -94,7 +93,6 @@ HELD X é um tipo de item que seu pokémon pode segurar.
 X-ATTACK   - 11% DE ATK À TODOS OS ELEMENTOS
 X-DEFENSE - 11% DE DEFESA
 `
-
 const commandsText = `
 📖 PokeZap Wiki - *COMMANDS*
 Para utilizar um comando no jogo é obrigatório informar o prefixo pokezap ou pz
@@ -108,8 +106,8 @@ Para utilizar um comando no jogo é obrigatório informar o prefixo pokezap ou p
 
 *POKÉMONS*
 ➡️ *poke info _(pokemonName/ID)_ -* _Informações do pokémon_
-➡️ *poke team -* _Informações do time atual_
-➡️ *poke team _(pokemonName/ID)_ -* _Inserir pokémons ao time atual (Máximo: 6)_
+➡️ *team -* _Informações do time atual_
+➡️ *team _(pokemonName/ID)_ -* _Inserir pokémons ao time atual (Máximo: 6)_
 ➡️ *poke sell _(pokemonName/ID)_ -* _Vender pokémon_
 ➡️ *poke evolve _(pokemonName/ID)_ -* _Evoluir pokémon_
 ➡️ *poke mega-evolve _(pokemonName/ID)_ -* _Mega evoluir pokémon_
@@ -179,7 +177,6 @@ Para utilizar um comando no jogo é obrigatório informar o prefixo pokezap ou p
 ➡️ *sell poke _(pokemonID)_ -* _Vender pokémon_
 ➡️ *sell item _(itemID)_ -* _Vender item_
 `
-
 const incenseText = `
 📖 PokeZap Wiki - *INCENSOS*
 
@@ -188,7 +185,6 @@ full-incense             Aparição mínima de 10 pokémons em 30 minutos
 shiny-incense          Aparição mínima de 10 pokémons em 30 minutos, podendo haver shiny
 elemental-incense   Aparição mínima de 10 pokémons em 30 minutos dos tipos escolhidos
 `
-
 const upgradesText = `
 📖 PokeZap Wiki - *UPGRADES*
 
@@ -203,8 +199,7 @@ bikeshop               Possibilidade de raid na rota
 barco                     Viajar para outras localidades de pokémons especificos
 pokemon-center   +2 energia bônus de tempo em tempo
 `
-
-const subRouteMap = new Map<string, any>([
+const helpTextMap = new Map<string, any>([
   // INCENSE ROUTES
   ['INCENSE', incenseText],
   ['INCENSES', incenseText],
@@ -249,16 +244,31 @@ const subRouteMap = new Map<string, any>([
   ['HELDX', heldXText],
   ['HELD-X', heldXText],
 ])
+const subRouteMap = new Map<string, (data: TRouteParams) => Promise<IResponse>>([
+  // SKILL ROUTES
+  ['SKILL', helpSkill],
+  ['MOVE', helpSkill],
+  ['ABILITY', helpSkill],
+
+  // SKILLS ROUTES
+  ['SKILLS', pokemonSkills],
+  ['MOVES', pokemonSkills],
+])
 
 export const helpRoutes = async (data: TRouteParams): Promise<IResponse> => {
   const [, , subRoute] = data.routeParams
   if (!subRoute) throw new MissingParametersHelpRouteError()
 
   const route = subRouteMap.get(subRoute)
-  if (!route) throw new SubRouteNotFoundError(subRoute)
+
+  if (route) return await route(data)
+
+  const helpText = helpTextMap.get(subRoute)
+
+  if (!helpText) throw new SubRouteNotFoundError(subRoute)
 
   return {
-    message: route,
+    message: helpText,
     status: 200,
     data: null,
   }

@@ -76,6 +76,9 @@ export const wildPokeSpawn = async (data: TParams) => {
             isRegional: true,
             OR: getIncenseTypes(),
           },
+          include: {
+            skills: true,
+          },
         })
       : await prismaClient.basePokemon.findMany({
           where: {
@@ -87,6 +90,9 @@ export const wildPokeSpawn = async (data: TParams) => {
             isFirstEvolution: true,
             OR: getIncenseTypes(),
           },
+          include: {
+            skills: true,
+          },
         })
 
     const baseData = basePokemons[Math.floor(Math.random() * basePokemons.length)]
@@ -96,8 +102,8 @@ export const wildPokeSpawn = async (data: TParams) => {
 
     const getShinyChance = () => {
       if (!gameRoom.incenseCharges || gameRoom.incenseCharges <= 0) return 0.025
-      if (gameRoom.activeIncense === 'shiny-incense') return 0.09
-      return 0.05
+      if (gameRoom.activeIncense === 'shiny-incense') return 0.12
+      return 0.085
     }
 
     const shinyChance = getShinyChance()

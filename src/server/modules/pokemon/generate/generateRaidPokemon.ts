@@ -11,11 +11,12 @@ type TParams = {
   name: string
   level: number
   talentIds?: number[]
+  shinyBonusChance?: number
 }
 
 export const generateRaidPokemon = async (data: TParams): Promise<RaidPokemonBaseDataSkills> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
-  const { name, level } = data
+  const { name, level, shinyBonusChance } = data
 
   const baseData = await prismaClient.basePokemon.findFirst({
     where: {
@@ -25,7 +26,7 @@ export const generateRaidPokemon = async (data: TParams): Promise<RaidPokemonBas
 
   if (!baseData) throw new UnexpectedError('No basePokemon found for : ' + name)
 
-  const isShiny = Math.random() < 0.05
+  const isShiny = Math.random() < 0.05 + (shinyBonusChance ?? 0)
   const talentIds = data.talentIds
     ? data.talentIds
     : [

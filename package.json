@@ -46,7 +46,7 @@
     "reflect-metadata": "0.1.13",
     "tslog": "4.8.2",
     "tsyringe": "4.7.0",
-    "whatsapp-web.js": "^1.20.0",
+    "whatsapp-web.js": "^1.23.0",
     "wwebjs-mongo": "1.1.0"
   },
   "devDependencies": {

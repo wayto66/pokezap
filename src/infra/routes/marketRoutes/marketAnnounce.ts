@@ -1,5 +1,6 @@
 import {
   MissingParametersPokemonInformationError,
+  PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
   PokemonMustBeShinyError,
   PokemonNotFoundError,
@@ -51,6 +52,7 @@ export const marketAnnounce = async (data: TRouteParams): Promise<IResponse> => 
   if (!pokemon || (searchMode === 'string' && !pokemon.isAdult))
     throw new PokemonNotFoundError(pokemonRequestData.identifier)
   if (!pokemon.isShiny) throw new PokemonMustBeShinyError()
+  if (pokemon.ownerId !== player.id) throw new PlayerDoestNotOwnThePokemonError(pokemon.id, player.name)
 
   if (remove && ['REMOVE', 'REMOVER', 'OUT'].includes(remove)) {
     const announcedPokemon = await prismaClient.pokemon.update({

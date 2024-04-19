@@ -1,4 +1,4 @@
-import { BasePokemon, Pokemon, PrismaClient } from '@prisma/client'
+import { BasePokemon, Pokemon, PrismaClient, Skill } from '@prisma/client'
 import { container } from 'tsyringe'
 import { PokemonBaseData } from '../../modules/duel/duelNXN'
 import { generateWildPokemon } from '../../modules/pokemon/generate/generateWildPokemon'
@@ -12,14 +12,22 @@ export const npcMarketOffers = async () => {
     },
     include: {
       baseData: true,
+      skills: true,
     },
   })
-  const basePokemons = await prismaClient.basePokemon.findMany()
+  const basePokemons = await prismaClient.basePokemon.findMany({
+    where: {},
+    include: {
+      skills: true,
+    },
+  })
 
-  const getOffer = (pokemon: PokemonBaseData, basePokemons: BasePokemon[]) => {
+  const getOffer = (
+    pokemon: PokemonBaseData,
+    basePokemons: (BasePokemon & { skills: Skill[] })[]
+  ): BasePokemon & { skills: Skill[] } => {
     const filteredBasePokemons = basePokemons.filter(
-      p =>
-        p.BaseAllStats <= pokemon.baseData.BaseAllStats * 1.05 && p.BaseAllStats > pokemon.baseData.BaseAllStats * 0.8
+      p => p.BaseAllStats <= pokemon.baseData.BaseAllStats * 0.8 && p.BaseAllStats > pokemon.baseData.BaseAllStats * 0.1
     )
 
     return filteredBasePokemons[Math.floor(Math.random() * filteredBasePokemons.length)]

@@ -169,7 +169,17 @@ export const raidProgress = async (data: TRouteParams): Promise<IResponse> => {
       )
     )
     if (currentRoom.isFinalRoom) {
-      // TODO: give player rewards
+      await prismaClient.raid.update({
+        where: {
+          id: raid.id,
+        },
+        data: {
+          isFinished: true,
+          isInProgress: false,
+          inInLobby: false,
+          statusTrashed: true,
+        },
+      })
       return {
         message: `A equipe de raid enfrenta ${currentRoom.enemyPokemons[0].baseData.name.toUpperCase()}!`,
         status: 200,
@@ -182,6 +192,17 @@ export const raidProgress = async (data: TRouteParams): Promise<IResponse> => {
         afterMessageDelay: 10000,
       }
     }
+    await prismaClient.raid.update({
+      where: {
+        id: raid.id,
+      },
+      data: {
+        isFinished: true,
+        isInProgress: false,
+        inInLobby: false,
+        statusTrashed: true,
+      },
+    })
     return {
       message: `A equipe de raid enfrenta a sala ${currentRoomIndex} de ${raid.name}!`,
       status: 200,
@@ -247,7 +268,7 @@ export const raidProgress = async (data: TRouteParams): Promise<IResponse> => {
         targetPokemon: currentRoom.enemyPokemons[0],
       })
       if (response.leveledUp)
-        levelupMessages.push(`${pokemon.baseData.name} avançou para o nível ${pokemon.level + 1}!`)
+        levelupMessages.push(`${pokemon.nickName ?? pokemon.baseData.name} avançou para o nível ${pokemon.level + 1}!`)
     }
 
     await prismaClient.player.updateMany({
@@ -261,6 +282,17 @@ export const raidProgress = async (data: TRouteParams): Promise<IResponse> => {
           increment: raidDifficultyData.cashReward,
         },
         isInRaid: false,
+      },
+    })
+    await prismaClient.raid.update({
+      where: {
+        id: raid.id,
+      },
+      data: {
+        isFinished: true,
+        isInProgress: false,
+        inInLobby: false,
+        statusTrashed: true,
       },
     })
 
@@ -279,8 +311,6 @@ export const raidProgress = async (data: TRouteParams): Promise<IResponse> => {
       afterMessageDelay: 15000,
     }
   }
-
-  console.log('h1')
 
   const currentRoomIndexInArray = raid.raidRooms.findIndex(r => r.id === roomId)
   const nextRoom = raid.raidRooms[currentRoomIndexInArray + 1]
@@ -310,14 +340,14 @@ export const raidProgress = async (data: TRouteParams): Promise<IResponse> => {
   if (!raidCreator) throw new PlayerNotFoundError(raid.creatorId.toString())
 
   return {
-    message: `A equipe de raid enfrenta a sala ${currentRoomIndex} de ${raid.name}!`,
+    message: `A equipe de raid enfrenta a sala ${currentRoomIndex + 1}/4 de ${raid.name}!`,
     status: 200,
     data: null,
     imageUrl: duel.imageUrl,
     isAnimated: true,
     afterMessage: `${duel.damageDealtMessage}
 
-    *${player.name}* deve confirmar o avanço na raid.
+    *${raidCreator.name}* deve confirmar o avanço na raid.
     👍 - Prosseguir raid`,
     afterMessageDelay: 10000,
     afterMessageActions: [`pz. raid select-onlycreator ${raid.id} ${nextRoom.id} `],

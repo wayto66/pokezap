@@ -58,6 +58,7 @@ export const iGenDuelX1 = async (data: TParams) => {
     idPositionX: 5,
     idPositionY: 340,
     textAlign: 'start',
+    isGiant: data.player1.teamPoke1.isGiant,
   })
   await drawPokemon({
     canvas2d,
@@ -68,6 +69,7 @@ export const iGenDuelX1 = async (data: TParams) => {
     idPositionX: 495,
     idPositionY: 340,
     textAlign: 'end',
+    isGiant: data.player2.teamPoke1.isGiant,
   })
 
   const talentsPokemonPlayer1 = getTalents(data.player1)

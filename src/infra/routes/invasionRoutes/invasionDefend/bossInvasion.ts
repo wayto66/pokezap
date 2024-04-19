@@ -237,6 +237,7 @@ export const bossInvasion = async (data: TRouteParams): Promise<IResponse> => {
 
   const afterMessage = `*${players.map(p => p.name).join(' e ')}* vencem a invasão e recebem $${cashReward} POKECOINS!.
 
+${duel.damageDealtMessage}
 ${expGainDisplayMessagesObject}
 ${lootMessages.join(' \n')}
 `

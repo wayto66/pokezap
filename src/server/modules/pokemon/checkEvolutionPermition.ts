@@ -152,6 +152,8 @@ export const checkEvolutionPermition = async (
 
   if (!evoToPoke) throw new UnexpectedError('Não foi possível encontrar basePokemon: ' + evoData.species.name)
 
+  const regionalMultiplier = evoToPoke.isRegional ? 1.05 : 1
+
   const evolvedPoke = poke.isShiny
     ? await client.pokemon.update({
         where: {
@@ -164,12 +166,12 @@ export const checkEvolutionPermition = async (
             },
           },
           spriteUrl: evoToPoke.shinySpriteUrl,
-          hp: Math.round(generateHpStat(evoToPoke.BaseHp, poke.level) * 1.1),
-          atk: Math.round(generateGeneralStats(evoToPoke.BaseAtk, poke.level) * 1.1),
-          def: Math.round(generateGeneralStats(evoToPoke.BaseDef, poke.level) * 1.1),
-          spAtk: Math.round(generateGeneralStats(evoToPoke.BaseSpAtk, poke.level) * 1.1),
-          spDef: Math.round(generateGeneralStats(evoToPoke.BaseSpDef, poke.level) * 1.1),
-          speed: Math.round(generateGeneralStats(evoToPoke.BaseSpeed, poke.level) * 1.1),
+          hp: Math.round(generateHpStat(evoToPoke.BaseHp, poke.level) * 1.15 * regionalMultiplier),
+          atk: Math.round(generateGeneralStats(evoToPoke.BaseAtk, poke.level) * 1.15 * regionalMultiplier),
+          def: Math.round(generateGeneralStats(evoToPoke.BaseDef, poke.level) * 1.15 * regionalMultiplier),
+          spAtk: Math.round(generateGeneralStats(evoToPoke.BaseSpAtk, poke.level) * 1.15 * regionalMultiplier),
+          spDef: Math.round(generateGeneralStats(evoToPoke.BaseSpDef, poke.level) * 1.15 * regionalMultiplier),
+          speed: Math.round(generateGeneralStats(evoToPoke.BaseSpeed, poke.level) * 1.15 * regionalMultiplier),
         },
         include: {
           baseData: true,

@@ -6,12 +6,29 @@ import { IResponse } from '../../../../server/models/IResponse'
 import { iGenInventoryItems } from '../../../../server/modules/imageGen/iGenInventoryItems'
 
 export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , , namesOrPage] = data.routeParams
+  const [, , , ...options] = data.routeParams
+
+  const lastOption = options[options.length - 1]
 
   const numberPage = () => {
-    if (typeof Number(namesOrPage) === 'number' && !isNaN(Number(namesOrPage))) return Number(namesOrPage)
+    if (!isNaN(Number(lastOption))) return Number(lastOption)
     return 1
   }
+
+  const typeFilters = options
+    .map(value => {
+      if (isNaN(Number(value))) {
+        if (['BALL', 'BALLS', 'POKEBALL', 'POKEBALLS'].includes(value)) return 'standard-balls special-balls'
+        if (['PLATE', 'PLATES'].includes(value)) return 'plates'
+        if (['GEM', 'GEMS', 'JEWEL'].includes(value)) return 'jewels'
+      }
+    })
+    .filter(value => value !== undefined)
+    .join(' ')
+    .split(' ')
+    .filter(value => value !== '')
+
+  console.log({ typeFilters })
 
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const player = await prismaClient.player.findFirst({
@@ -23,6 +40,11 @@ export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> =>
         where: {
           amount: {
             gt: 0,
+          },
+          baseItem: {
+            type: {
+              in: typeFilters.length > 0 ? typeFilters : undefined,
+            },
           },
         },
         skip: Math.max(0, (numberPage() - 1) * 19),
@@ -62,6 +84,6 @@ export const inventoryItems1 = async (data: TRouteParams): Promise<IResponse> =>
     status: 200,
     data: null,
     imageUrl: imageUrl,
-    actions: [`pz. inventory poke ${numberPage() + 1}`],
+    actions: [`pz. inventory item ${numberPage() + 1}`],
   }
 }

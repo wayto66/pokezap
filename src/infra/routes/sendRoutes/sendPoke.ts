@@ -95,17 +95,42 @@ export const sendPoke = async (data: TRouteParams): Promise<IResponse> => {
   if (pokemon.ownerId === targetPlayer.id) throw new UnexpectedError('sendPoke')
   if (targetPlayer.isInRaid) throw new PlayerInRaidIsLockedError(targetPlayer.name)
 
-  await prisma.pokemon.update({
-    where: {
-      id: pokemon.id,
-    },
-    data: {
-      ownerId: targetPlayer.id,
-    },
-    include: {
-      baseData: true,
-    },
-  })
+  await prisma.$transaction([
+    prisma.marketOffer.updateMany({
+      where: {
+        OR: [
+          {
+            pokemonDemand: {
+              some: {
+                id: pokemon.id,
+              },
+            },
+          },
+          {
+            pokemonOffer: {
+              some: {
+                id: pokemon.id,
+              },
+            },
+          },
+        ],
+      },
+      data: {
+        active: false,
+      },
+    }),
+    prisma.pokemon.update({
+      where: {
+        id: pokemon.id,
+      },
+      data: {
+        ownerId: targetPlayer.id,
+      },
+      include: {
+        baseData: true,
+      },
+    }),
+  ])
 
   return {
     message: `*${player.name}* enviou #${pokemon.id} para *${targetPlayer.name}*.`,

@@ -8,7 +8,8 @@ import { generateHpStat } from '../../../../server/modules/pokemon/generateHpSta
 import { TRouteParams } from '../../router'
 
 export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , gender, spriteId] = data.routeParams
+  const [, , genderPre, spriteId] = data.routeParams
+  const gender = genderPre.toUpperCase()
   if (gender !== 'MENINO' && gender !== 'MENINA') throw new GenderDoesNotExistError(gender)
 
   const playerSprite = () => {
@@ -23,6 +24,7 @@ export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
       name: data.playerName,
       phone: data.playerPhone,
       spriteUrl: playerSprite(),
+      cash: 3000,
     },
   })
 
@@ -134,7 +136,17 @@ export const newUser3 = async (data: TRouteParams): Promise<IResponse> => {
   })
 
   return {
-    message: `Usuário ${newPlayer.name} criado com o código ${newPlayer.phone}. Seu primeiro pokemon é um ${newPokemon.baseData.name}!`,
+    message: `Usuário ${newPlayer.name} criado com o código #${newPlayer.id}. Seu primeiro pokemon é um ${newPokemon.baseData.name}! \n\n Voce pode utilizar o comando "pz. help" para obter ajuda, mas aqui vai uma lista com alguns comandos: \n\n 
+    - pz. inventory (ou pz. i) = acessa seu inventario de itens ou pokemons
+    - pz. team | visualizar seu time pokemon atual
+    - pz. team 1515 4441 | monta o time com os pokemons 1515 e 4441
+    - pz. team charmander pikachu | monta o time com seu charmander e pikachu
+    - pz. loja | acessa a loja
+    - pz. help | acessa ajuda com mais comandos 
+    
+    ATENÇÃO: este chat é utilizado para voce acessar seu inventario e afins.
+    Para encontrar pokemons, treinadores e etc, voce deverá entrar em uma rota, que é um grupo de whatsapp que será disponibilizado abaixo:    
+    `,
     status: 200,
     imageUrl: imageUrl,
     data: null,

@@ -313,6 +313,24 @@ export class MissingParameterError extends AppError {
   }
 }
 
+export class InvalidNicknameError extends AppError {
+  constructor(nickname: string) {
+    const message = `Apelido "${nickname}" não é válido.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class NicknameAlreadyInUseError extends AppError {
+  constructor(nickname: string) {
+    const message = `Apelido "${nickname}" já está sendo utilizado.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
 export class MissingTravelRegionError extends AppError {
   constructor() {
     const message = `Para onde iremos viajar?
@@ -321,6 +339,20 @@ export class MissingTravelRegionError extends AppError {
 😂 - Voltar`
     const statusCode = 300
     const actions = ['pz. rota travel alola', 'pz. rota travel galar', 'pz. rota travel return']
+
+    super(message, statusCode, undefined, actions)
+  }
+}
+
+export class MissingParameterSetRoleRouteError extends AppError {
+  constructor(pokemonName: string) {
+    const message = `Qual função deseja atribuir à ${pokemonName}? \n👍 - Causador de dano (damage) \n❤ - Defensor (tanker) \n😂 - Suporte (support)`
+    const statusCode = 300
+    const actions = [
+      `pz. p setrole ${pokemonName} damage`,
+      `pz. p setrole ${pokemonName} tanker`,
+      `pz. p setrole ${pokemonName} support`,
+    ]
 
     super(message, statusCode, undefined, actions)
   }
@@ -412,6 +444,22 @@ export class InvalidDifficultError extends AppError {
 export class PlayerNotFoundError extends AppError {
   constructor(playerPhone: string) {
     const message = `ERRO: Jogador não encontrado com o código ${playerPhone}`
+
+    super(message)
+  }
+}
+
+export class PlayerAlreadyExists extends AppError {
+  constructor(name: string) {
+    const message = `${name}, parece que você já tem um personagem cadastrado.`
+
+    super(message)
+  }
+}
+
+export class SkillNotFoundError extends AppError {
+  constructor(skillName: string) {
+    const message = `ERRO: Não existe uma skill com o nome: "${skillName}"`
 
     super(message)
   }

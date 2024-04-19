@@ -4,6 +4,7 @@ import {
   OfferAlreadyFinishedError,
   OfferIsNotForPlayerError,
   OfferNotFoundError,
+  PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
   PokemonNotFoundError,
   TypeMissmatchError,
@@ -52,6 +53,8 @@ export const marketAccept = async (data: TRouteParams): Promise<IResponse> => {
   if (!offer) throw new OfferNotFoundError(offerId.toFixed(2))
   if (!offer.active) throw new OfferAlreadyFinishedError(offer.id)
   if (offer.demandPlayerId !== player.id) throw new OfferIsNotForPlayerError(offer.id)
+  if (offer.pokemonDemand[0].ownerId !== player.id)
+    throw new PlayerDoestNotOwnThePokemonError(offer.pokemonDemand[0].id, player.name)
 
   await prismaClient.$transaction([
     prismaClient.pokemon.update({

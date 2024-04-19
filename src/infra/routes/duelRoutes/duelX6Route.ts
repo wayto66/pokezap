@@ -89,11 +89,11 @@ export const duelX6Route = async (data: TRouteParams): Promise<IResponse> => {
   })
 
   return {
-    message: `${player1.name} desafia ${player2.name} para um duelo duplo!
+    message: `${player1.name} desafia ${player2.name} para um duelo X6!
     👍 - Aceitar`,
     status: 200,
     data: null,
     imageUrl: imageUrl,
-    actions: [`pz. duel acceptx2 ${newSession.id}`],
+    actions: [`pz. duel acceptx6 ${newSession.id}`],
   }
 }

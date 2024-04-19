@@ -4,10 +4,11 @@ import { IPokemon } from '../../../../server/models/IPokemon'
 import { IResponse } from '../../../../server/models/IResponse'
 import { ISession } from '../../../../server/models/ISession'
 import { checkEvolutionPermition } from '../../../../server/modules/pokemon/checkEvolutionPermition'
+import { CantProceedWithPokemonInTeamError } from '../../../errors/AppErrors'
 
 export type TTradePokeParams = {
-  creatorPokemon: IPokemon
-  invitedPokemon: IPokemon
+  creatorPokemon: IPokemon & any
+  invitedPokemon: IPokemon & any
   session: ISession
 }
 
@@ -21,6 +22,26 @@ export const tradePoke2 = async (data: TTradePokeParams): Promise<IResponse> => 
       data: null,
     }
 
+  if (
+    data.creatorPokemon.teamSlot1 ||
+    data.creatorPokemon.teamSlot2 ||
+    data.creatorPokemon.teamSlot3 ||
+    data.creatorPokemon.teamSlot4 ||
+    data.creatorPokemon.teamSlot5 ||
+    data.creatorPokemon.teamSlot6
+  )
+    throw new CantProceedWithPokemonInTeamError(data.creatorPokemon.id, data.creatorPokemon.baseData.name)
+
+  if (
+    data.invitedPokemon.teamSlot1 ||
+    data.invitedPokemon.teamSlot2 ||
+    data.invitedPokemon.teamSlot3 ||
+    data.invitedPokemon.teamSlot4 ||
+    data.invitedPokemon.teamSlot5 ||
+    data.invitedPokemon.teamSlot6
+  )
+    throw new CantProceedWithPokemonInTeamError(data.invitedPokemon.id, data.invitedPokemon.baseData.name)
+
   await checkEvolutionPermition({
     playerId: data.creatorPokemon.ownerId,
     pokemonId: data.creatorPokemon.id,
@@ -33,40 +54,89 @@ export const tradePoke2 = async (data: TTradePokeParams): Promise<IResponse> => 
     fromTrade: true,
   })
 
-  await prismaClient.pokemon.update({
-    where: {
-      id: data.creatorPokemon.id,
-    },
-    data: {
-      owner: {
-        connect: {
-          id: data.invitedPokemon.ownerId,
+  await prismaClient.$transaction([
+    prismaClient.marketOffer.updateMany({
+      where: {
+        OR: [
+          {
+            pokemonDemand: {
+              some: {
+                id: data.creatorPokemon.id,
+              },
+            },
+          },
+          {
+            pokemonOffer: {
+              some: {
+                id: data.creatorPokemon.id,
+              },
+            },
+          },
+        ],
+      },
+      data: {
+        active: false,
+      },
+    }),
+    prismaClient.marketOffer.updateMany({
+      where: {
+        OR: [
+          {
+            pokemonDemand: {
+              some: {
+                id: data.invitedPokemon.id,
+              },
+            },
+          },
+          {
+            pokemonOffer: {
+              some: {
+                id: data.invitedPokemon.id,
+              },
+            },
+          },
+        ],
+      },
+      data: {
+        active: false,
+      },
+    }),
+
+    prismaClient.pokemon.update({
+      where: {
+        id: data.creatorPokemon.id,
+      },
+      data: {
+        owner: {
+          connect: {
+            id: data.invitedPokemon.ownerId,
+          },
         },
       },
-    },
-  })
+    }),
 
-  await prismaClient.pokemon.update({
-    where: {
-      id: data.invitedPokemon.id,
-    },
-    data: {
-      owner: {
-        connect: {
-          id: data.creatorPokemon.ownerId,
+    prismaClient.pokemon.update({
+      where: {
+        id: data.invitedPokemon.id,
+      },
+      data: {
+        owner: {
+          connect: {
+            id: data.creatorPokemon.ownerId,
+          },
         },
       },
-    },
-  })
+    }),
 
-  await prismaClient.session.update({
-    where: {
-      id: data.session.id,
-    },
-    data: {
-      isFinished: true,
-    },
-  })
+    prismaClient.session.update({
+      where: {
+        id: data.session.id,
+      },
+      data: {
+        isFinished: true,
+      },
+    }),
+  ])
 
   return {
     message: `Troca efetuada com sucesso!`,

@@ -36,7 +36,7 @@ export const raidJoin = async (data: TRouteParams): Promise<IResponse> => {
   })
   if (!player) throw new PlayerNotFoundError(data.playerPhone)
   if (!player.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(player.name)
-  if (player.energy < 2) throw new NoEnergyError(player.name)
+  if (player.energy < 1) throw new NoEnergyError(player.name)
 
   const playerPokemon = await prismaClient.pokemon.findFirst({
     where: {
@@ -102,7 +102,7 @@ export const raidJoin = async (data: TRouteParams): Promise<IResponse> => {
     const zapClient = container.resolve<Client>('ZapClientInstance1')
     await zapClient.sendMessage(
       data.groupCode,
-      `*${player.name}* e *${playerPokemon.baseData.name}* entraram para a equipe de raid!
+      `*${player.name}* e *${playerPokemon.nickName ?? playerPokemon.baseData.name}* entraram para a equipe de raid!
       A aventura vai iniciar!`
     )
     await prismaClient.raid.update({
@@ -123,7 +123,7 @@ export const raidJoin = async (data: TRouteParams): Promise<IResponse> => {
       },
       data: {
         energy: {
-          decrement: 2,
+          decrement: 1,
         },
       },
     })
@@ -135,7 +135,9 @@ export const raidJoin = async (data: TRouteParams): Promise<IResponse> => {
   }
 
   return {
-    message: `*${player.name}* e *${playerPokemon.baseData.name}* entraram para a equipe de raid!`,
+    message: `*${player.name}* e *${
+      playerPokemon.nickName ?? playerPokemon.baseData.name
+    }* entraram para a equipe de raid!`,
     status: 200,
     data: null,
   }

@@ -1,23 +1,20 @@
-import { BaseItem, Item, Player, PrismaClient } from '@prisma/client'
-import { container } from 'tsyringe'
-import {
-  AppError,
-  PlayerInRaidIsLockedError,
-  PlayerNotFoundError,
-  RouteNotFoundError,
-  RouteNotProvidedError,
-} from '../../infra/errors/AppErrors'
+import { BaseItem, Item, Player } from '@prisma/client'
+import { AppError, RouteNotFoundError, RouteNotProvidedError } from '../../infra/errors/AppErrors'
 import { IResponse } from '../../server/models/IResponse'
 import { PokemonBaseData } from '../../server/modules/duel/duelNXN'
 import { logger } from '../logger'
+import { admRoutes } from './admRoutes'
 import { battleRoutes } from './battleRoutes'
 import { pokemonBreed1 } from './breedRoutes/pokemonBreed1'
 import { pokemonHatch } from './breedRoutes/pokemonHatch'
+import { casinoRoutes } from './casinoRoutes'
 import { catchRoutes } from './catchRoutes'
 import { duelRoutes } from './duelRoutes'
 import { helpRoutes } from './helpRoutes'
 import { invasionRoutes } from './invasionRoutes'
 import { inventoryRoutes } from './inventoryRoutes'
+import { marketRoutes } from './marketRoutes'
+import { megaRoutes } from './megaRoutes'
 import { pokemonRoutes } from './pokemonRoutes'
 import { raidRoutes } from './raidRoutes'
 import { rankRoutes } from './rankingRoutes'
@@ -25,14 +22,10 @@ import { routeRoutes } from './routeRoutes'
 import { sellRoutes } from './sellRoutes'
 import { sendRoutes } from './sendRoutes'
 import { shopRoutes } from './shopRoutes'
-import { tradeRoutes } from './tradeRoutes'
-import { playerInfo1 } from './userRoutes/info/playerInfo1'
-import { newUser1 } from './userRoutes/newUser/newUser1'
 import { teamRoutes } from './teamRoutes'
-import { casinoRoutes } from './casinoRoutes'
-import { megaRoutes } from './megaRoutes'
-import { admRoutes } from './admRoutes'
-import { marketRoutes } from './marketRoutes'
+import { tradeRoutes } from './tradeRoutes'
+import { playerRoutes } from './userRoutes'
+import { newUser1 } from './userRoutes/newUser/newUser1'
 
 export type TRouteParams = {
   playerPhone: string
@@ -57,8 +50,8 @@ const routeMap = new Map<string, TRouteType>([
   ['INÍCIO', newUser1],
 
   // PLAYER INFO ROUTES
-  ['JOGADOR', playerInfo1],
-  ['PLAYER', playerInfo1],
+  ['JOGADOR', playerRoutes],
+  ['PLAYER', playerRoutes],
 
   // POKEMON ROUTES
   ['POKE', pokemonRoutes],
@@ -79,6 +72,7 @@ const routeMap = new Map<string, TRouteType>([
   // INVENTORY ROUTES
   ['INVENTARIO', inventoryRoutes],
   ['INVENTORY', inventoryRoutes],
+  ['BAG', inventoryRoutes],
 
   // DUEL ROUTES
   ['DUEL', duelRoutes],
@@ -116,6 +110,7 @@ const routeMap = new Map<string, TRouteType>([
   ['HELP', helpRoutes],
   ['WIKI', helpRoutes],
   ['AJUDA', helpRoutes],
+  ['INFO', helpRoutes],
 
   // SEND ROUTES
   ['SEND', sendRoutes],
@@ -150,6 +145,11 @@ const routeMap = new Map<string, TRouteType>([
   // MARKET ROUTES
   ['MARKET', marketRoutes],
   ['MERCADO', marketRoutes],
+
+  /// //////////// EXPRESS ROUTES ////////////////////
+
+  ['P', pokemonRoutes],
+  ['I', inventoryRoutes],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {

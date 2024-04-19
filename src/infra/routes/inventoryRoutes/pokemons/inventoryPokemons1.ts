@@ -24,7 +24,11 @@ export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse>
   })
   if (!player) throw new PlayerNotFoundError(data.playerPhone)
 
-  const page = !isNaN(Number(pageOrFilter)) ? Number(pageOrFilter) : 1
+  let page = 1
+  if (!isNaN(Number(pageOrFilter))) page = Number(pageOrFilter)
+  if (!isNaN(Number(filteredOptions[filteredOptions.length - 1])))
+    page = Number(filteredOptions[filteredOptions.length - 1])
+
   const filter = pageOrFilter !== undefined ? pageOrFilter.toUpperCase() : ''
 
   const isFilteredByEggs = ['EGGS', 'EGG', 'OVO', 'OVOS'].includes(filter)
@@ -36,25 +40,34 @@ export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse>
   let filteredNumbers: number[] = []
 
   function getTalentNumber(talent: string): number | undefined {
-    for (const [number, value] of talentIdMap.entries()) {
-      if (value === talent) {
+    for (const [number, talentName] of talentIdMap) {
+      if (talentName === talent) {
         return number
       }
     }
     return undefined
   }
 
+  const filteredOptionsLowerCase = filteredOptions
+    .map(value => {
+      const numberValue = Number(value)
+      if (isNaN(numberValue)) return value.toLowerCase()
+    })
+    .filter(value => value !== undefined)
+
   if (isFilteredByTypes) {
     baseData = {
-      OR: [{ type1Name: { in: filteredOptions } }, { type2Name: { in: filteredOptions } }],
+      OR: [{ type1Name: { in: filteredOptionsLowerCase } }, { type2Name: { in: filteredOptionsLowerCase } }],
     }
   } else if (isFilteredByNames) {
     baseData = {
-      OR: filteredOptions.map(option => ({ name: { contains: option } })),
+      OR: filteredOptionsLowerCase.map(option => ({ name: { contains: option } })),
     }
   } else if (isFilteredByTalents) {
-    filteredNumbers = filteredOptions
-      .map((option: string) => getTalentNumber(option))
+    filteredNumbers = filteredOptionsLowerCase
+      .map((option: string | undefined) => {
+        if (option) return getTalentNumber(option)
+      })
       .filter((number): number is number => number !== null)
   }
 
@@ -81,8 +94,6 @@ export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse>
             }))
           : undefined,
     },
-    skip: Math.max(0, (page - 1) * 20),
-    take: 20,
     include: {
       baseData: {
         include: {
@@ -108,16 +119,26 @@ export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse>
     return count
   }
 
-  pokemons.sort((a, b) => {
-    const aTalentCount = getTalentCount(a)
-    const bTalentCount = getTalentCount(b)
+  if (isFilteredByTalents) {
+    pokemons.sort((a, b) => {
+      const aTalentCount = getTalentCount(a)
+      const bTalentCount = getTalentCount(b)
 
-    return bTalentCount - aTalentCount
-  })
+      return bTalentCount - aTalentCount
+    })
+  } else {
+    pokemons.sort((a, b) => {
+      return b.level - a.level
+    })
+  }
+
+  const pokemonsTake20 = pokemons.slice(Math.max(0, (page - 1) * 20), Math.max(0, (page - 1) * 20) + 20)
 
   const imageUrl = await iGenInventoryPokemons({
-    pokemons,
+    pokemons: pokemonsTake20,
   })
+
+  const actions = [`pz. inventory poke ${pageOrFilter} ${filteredOptionsLowerCase} ${page + 1}`]
 
   return {
     message: `Página ${page} de Pokemons de ${player.name}.
@@ -125,6 +146,6 @@ export const inventoryPokemons1 = async (data: TRouteParams): Promise<IResponse>
     status: 200,
     data: null,
     imageUrl: imageUrl,
-    actions: [`pz. inventory poke ${page + 1}`],
+    actions,
   }
 }

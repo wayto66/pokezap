@@ -55,8 +55,6 @@ export const pokemonDropItem = async (data: TRouteParams): Promise<IResponse> =>
   if (pokemon.ownerId !== player.id) throw new PlayerDoestNotOwnThePokemonError(pokemon.id, player.name)
   if (!pokemon.heldItem) throw new PokemonIsNotHoldingItemError(pokemon.baseData.name)
 
-  console.log('ps0')
-
   await prismaClient.item.upsert({
     create: {
       amount: 1,
@@ -76,31 +74,29 @@ export const pokemonDropItem = async (data: TRouteParams): Promise<IResponse> =>
     },
   })
 
-  await prismaClient.pokemon
-    .update({
-      where: {
-        id: pokemon.id,
+  await prismaClient.pokemon.update({
+    where: {
+      id: pokemon.id,
+    },
+    data: {
+      heldItemId: null,
+      heldItem: {
+        disconnect: true,
       },
-      data: {
-        heldItemId: null,
-        heldItem: {
-          disconnect: true,
+    },
+    include: {
+      baseData: true,
+      heldItem: {
+        include: {
+          baseItem: true,
         },
       },
-      include: {
-        baseData: true,
-        heldItem: {
-          include: {
-            baseItem: true,
-          },
-        },
-      },
-    })
-    .catch(e => console.log(e))
+    },
+  })
 
   return {
     message: ``,
     status: 200,
-    react: '👍',
+    react: '👌',
   }
 }

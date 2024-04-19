@@ -12,14 +12,12 @@ import { getHoursDifference } from '../../../server/helpers/getHoursDifference'
 import { IResponse } from '../../../server/models/IResponse'
 import { iGenPokemonAnalysis } from '../../../server/modules/imageGen/iGenPokemonAnalysis'
 import { TRouteParams } from '../router'
+import { PokemonBaseData } from '../../../server/modules/duel/duelNXN'
 
 export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
   const [, , pokemonIdString] = data.routeParams
-  if (!pokemonIdString) throw new MissingParametersBreedRouteError()
 
-  if (pokemonIdString === 'CHECK') return await pokemonHatchCheck(data)
-
-  const pokemonId = Number(pokemonIdString.slice(pokemonIdString.indexOf('#') + 1))
+  const pokemonId = pokemonIdString ? Number(pokemonIdString.slice(pokemonIdString.indexOf('#') + 1)) : 0
   if (isNaN(pokemonId)) throw new TypeMissmatchError(pokemonIdString, 'número')
 
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
@@ -27,27 +25,35 @@ export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
     where: {
       phone: data.playerPhone,
     },
+    include: {
+      ownedPokemons: {
+        include: {
+          baseData: true,
+        },
+      },
+    },
   })
   if (!player) throw new PlayerNotFoundError(data.playerPhone)
 
-  const pokemon = await prismaClient.pokemon.findFirst({
-    where: {
-      id: pokemonId,
-      ownerId: player.id,
-    },
-    include: {
-      baseData: true,
-      talent1: true,
-      talent2: true,
-      talent3: true,
-      talent4: true,
-      talent5: true,
-      talent6: true,
-      talent7: true,
-      talent8: true,
-      talent9: true,
-    },
-  })
+  let pokemon: PokemonBaseData | undefined | null
+
+  const todayDate = new Date()
+
+  if (pokemonIdString) {
+    pokemon = await prismaClient.pokemon.findFirst({
+      where: {
+        id: pokemonId,
+        ownerId: player.id,
+      },
+      include: {
+        baseData: true,
+      },
+    })
+  } else {
+    pokemon = player.ownedPokemons
+      .filter(pokemon => !pokemon.isAdult)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0]
+  }
   if (!pokemon) throw new PlayersPokemonNotFoundError(pokemonId, player.name)
 
   if (getHoursDifference(pokemon.createdAt, new Date()) < metaValues.eggHatchingTimeInHours)
@@ -74,35 +80,5 @@ export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
     status: 200,
     data: null,
     imageUrl: imageUrl,
-  }
-}
-
-export const pokemonHatchCheck = async (data: TRouteParams): Promise<IResponse> => {
-  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
-
-  const player = await prismaClient.player.findFirst({
-    where: {
-      phone: data.playerPhone,
-    },
-    include: {
-      ownedPokemons: {
-        include: {
-          baseData: true,
-        },
-      },
-    },
-  })
-
-  if (!player) throw new PlayerNotFoundError(data.playerPhone)
-
-  return {
-    message: `Ovos prontos para serem chocados: \n \n ${player?.ownedPokemons
-      .map(p => {
-        if (getHoursDifference(p.createdAt, new Date()) > 24) return p.id
-
-        return undefined
-      })
-      .join(', ')}`,
-    status: 200,
   }
 }

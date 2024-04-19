@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import console from 'console'
 import express from 'express'
 import ffmpegPath from 'ffmpeg-static'
 import 'reflect-metadata'
@@ -8,9 +9,9 @@ import { logger } from './infra/logger'
 import { router } from './infra/routes/router'
 import { registerFonts } from './server/helpers/registerFonts'
 import { handleAllProcess } from './server/process'
-import { generateGymPokemons } from './server/modules/pokemon/generate/generateGymPokemons'
 
 process.on('uncaughtException', error => {
+  console.log(error)
   logger.error(error)
 })
 
@@ -18,8 +19,6 @@ registerFonts()
 
 const prismaClient = new PrismaClient()
 container.registerInstance<PrismaClient>('PrismaClient', prismaClient)
-
-prismaClient.message.deleteMany()
 
 const app = express()
 app.get('/', async () => {
@@ -33,7 +32,7 @@ app.get('/', async () => {
   logger.info(response)
 })
 
-app.listen(4000, async () => {
+app.listen(4001, async () => {
   logger.info('pokezap is online!')
 })
 
@@ -45,6 +44,10 @@ if (enableZap) {
       executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
     },
     ffmpegPath: ffmpegPath ?? '',
+    webVersionCache: {
+      type: 'remote',
+      remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html',
+    },
   })
 
   container.registerInstance<Client>('ZapClientInstance1', client)

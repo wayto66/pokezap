@@ -39,7 +39,7 @@ export const iGenRaidNextRoom = async (data: TParams) => {
   const talentSprites: any = {}
 
   for (let i = 0; i < enemyPokemons.length; i++) {
-    const ids = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    const ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
     const talentNames = ids.map(id => {
       return talentIdMap.get(id)
     })
@@ -67,10 +67,17 @@ export const iGenRaidNextRoom = async (data: TParams) => {
     ctx.drawImage(poke, x, y, 90, 90)
     for (let j = 1; j < 10; j++) {
       const talentName = (enemyPokemons[i] as any)['talentId' + j]
-      if (!talentName) continue
+      if (!talentName) {
+        console.log(`no talent name for ${(enemyPokemons[i] as any)['talentId' + j]}`)
+        continue
+      }
       const image = talentSprites[talentIdMap.get(talentName) || '']
+      if (!image) {
+        console.log('no image for talenidmapget: ' + talentIdMap.get(talentName))
+        console.log('no image for : ' + talentSprites[talentIdMap.get(talentName) || ''])
+      }
       if (image) {
-        ctx.drawImage(image, x - 40 + j * 21, y + 80, 20, 20)
+        ctx.drawImage(image, x - 60 + j * 18, y + 80, 17, 17)
       }
     }
   }

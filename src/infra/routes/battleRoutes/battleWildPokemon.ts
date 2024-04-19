@@ -203,7 +203,7 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
     ? `*${playerPokemon.baseData.name}* subiu para o nível ${handleWinExp.pokemon.level}!`
     : ''
 
-  const afterMessage = `*${player.name}* vence ${wildPokemon.baseData.name} e recebe +${cashGain} POKECOINS.
+  const afterMessage = `*${player.name}* vence* #${wildPokemon.id} - ${wildPokemon.baseData.name}* e recebe +${cashGain} POKECOINS.
 ${winnerLevelUpMessage}
 👍 - Jogar poke-ball
 ❤ - Jogar great-ball

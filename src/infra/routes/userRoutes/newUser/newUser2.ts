@@ -16,9 +16,9 @@ export const newUser2 = async (data: TRouteParams): Promise<IResponse> => {
 
   if (gender === 'MENINO') {
     return {
-      message: `Certo! Agora escolha seu avatar!
+      message: `Certo! Agora escolha seu avatar! [dsb]
       
-      (é só enviar: pokezap start menino + número do avatar)`,
+      (utilize: pz. start menino numero-do-avatar)`,
       status: 200,
       imageUrl: await iGenAvatarChoose({ genre: 'male' }),
       data: null,
@@ -27,9 +27,9 @@ export const newUser2 = async (data: TRouteParams): Promise<IResponse> => {
 
   if (gender === 'MENINA') {
     return {
-      message: `Certo! Agora escolha seu avatar!
+      message: `Certo! Agora escolha seu avatar! [dsb]
       
-      (é só enviar: pokezap start menina + número do avatar)`,
+      (utilize: pz. start menina numero-do-avatar)`,
       status: 200,
 
       imageUrl: await iGenAvatarChoose({ genre: 'female' }),

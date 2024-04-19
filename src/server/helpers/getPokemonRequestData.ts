@@ -4,6 +4,7 @@ type TGetPokemonRequestData = {
   pokemonIdentifierString: string
   playerId: number
   onlyAdult?: boolean
+  includeNotOwned?: boolean
 }
 
 export const getPokemonRequestData = ({
@@ -12,6 +13,7 @@ export const getPokemonRequestData = ({
   pokemonIdentifierString,
   playerId,
   onlyAdult,
+  includeNotOwned,
 }: TGetPokemonRequestData) => {
   if (onlyAdult) {
     if (searchMode === 'number')
@@ -26,10 +28,17 @@ export const getPokemonRequestData = ({
       return {
         identifier: pokemonIdentifierString.toLowerCase(),
         where: {
-          baseData: {
-            name: pokemonIdentifierString.toLowerCase(),
-          },
-          ownerId: playerId,
+          OR: [
+            {
+              baseData: {
+                name: pokemonIdentifierString.toLowerCase(),
+              },
+            },
+            {
+              nickName: pokemonIdentifierString.toLowerCase(),
+            },
+          ],
+          ownerId: includeNotOwned ? undefined : playerId,
           isAdult: true,
         },
       }
@@ -45,10 +54,17 @@ export const getPokemonRequestData = ({
     return {
       identifier: pokemonIdentifierString.toLowerCase(),
       where: {
-        baseData: {
-          name: pokemonIdentifierString.toLowerCase(),
-        },
-        ownerId: playerId,
+        OR: [
+          {
+            baseData: {
+              name: pokemonIdentifierString.toLowerCase(),
+            },
+          },
+          {
+            nickName: pokemonIdentifierString.toLowerCase(),
+          },
+        ],
+        ownerId: includeNotOwned ? undefined : playerId,
       },
     }
 }

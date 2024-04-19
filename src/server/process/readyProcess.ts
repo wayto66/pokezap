@@ -80,5 +80,104 @@ export const readyProcess = async (zapIstanceName: string) => {
     })
   })
 
-  await prismaClient.$transaction([])
+  const creategympokes = false
+
+  if (creategympokes) {
+    generateGymPokemons({
+      level: 90,
+      name: 'poliwrath',
+      ownerId: 1,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'ludicolo',
+      ownerId: 1,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'crawdaunt',
+      ownerId: 1,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'slowking',
+      ownerId: 1,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'omastar',
+      ownerId: 1,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'blastoise-mega',
+      ownerId: 1,
+    })
+
+    ////
+
+    generateGymPokemons({
+      level: 90,
+      name: 'poliwrath',
+      ownerId: 2,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'magcargo',
+      ownerId: 2,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'rhydon',
+      ownerId: 2,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'lunatone',
+      ownerId: 2,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'aerodactyl',
+      ownerId: 2,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'tyranitar-mega',
+      ownerId: 2,
+    })
+
+    ///
+
+    generateGymPokemons({
+      level: 90,
+      name: 'galvantula',
+      ownerId: 3,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'rotom',
+      ownerId: 3,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'magnezone',
+      ownerId: 3,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'emolga',
+      ownerId: 3,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'lanturn',
+      ownerId: 3,
+    })
+    generateGymPokemons({
+      level: 90,
+      name: 'ampharos-mega',
+      ownerId: 3,
+    })
+  }
 }

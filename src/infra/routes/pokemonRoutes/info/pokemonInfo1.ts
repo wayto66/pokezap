@@ -29,11 +29,20 @@ export const pokemonInfo1 = async (data: TRouteParams): Promise<IResponse> => {
   })
   if (!player) throw new PlayerNotFoundError(data.playerPhone)
 
+  const basePokemonNamesPre = await prismaClient.basePokemon.findMany({
+    select: {
+      name: true,
+    },
+  })
+
+  const basePokemonNames = basePokemonNamesPre.map(p => p.name)
+
   const pokemonRequestData = getPokemonRequestData({
     playerId: player.id,
     pokemonId: pokemonId,
     pokemonIdentifierString: pokemonIdString,
     searchMode,
+    includeNotOwned: !basePokemonNames.includes(pokemonIdString.toLowerCase()),
   })
   if (!pokemonRequestData) throw new UnexpectedError('NO REQUEST DATA FOUND.')
 
@@ -73,7 +82,9 @@ export const pokemonInfo1 = async (data: TRouteParams): Promise<IResponse> => {
 
   if (pokemon.owner) {
     return {
-      message: `#${pokemon.id} ${pokemon.baseData.name.toUpperCase()} de *${pokemon.owner.name}* ! `,
+      message: `#${pokemon.id} ${pokemon.nickName ?? pokemon.baseData.name.toUpperCase()} de *${
+        pokemon.owner.name
+      }* ! `,
       status: 200,
       data: null,
       imageUrl: imageUrl,

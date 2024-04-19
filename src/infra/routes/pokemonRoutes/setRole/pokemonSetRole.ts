@@ -4,6 +4,7 @@ import { getPokemonRequestData } from '../../../../server/helpers/getPokemonRequ
 import { IResponse } from '../../../../server/models/IResponse'
 import {
   MissingParameterError,
+  MissingParameterSetRoleRouteError,
   PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
   PokemonNotFoundError,
@@ -16,11 +17,6 @@ export const pokemonSetRole = async (data: TRouteParams): Promise<IResponse> => 
 
   const [, , , pokemonIdString, roleUppercase] = data.routeParams
   if (!pokemonIdString) throw new MissingParameterError('Nome/Id do Pokemon e nome do Item')
-  if (!roleUppercase) throw new MissingParameterError('Role/Função desejada')
-  const role = roleUppercase.toLowerCase()
-
-  if (!['support', 'sup', 'suporte', 'tank', 'tanker', 'blocker', 'block', 'damage', 'dmg'].includes(role))
-    throw new UnexpectedError('invalid role')
 
   let searchMode = 'string'
 
@@ -58,8 +54,24 @@ export const pokemonSetRole = async (data: TRouteParams): Promise<IResponse> => 
   if (!pokemon || !pokemon.isAdult) throw new PokemonNotFoundError(pokemonRequestData.identifier)
   if (pokemon.ownerId !== player.id) throw new PlayerDoestNotOwnThePokemonError(pokemon.id, player.name)
 
+  if (!roleUppercase) throw new MissingParameterSetRoleRouteError(pokemon.nickName ?? pokemon.baseData.name)
+
+  const role = roleUppercase.toLowerCase()
+  if (!['damage', 'tanker', 'support'].includes(role)) throw new UnexpectedError('invalid role')
+
+  await prismaClient.pokemon.update({
+    where: {
+      id: pokemon.id,
+    },
+    data: {
+      role: roleUppercase,
+    },
+  })
+
   return {
-    message: `#${pokemon.id} ${pokemon.baseData.name.toUpperCase()} foi atribuido à função ${roleUppercase} !`,
+    message: `#${pokemon.id} ${
+      pokemon.nickName?.toUpperCase() ?? pokemon.baseData.name.toUpperCase()
+    } foi atribuido à função *${roleUppercase}*`,
     status: 200,
     data: null,
   }

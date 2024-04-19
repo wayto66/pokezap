@@ -294,8 +294,37 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
     ? `*${loserPokemon1.baseData.name}* subiu para o nível ${handleLoseExp1.pokemon.level}!`
     : ''
 
-  const afterMessage = `*${updatedWinnerPlayer.name}* vence o duelo e recebe +${eloGain} pontos de ranking e +${cashGain} POKECOINS.
+  const afterMessage = `*${
+    updatedWinnerPlayer.name
+  }* vence o duelo e recebe +${eloGain} pontos de ranking e +${cashGain} POKECOINS.
 *${updatedLoserPlayer.name}* perdeu ${eloLose} pontos de ranking.
+
+*${duel.winnerTeam[0].name}* causou ${duel.winnerTeam[0].totalDamageDealt.toFixed(0)} de dano.
+*${duel.winnerTeam[1].name}* causou ${duel.winnerTeam[1].totalDamageDealt.toFixed(0)} de dano.
+*${duel.loserTeam[0].name}* causou ${duel.loserTeam[0].totalDamageDealt.toFixed(0)} de dano.
+*${duel.loserTeam[1].name}* causou ${duel.loserTeam[1].totalDamageDealt.toFixed(0)} de dano.
+
+${[...duel.winnerTeam, ...duel.loserTeam]
+  .map(p => {
+    if (p.totalHealing > 0) return `*${p.name}* curou ${p.totalHealing.toFixed(0)}.`
+    return ''
+  })
+  .filter((m: string) => m.length > 0)
+  .join('\n')}
+
+${[...duel.winnerTeam, ...duel.loserTeam]
+  .map(p => {
+    const messages: string[] = []
+    for (const key in p.buffData) {
+      if (p.buffData[key] > 0) {
+        messages.push(`*${p.name}* aumentou a ${key} de seu time em ${p.buffData[key]}.`)
+      }
+    }
+    return messages.join('\n')
+  })
+  .filter((m: string) => m.length > 5)
+  .join('\n')}
+
 ${levelDiffMessage}
 ${winnerLevelUpMessage0}
 ${winnerLevelUpMessage1}

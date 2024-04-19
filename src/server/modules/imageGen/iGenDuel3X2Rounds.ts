@@ -42,9 +42,15 @@ export const iGenDuel3X2Rounds = async (data: TDuelRoundData): Promise<string> =
 
       const skillFlagImagesMap = new Map<string, Image>([])
 
-      for (const poke of [leftTeam, rightTeam].flat()) {
+      for (const poke of [data.leftTeam, data.rightTeam].flat()) {
         if (!poke.skillMap) continue
-        for (const [, skill] of poke.skillMap) {
+        const skillMap = [
+          ...poke.skillMap.supportSkills,
+          ...poke.skillMap.tankerSkills,
+          ...Array.from(poke.skillMap.damageSkills.keys()),
+        ]
+        console.log(skillMap.map(s => s.name))
+        for (const skill of skillMap) {
           if (!skillFlagImagesMap.get(skill.typeName)) {
             skillFlagImagesMap.set(
               skill.typeName,

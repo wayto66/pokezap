@@ -10,12 +10,14 @@ const subRouteMap = new Map<string, any>([
   ['ITEMS', inventoryItems1],
   ['ITEN', inventoryItems1],
   ['ITENS', inventoryItems1],
+  ['I', inventoryItems1],
 
   // INVENTORY POKEMON ROUTES
   ['POKEMONS', inventoryPokemons1],
   ['POKEMON', inventoryPokemons1],
   ['POKES', inventoryPokemons1],
   ['POKE', inventoryPokemons1],
+  ['P', inventoryPokemons1],
 ])
 
 export const inventoryRoutes = async (data: TRouteParams): Promise<IResponse> => {

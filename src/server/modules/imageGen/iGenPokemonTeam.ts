@@ -114,18 +114,18 @@ export const iGenPokemonTeam = async (data: TParams) => {
 
     /// draw pokemon level
     ctx.font = ' 18px Pokemon'
-    ctx.fillStyle = 'white'
+    ctx.fillStyle = 'black'
     ctx.textAlign = 'center'
     ctx.fillText(`lvl: ${pokeTeam[i].level}`, x + 110, y + 135)
 
     /// draw pokemon name
     ctx.font = ' 18px Pokemon'
-    ctx.fillStyle = 'white'
+    ctx.fillStyle = 'black'
     ctx.textAlign = 'start'
-    ctx.fillText(`${pokeTeam[i].nickname ? pokeTeam[i].nickname : pokeTeam[i].baseData.name}`, x + 135, y + 52)
+    ctx.fillText(`${pokeTeam[i].nickName ? pokeTeam[i].nickName : pokeTeam[i].baseData.name}`, x + 135, y + 52)
 
     ctx.font = ' 18px Pokemon'
-    ctx.fillStyle = 'white'
+    ctx.fillStyle = 'black'
     ctx.textAlign = 'start'
     ctx.fillText(`#${pokeTeam[i].id}`, x + 25, y + 41)
 

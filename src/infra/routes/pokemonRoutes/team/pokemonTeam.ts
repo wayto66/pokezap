@@ -97,9 +97,14 @@ export const pokemonTeam = async (data: TRouteParams): Promise<IResponse> => {
       const lowercaseName = name.toLowerCase()
       const pokemon = await prismaClient.pokemon.findFirst({
         where: {
-          baseData: {
-            name: lowercaseName,
-          },
+          OR: [
+            {
+              baseData: {
+                name: lowercaseName,
+              },
+            },
+            { nickName: lowercaseName },
+          ],
           ownerId: player.id,
         },
       })
