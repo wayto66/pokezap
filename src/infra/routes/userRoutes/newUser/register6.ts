@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import { IResponse } from '../../../../server/models/IResponse'
-import { PlayerNotFoundError, UnexpectedError } from '../../../errors/AppErrors'
+import { PlayerDoesNotHaveItemError, PlayerNotFoundError, UnexpectedError } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
 
 export const register6 = async (data: TRouteParams): Promise<IResponse> => {
@@ -28,6 +28,11 @@ export const register6 = async (data: TRouteParams): Promise<IResponse> => {
           },
         },
       },
+      ownedItems: {
+        include: {
+          baseItem: true,
+        },
+      },
     },
   })
   const wildPokemon = await prismaClient.pokemon.findUnique({
@@ -44,6 +49,8 @@ export const register6 = async (data: TRouteParams): Promise<IResponse> => {
   })
   if (!player || !wildPokemon) throw new PlayerNotFoundError(data.playerPhone)
   if (!player.teamPoke1) throw new UnexpectedError('Não há um pokemon em seu time')
+  if (!player.ownedItems.some(item => item.baseItem.name === 'poke-ball'))
+    throw new PlayerDoesNotHaveItemError(player.name, 'poke-ball')
 
   await prismaClient.pokemon.update({
     where: {
