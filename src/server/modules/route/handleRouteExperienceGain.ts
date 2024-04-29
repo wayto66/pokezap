@@ -24,7 +24,7 @@ type TResponse = {
 export const handleRouteExperienceGain = async (data: TParams): Promise<TResponse> => {
   const { route } = data
   const expGain = getExperienceGain(data)
-  const newExp = Math.round(route.experience + (expGain * 1.4) / 7)
+  const newExp = Math.round(route.experience + expGain / 7)
   const newLevel = Math.floor(Math.cbrt(newExp))
 
   const prisma = container.resolve<PrismaClient>('PrismaClient')
