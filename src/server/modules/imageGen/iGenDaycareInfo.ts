@@ -35,7 +35,7 @@ export const iGenDaycareInfo = async (data: TParams) => {
   let k = 0
 
   for (let i = 0; i < pokemons.length; i++) {
-    if (i === 3 || i === 9 || i === 12) {
+    if (i === 3 || i === 6 || i === 9) {
       j++
       k = 0
     }
@@ -47,11 +47,14 @@ export const iGenDaycareInfo = async (data: TParams) => {
     ctx.drawImage(sprite, x, y, 90, 90)
 
     const hoursLeft = data.remainingHoursMap.get(pokemons[i].id)
+    if (!hoursLeft) continue
+
+    const message = hoursLeft < 0 ? 'PRONTO' : hoursLeft?.toFixed(2) + 'h'
 
     ctx.font = ' 13px Pokemon'
-    ctx.fillStyle = 'white'
+    ctx.fillStyle = hoursLeft < 0 ? 'green' : 'white'
     ctx.textAlign = 'start'
-    ctx.fillText(`#${pokemons[i].id} - ${hoursLeft?.toFixed(2)}h`, x, y + 95)
+    ctx.fillText(`#${pokemons[i].id} - ${message}`, x, y + 95)
     k++
   }
 

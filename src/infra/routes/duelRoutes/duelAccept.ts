@@ -31,7 +31,7 @@ export type DuelPlayer = Player & {
 }
 
 export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , , sessionIdString] = data.routeParams
+  const [, , , sessionIdString, fast] = data.routeParams
   const sessionId = Number(sessionIdString)
   if (typeof sessionId !== 'number') throw new TypeMissmatchError(sessionIdString, 'number')
 
@@ -42,7 +42,6 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
     },
   })
   if (!player2) throw new PlayerNotFoundError(data.playerPhone)
-  if (player2.energy <= 0) throw new NoEnergyError(player2.name)
 
   const session = await prismaClient.session.findFirst({
     where: {
@@ -120,9 +119,15 @@ export const duelAccept = async (data: TRouteParams): Promise<IResponse> => {
   if (!session.invited.teamPoke1) throw new PlayerDoesNotHaveThePokemonInTheTeamError(session.invited.name)
   if (session.invitedId !== player2.id) throw new SendEmptyMessageError()
 
+  if (session.creator.energy <= 0) throw new NoEnergyError(session.creator.name)
+  if (session.invited.energy <= 0) throw new NoEnergyError(session.invited.name)
+
+  const staticImage = !!(fast && fast === 'FAST')
+
   const duel = await duelNXN({
     leftTeam: [session.creator.teamPoke1],
     rightTeam: [session.invited.teamPoke1],
+    staticImage,
   })
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
@@ -252,6 +257,6 @@ ${loserLevelUpMessage}`
     data: null,
     imageUrl: duel.imageUrl,
     afterMessage,
-    isAnimated: true,
+    isAnimated: !staticImage,
   }
 }

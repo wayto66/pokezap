@@ -4,13 +4,13 @@ import { FailedToFindXinYError } from '../../../infra/errors/AppErrors'
 import { evoDataIdMap } from '../../../server/constants/evoDataIdMap'
 import { getRandomBetween2 } from '../../../server/helpers/getRandomBetween2'
 import { getRandomBetween3 } from '../../../server/helpers/getRandomBetween3'
-import { IPokemon } from '../../../server/models/IPokemon'
+import { PokemonBaseData } from '../duel/duelNXN'
 import { generateGeneralStats } from './generateGeneralStats'
 import { generateHpStat } from './generateHpStat'
 
 type TParams = {
-  poke1: IPokemon
-  poke2: IPokemon
+  poke1: PokemonBaseData
+  poke2: PokemonBaseData
 }
 
 export const breed = async (data: TParams): Promise<Pokemon & { baseData: BasePokemon }> => {
@@ -35,6 +35,10 @@ export const breed = async (data: TParams): Promise<Pokemon & { baseData: BasePo
     },
   })
 
+  let giantChance = 0
+  if (data.poke1.isGiant) giantChance += 0.2
+  if (data.poke2.isGiant) giantChance += 0.2
+
   if (!babyBaseData) throw new FailedToFindXinYError('babyBaseData', 'breed-module')
 
   const babyPoke = await prismaClient.pokemon.create({
@@ -50,6 +54,7 @@ export const breed = async (data: TParams): Promise<Pokemon & { baseData: BasePo
       isAdult: false,
       savage: false,
       isMale: Math.random() > 0.5,
+      isGiant: Math.random() < giantChance,
       level: 1,
       ownerId: data.poke1.ownerId,
       parentId1: data.poke1.id,

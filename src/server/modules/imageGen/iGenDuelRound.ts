@@ -84,8 +84,8 @@ export const iGenDuelRound = async (data: TDuelRoundData) => {
 
   leftPokeCanvas.invertHorizontally()
   leftPokeCanvas.draw({
-    height: 250 * (leftPokemon.isGiant ? 1.5 : 1),
-    width: 250 * (leftPokemon.isGiant ? 1.5 : 1),
+    height: 250 * (leftPokemon.isGiant ? 1.25 : 1),
+    width: 250 * (leftPokemon.isGiant ? 1.25 : 1),
     positionX: 0,
     positionY: 165,
     image: leftPokemonImage,
@@ -212,8 +212,8 @@ const drawPokemons = (canvas2d: TCanvas2D, image: Image, positionX: number, posi
     image,
     positionX,
     positionY,
-    width: 250 * (isGiant ? 1.5 : 1),
-    height: 250 * (isGiant ? 1.5 : 1),
+    width: 250 * (isGiant ? 1.25 : 1),
+    height: 250 * (isGiant ? 1.25 : 1),
   })
 }
 

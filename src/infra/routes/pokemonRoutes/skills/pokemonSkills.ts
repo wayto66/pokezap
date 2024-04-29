@@ -3,16 +3,15 @@ import { container } from 'tsyringe'
 import { TRouteParams } from '../../../../infra/routes/router'
 import { IResponse } from '../../../../server/models/IResponse'
 import { MissingParameterError, PokemonNotFoundError, UnexpectedError } from '../../../errors/AppErrors'
+import { pokemonAvailabeSkills } from './pokemonAvailabeSkills'
 import { pokemonSkillsByRole } from './pokemonSkillsByRole'
 
 export const pokemonSkills = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
   const [, , , element, pokemonName] = data.routeParams
-  if (!element) throw new MissingParameterError('elemento de ataque')
-  if (!pokemonName) throw new MissingParameterError('nome do pokemon')
-
-  let mode = 'type'
+  if (!element) throw new MissingParameterError('Nome do pokemon ou elemento + nome do pokemon')
+  if (!pokemonName) return await pokemonAvailabeSkills(data)
 
   const type = await prismaClient.type.findFirst({
     where: {
@@ -56,12 +55,16 @@ export const pokemonSkills = async (data: TRouteParams): Promise<IResponse> => {
 
   for (const skill of skills) {
     const skillLevel = skillMap.get(skill.name)
-    const skillDisplay = `*${skill.name}* -PWR:${skill.attackPower} -LVL:${skillLevel}-CLASSE:${skill.class}\n `
+    const skillDisplay = `*${skill.name}* -PWR:${skill.attackPower === 0 ? 'status' : skill.attackPower} -LVL:${
+      skillLevel === '999' ? '[TM]' : skillLevel
+    }`
     skillDisplays.push(skillDisplay)
   }
 
   return {
-    message: `SKILLS DO TIPO ${type.name.toUpperCase()} para ${pokemonName.toUpperCase()}: \n\n${skillDisplays}`,
+    message: `SKILLS DO TIPO ${type.name.toUpperCase()} para ${pokemonName.toUpperCase()}: \n\n${skillDisplays.join(
+      '\n'
+    )}`,
     status: 200,
     data: null,
   }

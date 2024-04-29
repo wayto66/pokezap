@@ -152,7 +152,7 @@ export const wildPokeSpawn = async (data: TParams) => {
         }!
 Ações:
 👍 - Batalhar
-❤ - Batalha Rápida
+❤ - Batalhar
 `,
       })
       .then(async result => {
@@ -161,7 +161,7 @@ Ações:
             msgId: result.id.id,
             type: '?',
             body: '',
-            actions: [`pokezap. battle ${newWildPokemon.id}`, `pz. battle ${newWildPokemon.id} fast`],
+            actions: [`pokezap. battle ${newWildPokemon.id} fast`, `pz. battle ${newWildPokemon.id} fast`],
           },
         })
       })

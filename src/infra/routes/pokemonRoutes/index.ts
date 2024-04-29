@@ -2,6 +2,7 @@ import { MissingParametersPokemonRouteError, SubRouteNotFoundError } from '../..
 import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { teamSet } from '../teamRoutes/teamSet'
+import { tradePoke1 } from '../tradeRoutes/tradePoke/tradePoke1'
 import { pokemonDropItem } from './dropItem/pokemonDropItem'
 import { pokemonEvolve } from './evolve/pokemonEvolve'
 import { pokemonHoldItem } from './holdItem/pokemonHoldItem'
@@ -11,34 +12,34 @@ import { pokemonNickname } from './nickname/pokemonNickname'
 import { pokemonSell } from './sell/pokemonSell'
 import { pokemonSetRole } from './setRole/pokemonSetRole'
 import { pokemonSkills } from './skills/pokemonSkills'
-import { pokemonTeam } from './team/pokemonTeam'
 
 const subRouteMap = new Map<string, any>([
   // POKEMON INFO ROUTES
   ['INFO', pokemonInfo1],
   ['INFORMATION', pokemonInfo1],
   ['INDO', pokemonInfo1],
+  ['I', pokemonInfo1],
 
   // POKEMON TEAM ROUTES
   [
     'TEAM',
     (data: TRouteParams) => {
-      const newData = { ...data, routeParams: data.routeParams.slice(1) }
-      teamSet(newData)
+      const newData = { ...data, routeParams: data.routeParams.slice(1, 9999) }
+      return teamSet(newData)
     },
   ],
   [
     'TIME',
     (data: TRouteParams) => {
-      const newData = { ...data, routeParams: data.routeParams.slice(1) }
-      teamSet(newData)
+      const newData = { ...data, routeParams: data.routeParams.slice(1, 9999) }
+      return teamSet(newData)
     },
   ],
   [
     'EQUIPE',
     (data: TRouteParams) => {
-      const newData = { ...data, routeParams: data.routeParams.slice(1) }
-      teamSet(newData)
+      const newData = { ...data, routeParams: data.routeParams.slice(1, 9999) }
+      return teamSet(newData)
     },
   ],
 
@@ -87,6 +88,10 @@ const subRouteMap = new Map<string, any>([
   ['SET-ROLE', pokemonSetRole],
   ['SETFUNCTION', pokemonSetRole],
   ['SET-FUNCTION', pokemonSetRole],
+
+  // TRADE
+  ['TRADE', tradePoke1],
+  ['TROCAR', tradePoke1],
 ])
 
 export const pokemonRoutes = async (data: TRouteParams): Promise<IResponse> => {

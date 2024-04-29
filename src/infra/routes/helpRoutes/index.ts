@@ -3,6 +3,7 @@ import { MissingParametersHelpRouteError, SubRouteNotFoundError } from '../../er
 import { pokemonSkills } from '../pokemonRoutes/skills/pokemonSkills'
 import { TRouteParams } from '../router'
 import { helpSkill } from './helpSkill'
+import { pokeBallBox, propCase, rareCandy, tm, tmCase } from './items'
 
 const clanText = `
 📖 PokeZap Wiki - *CLANS*
@@ -33,6 +34,8 @@ DUSK-BALL           Lutador/Rock
 JANGURU-BALL    Grass/Poison
 NET-BALL              Water/Bug
 SORA-BALL           Flying/Ice
+
+BEAST-BALL          Todos com bônus de captura altíssimo
 `
 const platesText = `
 📖 PokeZap Wiki - *PLATES*
@@ -94,111 +97,159 @@ X-ATTACK   - 11% DE ATK À TODOS OS ELEMENTOS
 X-DEFENSE - 11% DE DEFESA
 `
 const commandsText = `
-📖 PokeZap Wiki - *COMMANDS*
-Para utilizar um comando no jogo é obrigatório informar o prefixo pokezap ou pz
-(Ex. poke**p. start).
+📖 PokeZap Wiki - *COMMANDS* - [d]
+Para utilizar um comando no jogo é obrigatório informar o prefixo pz.
+(Exemplo: pz. inventory).
+Tente abreviar os comandos também! (pz. inventory item, pode ser pz. i i)
 
 *INÍCIO*
 ➡️ *start -*  _Criar personagem_
 
 *PERSONAGEM*
 ➡️ *player -* _Informações sobre seu personagem_
+➡️ *cash -* _Exibe rapidamente seu dinheiro_
+➡️ *energy -* _Exibe rapidamente sua energia_
+
+*INVENTÁRIO*
+➡️ *inventory -* _Início do inventário_
+➡️ *inventory item -* _Exibe seus items_
+➡️ *inventory pokemon -* _Exibe todos os seus pokemons_
+➡️ *inventory pokemon type fire -* _Exibe todos os seus pokemons do tipo fire_
+➡️ *inventory pokemon name pidgey -* _Exibe todos os seus pidgey
+➡️ *inventory pokemon talent ice -* _Exibe todos os seus pokemons com talento de gelo
+
+*USAR ITEM*
+➡️ *useitem _(nome do item)_ -* _User item com o nome fornecido_
 
 *POKÉMONS*
-➡️ *poke info _(pokemonName/ID)_ -* _Informações do pokémon_
+➡️ *poke info _(nome ou id do pokemon)_ -* _Informações do pokémon_
+➡️ *poke sell _(nome ou id do pokemon)_ -* _Vender pokémon_
+➡️ *poke evolve _(nome ou id do pokemon)_ -* _Evoluir pokémon_
+➡️ *poke mega-evolve _(nome ou id do pokemon)_ -* _Mega evoluir pokémon_
+➡️ *poke skills _(nome ou id do pokemon)_ -* _Informações de habilidades do pokémon_
+➡️ *poke giveitem _(nome ou id do pokemon)_ _(nome do item)_ -* _Dar item ao pokémon_
+➡️ *poke dropitem _(nome ou id do pokemon)_ _(nome do item)_ -* _Remover item do pokémon_
+
+*TIME POKEMON*
 ➡️ *team -* _Informações do time atual_
-➡️ *team _(pokemonName/ID)_ -* _Inserir pokémons ao time atual (Máximo: 6)_
-➡️ *poke sell _(pokemonName/ID)_ -* _Vender pokémon_
-➡️ *poke evolve _(pokemonName/ID)_ -* _Evoluir pokémon_
-➡️ *poke mega-evolve _(pokemonName/ID)_ -* _Mega evoluir pokémon_
-➡️ *poke skills _(skillType)_ _(pokemonName/ID)_ -* _Informações de habilidades do tipo X do pokémon_
-➡️ *poke give-item _(pokemonName/ID)_ _(itemName/ID)_ -* _Inserir item ao pokémon_
-➡️ *poke drop-item _(pokemonName/ID)_ _(itemName/ID)_ -* _Remover item do pokémon_
+➡️ *team _(nome ou id do pokemon)_ -* _Inserir pokémons ao time atual (Máximo: 6)_
+▶▶ Exemplo: pz. team charizard electrode murkrow
+▶▶ Exemplo: pz. team 15567 10889 20122
+➡️ *team main _(nome ou id do pokemon)_ -* _Troca apenas o pokemon principal, mantendo o time_
+➡️ *team save _(nome do time)_ -* _Salva o time atual com o nome definido, para uso posterior_
+➡️ *team load _(nome do time)_ -* _Carrega o time salvo com o nome fornecido, se disponível_
 
 *ROTA*
 ➡️ *route start -* _Iniciar rota no grupo_
 ➡️ *route enter -* _Entrar na rota_
 ➡️ *route leave -* _Sair da rota_
 ➡️ *route info -* _Informações da rota_
-➡️ *route upgrade _(upgradeName)_ -* _Realizar upgrade na rota. (Consulte os diferentes tipos de upgrade utilizando o comando pokez**p. help upgrade)_
-➡️ *route incense _(incenseName)_ -* _Ativar incenso na rota. (Consulte os diferentes tipos de incenso utilizando o comando pokez**p. help incense)_
+➡️ *route upgrade _(nome do upgrade)_ -* _Realizar upgrade na rota. (Consulte os diferentes tipos de upgrade utilizando o comando pz. help upgrade)_
+➡️ *route incense _(nome do incenso)_ -* _Ativar incenso na rota. (Consulte os diferentes tipos de incenso utilizando o comando pz. help incense)_
 ➡️ *route lock _(level)_ -* _Limitar nível máximo de aparição de pokémons na rota_
 ➡️ *route verify -* _Informar boss que está afugentando os pokémons da rota_
 ➡️ *route forfeit -* _Utilizar poké-coins e experiencia da rota para remover o boss que está afugentando os pokémons da rota_
-➡️ *route poke-ranch _(pokemonName/ID)_ -* _Resgatar pokémon (Caso ele tenha fugido dentro de 6 horas)_
-➡️ *route day-care _(pokemonName/ID)_ -* _Adicionar pokémon ao day-care (O pokémon será treinado até alcançar o nível da rota)_
-➡️ *route travel _(cityName)_ -* _Mover a rota para o destino, onde é possível capturar pokémons daquela região (Ex. alola e galar)_
+➡️ *route pokeranch _(id do pokemon)_ -* _Resgatar pokémon (Caso ele tenha fugido dentro de 6 horas)_
+➡️ *route daycare _(id do pokemon)_ -* _Adicionar pokémon ao day-care (O pokémon será treinado até alcançar o nível da rota)_
+➡️ *route travel -* _Mover a rota para o destino, onde é possível capturar pokémons daquela região_
 
 *CAPTURA*
-➡️ *catch _(pokeballName/ID)_ _(pokemonName/ID)_ -* _Utilizar pokébola específica para capturar o pokémon_
+➡️ *catch _(nome-da-pokebola)_ _(id do pokemon)_ -* _Utilizar pokébola especial para capturar o pokémon_
 
 *INVENTÁRIO*
 ➡️ *inventory items -* _Exibir inventário de items_
 ➡️ *inventory poke -* _Exibir inventário de pokémons_
 
 *DUELO*
-➡️ *duel x1 _(playerID)_ -* _Convidar jogador para um duelo 1v1. (Utilizará o primeiro slot de pokémons de cada jogador)_
-➡️ *duel x2 _(playerID)_ -* _Convidar jogador para um duelo 2v2. (Utilizará os primeiros 2 slots de pokémons de cada jogador)_
+➡️ *duel x1 _(id-do-oponente)_ -* _Convidar jogador para um duelo 1v1. (Utilizará o primeiro slot de pokémons de cada jogador)_
+➡️ *duel x2 _(id-do-oponente)_ -* _Convidar jogador para um duelo 2v2. (Utilizará os primeiros 2 slots de pokémons de cada jogador)_
+➡️ *duel z6 _(id-do-oponente)_ -* _Convidar jogador para um duelo 6x6. (Utilizará os 6 slots de pokémons de cada jogador)_
 
 *TROCAS*
-➡️ *trade poke _(pokemonID)_ _(pokemonID)_ -* _Trocar seu pokémon com o pokémon de outro jogador, respectivamente._
+➡️ *trade poke _(id-do-pokemon)_ _(id-do-pokemon)_ -* _Trocar seu pokémon com o pokémon de outro jogador, respectivamente._
 
 *LOJA*
-➡️ *shop -* _Exibir a loja do jogo_
-➡️ *shop _(itemName/ID)_ _(amount)_ -* _Comprar item da loja_
-
-*BATALHA*
-➡️ *battle _(pokemonID)_ -* _Enfrentar pokémon_
+➡️ *loja -* _Exibir a loja do jogo_
+➡️ *loja _(nome do item OU posição dele na loja)_ _(quantidade)_ -* _Comprar item da loja_
 
 *RANQUEAMENTO*
-➡️ *ranking elo -* _Exibir ranking de duelos_
-➡️ *ranking catch -* _Exibir ranking de capturas (Pontos adquiridos em capturas únicas)_
+➡️ *rank elo -* _Exibir ranking de duelos_
+➡️ *rank catch -* _Exibir ranking de capturas (Pontos adquiridos em capturas únicas)_
 
 *COMBINAÇÃO DE POKÉMON*
-➡️ *breed _(pokemonID)_ _(pokemonID)_ -* _Combinar pokémons para gerar filhotes_
-➡️ *hatch _(pokemonID)_ -* _Chocar ovo do filhote para gerar um pokémon_
+➡️ *breed _(id-do-pokemon)_ _(id-do-pokemon)_ -* _Combinar pokémons para gerar filhotes_
+➡️ *hatch -* _Chocar ovo do filhote para gerar um pokémon_
 
 *ENVIAR*
-➡️ *send poke _(pokemonID)_ _(playerID)_ -* _Enviar pokémon para outro jogador_
-➡️ *send items _(itemID)_ _(amount)_ _(playerID)_ -* _Enviar items para outro jogador_
-➡️ *send cash _(amount)_ _(playerID)_ -* _Enviar poké-coins para outro jogador_
+➡️ *send poke _(id-do-pokemon)_ _(id-do-jogador)_ -* _Enviar pokémon para outro jogador_
+➡️ *send item _(nome-do-item)_ _(quantidade)_ _(id-do-jogador)_ -* _Enviar items para outro jogador_
+➡️ *send cash _(quantidade)_ _(id-do-jogador)_ -* _Enviar poké-coins para outro jogador_
 
 *INVASÃO*
-➡️ *invasion defend _(pokemonID)_ -* _Defender invasão_
+➡️ *invasion defend _(id-do-pokemon)_ -* _Defender invasão_
 
 *ATAQUE*
 ➡️ *raid start _(raidName)_ _(nivel)_ -* _Iniciar raid_
 ➡️ *raid enter _(raidId)_ -* _Participar da raid_
 ➡️ *raid cancel -* _Deixar a raid_
 ➡️ *raid team -* _Exibir time para raid_
-➡️ *raid team _(pokemonID)_ -* _Atualizar time para raid_
+➡️ *raid team _(id-do-pokemon)_ -* _Atualizar time para raid_
 
 *VENDAS*
-➡️ *sell poke _(pokemonID)_ -* _Vender pokémon_
-➡️ *sell item _(itemID)_ -* _Vender item_
+➡️ *sell poke _(id-do-pokemon)_ -* _Vender pokémon_
+➡️ *sell all-poke eggs 3 -* _Vender todos os pokémons com 3 ou mais ovos_
+➡️ *sell item _(nome-do-item)_ _(quantidade)_-* _Vender item_
 `
 const incenseText = `
-📖 PokeZap Wiki - *INCENSOS*
+📖 PokeZap Wiki - *INCENSOS* - [d]
 
 *NOME*                    *DESCRIÇÃO*
 full-incense             Aparição mínima de 10 pokémons em 30 minutos
 shiny-incense          Aparição mínima de 10 pokémons em 30 minutos, podendo haver shiny
 elemental-incense   Aparição mínima de 10 pokémons em 30 minutos dos tipos escolhidos
+
+Para usar:
+pz. rota incenso
+pz. rota incenso shiny-incense
+pz. rota incenso elemental-incense fire grass (diga os tipos que deseja)
 `
 const upgradesText = `
-📖 PokeZap Wiki - *UPGRADES*
+📖 PokeZap Wiki - *UPGRADES* [d]
 
 *NOME*                   *DESCRIÇÃO*
 ponte-de-pesca      Possibilidade de pesca (Em desenvolvimento)
-poke-ranch             Resgate de pokémons que já fugiram dentro de 6 horas
+poke-ranch             Resgate de pokémons que já fugiram dentro de 12 horas
 minivan                  (Em desenvolvimento)
 daycare                  Treinar pokémons, limitado ao nível da sua rota
-bazar                     (Em desenvolvimento)
-lab                         (Em desenvolvimento)
+casino                    Aposte seus itens e tente lucrar
+lab                       Reduz o tempo de nascimento dos pokemon
 bikeshop               Possibilidade de raid na rota
 barco                     Viajar para outras localidades de pokémons especificos
 pokemon-center   +2 energia bônus de tempo em tempo
+
+Para mais informação utilize:
+pz. help upgrade (nome-do-upgrade)
 `
+
+const talentsText = `
+📖 PokeZap Wiki - *TALENTOS* [d]
+
+Em PokeZap, cada pokemon possui 9 talentos que podem ser vistos no canto inferior esquerdo.
+Os talento servem para:
+
+*1. Aumentar o dano dos poderes exponencialmente*
+*2. Aumentar a defesa*
+*3. Permitir o uso de golpes TM que não seja da tipagem do pokemon* 
+⚙ - Um charizard do tipo fogo/voador, pode usar o golpe THUNDER-PUNCH (tm) se:
+    Possuir 3 TMs
+    Ter 2 talentos do tipo elétrico (mesma tipagem do golpe tm)
+
+    Para saber quantos talentos necessários:
+    1 - Golpe com até 40 de poder
+    2 - Golpe com até 75 de poder
+    3 - Todos os golpes
+`
+
 const helpTextMap = new Map<string, any>([
   // INCENSE ROUTES
   ['INCENSE', incenseText],
@@ -243,6 +294,24 @@ const helpTextMap = new Map<string, any>([
   // HELD X ROUTES
   ['HELDX', heldXText],
   ['HELD-X', heldXText],
+
+  // TALENT ROUTES
+  ['TALENT', talentsText],
+  ['TALENTS', talentsText],
+  ['TALENTO', talentsText],
+  ['TALENTOS', talentsText],
+
+  // ITEM ROUTES
+  ['TM', tm],
+  ['TM-CASE', tmCase],
+  ['TMCASE', tmCase],
+  ['POKEBALL-BOX', pokeBallBox],
+  ['POKE-BALL-BOX', pokeBallBox],
+  ['POKEBALLBOX', pokeBallBox],
+  ['RARE-CANDY', rareCandy],
+  ['RARECANDY', rareCandy],
+  ['PROPCASE', propCase],
+  ['PROP-CASE', propCase],
 ])
 const subRouteMap = new Map<string, (data: TRouteParams) => Promise<IResponse>>([
   // SKILL ROUTES

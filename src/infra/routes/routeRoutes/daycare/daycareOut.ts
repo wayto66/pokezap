@@ -82,7 +82,7 @@ export const daycareOut = async (data: TRouteParams): Promise<IResponse> => {
   const hoursLeft = 24 - getHoursDifference(pokemon.daycareEntry, new Date())
   if (hoursLeft > 0) throw new PokemonInDaycareRemainingTime(pokemon.id, pokemon.baseData.name, hoursLeft.toFixed(2))
 
-  const targetLevel = Math.ceil(route.level / 2)
+  const targetLevel = Math.ceil(route.level)
 
   await handleLevelSet({
     pokemon,

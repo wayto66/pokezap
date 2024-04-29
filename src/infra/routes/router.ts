@@ -16,16 +16,24 @@ import { inventoryRoutes } from './inventoryRoutes'
 import { marketRoutes } from './marketRoutes'
 import { megaRoutes } from './megaRoutes'
 import { pokemonRoutes } from './pokemonRoutes'
+import { pokemonEvolve } from './pokemonRoutes/evolve/pokemonEvolve'
+import { pokemonSetRole } from './pokemonRoutes/setRole/pokemonSetRole'
 import { raidRoutes } from './raidRoutes'
 import { rankRoutes } from './rankingRoutes'
 import { routeRoutes } from './routeRoutes'
+import { daycareRoutes } from './routeRoutes/daycare'
+import { pokeranchRoute } from './routeRoutes/pokeranch/pokeranchRoute'
 import { sellRoutes } from './sellRoutes'
 import { sendRoutes } from './sendRoutes'
 import { shopRoutes } from './shopRoutes'
 import { teamRoutes } from './teamRoutes'
+import { tournamentRoutes } from './tournamentRoutes'
 import { tradeRoutes } from './tradeRoutes'
+import { useItemRoutes } from './useItemRoutes'
 import { playerRoutes } from './userRoutes'
-import { newUser1 } from './userRoutes/newUser/newUser1'
+import { register } from './userRoutes/newUser'
+import { playerCash } from './userRoutes/playerCash'
+import { playerEnergy } from './userRoutes/playerEnergy'
 
 export type TRouteParams = {
   playerPhone: string
@@ -40,14 +48,14 @@ export type TRouteParams = {
     }
   }
 }
-type TRouteType = (data: TRouteParams) => Promise<IResponse>
+export type TRouteType = (data: TRouteParams) => Promise<IResponse>
 
 const routeMap = new Map<string, TRouteType>([
   // NEW USER ROUTES
-  ['INICIAR', newUser1],
-  ['INICIO', newUser1],
-  ['START', newUser1],
-  ['INÍCIO', newUser1],
+  ['INICIAR', register],
+  ['INICIO', register],
+  ['START', register],
+  ['INÍCIO', register],
 
   // PLAYER INFO ROUTES
   ['JOGADOR', playerRoutes],
@@ -83,6 +91,10 @@ const routeMap = new Map<string, TRouteType>([
   ['TRADE', tradeRoutes],
   ['TROCA', tradeRoutes],
   ['TROCAR', tradeRoutes],
+
+  // TOURNAMENT ROUTES
+  ['TORNEIO', tournamentRoutes],
+  ['TOURNAMENT', tournamentRoutes],
 
   // SHOP ROUTES
   ['SHOP', shopRoutes],
@@ -146,10 +158,80 @@ const routeMap = new Map<string, TRouteType>([
   ['MARKET', marketRoutes],
   ['MERCADO', marketRoutes],
 
+  // USEITEM ROUTES
+  ['USEITEM', useItemRoutes],
+  ['USE-ITEM', useItemRoutes],
+  ['USEITEN', useItemRoutes],
+  ['USE-ITEN', useItemRoutes],
+  ['USE', useItemRoutes],
+
   /// //////////// EXPRESS ROUTES ////////////////////
 
   ['P', pokemonRoutes],
   ['I', inventoryRoutes],
+  ['T', tradeRoutes],
+  ['L', shopRoutes],
+  ['B', shopRoutes],
+  ['CASH', (data: TRouteParams) => playerCash({ ...data, routeParams: ['pz', 'player', 'cash'] })],
+  ['MONEY', playerCash],
+  ['ENERGY', playerEnergy],
+  ['ENERGIA', playerEnergy],
+  [
+    'EVOLVE',
+    (data: TRouteParams) => {
+      const routeParams = [...data.routeParams]
+      routeParams.unshift('shift')
+      return pokemonEvolve({ ...data, routeParams })
+    },
+  ],
+  [
+    'DAYCARE',
+    (data: TRouteParams) => {
+      const routeParams = [...data.routeParams]
+      routeParams.unshift('shift')
+      return daycareRoutes({ ...data, routeParams })
+    },
+  ],
+  [
+    'DAY-CARE',
+    (data: TRouteParams) => {
+      const routeParams = [...data.routeParams]
+      routeParams.unshift('shift')
+      return daycareRoutes({ ...data, routeParams })
+    },
+  ],
+  [
+    'POKERANCH',
+    (data: TRouteParams) => {
+      const routeParams = [...data.routeParams]
+      routeParams.unshift('shift')
+      return pokeranchRoute({ ...data, routeParams })
+    },
+  ],
+  [
+    'POKE-RANCH',
+    (data: TRouteParams) => {
+      const routeParams = [...data.routeParams]
+      routeParams.unshift('shift')
+      return pokeranchRoute({ ...data, routeParams })
+    },
+  ],
+  [
+    'SETROLE',
+    (data: TRouteParams) => {
+      const routeParams = [...data.routeParams]
+      routeParams.unshift('shift')
+      return pokemonSetRole({ ...data, routeParams })
+    },
+  ],
+  [
+    'SET-ROLE',
+    (data: TRouteParams) => {
+      const routeParams = [...data.routeParams]
+      routeParams.unshift('shift')
+      return pokemonSetRole({ ...data, routeParams })
+    },
+  ],
 ])
 
 export const router = async (data: TRouteParams): Promise<IResponse> => {
@@ -159,16 +241,6 @@ export const router = async (data: TRouteParams): Promise<IResponse> => {
 
     const route = routeMap.get(routeName.toUpperCase().trim())
     if (!route) throw new RouteNotFoundError(data.playerName, routeName)
-
-    /*  const prismaClient = container.resolve<PrismaClient>('PrismaClient')
-    const player = await prismaClient.player.findFirst({
-      where: {
-        phone: data.playerPhone,
-      },
-    })
-
-    if (!player) throw new PlayerNotFoundError(data.playerPhone)
-    if (player.isInRaid && routeName !== 'RAID') throw new PlayerInRaidIsLockedError(player.name) */
 
     return await route(data)
   } catch (error) {

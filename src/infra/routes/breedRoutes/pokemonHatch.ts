@@ -1,18 +1,17 @@
-import { PrismaClient } from '@prisma/client'
+import { BaseRoomUpgrades, PrismaClient, RoomUpgrades } from '@prisma/client'
 import { container } from 'tsyringe'
 import { metaValues } from '../../../constants/metaValues'
 import {
   EggIsNotReadyToBeHatch,
-  MissingParametersBreedRouteError,
   PlayerNotFoundError,
   PlayersPokemonNotFoundError,
   TypeMissmatchError,
 } from '../../../infra/errors/AppErrors'
 import { getHoursDifference } from '../../../server/helpers/getHoursDifference'
 import { IResponse } from '../../../server/models/IResponse'
+import { PokemonBaseData } from '../../../server/modules/duel/duelNXN'
 import { iGenPokemonAnalysis } from '../../../server/modules/imageGen/iGenPokemonAnalysis'
 import { TRouteParams } from '../router'
-import { PokemonBaseData } from '../../../server/modules/duel/duelNXN'
 
 export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
   const [, , pokemonIdString] = data.routeParams
@@ -31,13 +30,26 @@ export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
           baseData: true,
         },
       },
+      gameRooms: {
+        include: {
+          upgrades: {
+            include: {
+              base: true,
+            },
+          },
+        },
+      },
     },
   })
   if (!player) throw new PlayerNotFoundError(data.playerPhone)
 
-  let pokemon: PokemonBaseData | undefined | null
+  const isLabEnhanced = player.gameRooms.some(groom =>
+    groom.upgrades.some((upg: RoomUpgrades & { base: BaseRoomUpgrades }) => upg.base.name === 'lab')
+  )
 
-  const todayDate = new Date()
+  console.log({ isLabEnhanced })
+
+  let pokemon: PokemonBaseData | undefined | null
 
   if (pokemonIdString) {
     pokemon = await prismaClient.pokemon.findFirst({
@@ -56,7 +68,7 @@ export const pokemonHatch = async (data: TRouteParams): Promise<IResponse> => {
   }
   if (!pokemon) throw new PlayersPokemonNotFoundError(pokemonId, player.name)
 
-  if (getHoursDifference(pokemon.createdAt, new Date()) < metaValues.eggHatchingTimeInHours)
+  if (getHoursDifference(pokemon.createdAt, new Date()) < metaValues.eggHatchingTimeInHours - (isLabEnhanced ? 12 : 0))
     throw new EggIsNotReadyToBeHatch(
       pokemon.id,
       metaValues.eggHatchingTimeInHours - getHoursDifference(pokemon.createdAt, new Date())

@@ -21,6 +21,9 @@ export const rocketDuoInvasion = async (data: TRocketDuoInvasionParams) => {
         lte: baseExperienceTreshold,
       },
     },
+    include: {
+      skills: true,
+    },
   })
 
   const rocketPokemon1 = await generateWildPokemon({

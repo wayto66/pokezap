@@ -9,4 +9,5 @@ export type IResponse = {
   afterMessageActions?: string[]
   afterMessageDelay?: number
   isAnimated?: boolean
+  preventDelete?: boolean
 }

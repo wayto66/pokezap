@@ -1,8 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
-import { logger } from '../../logger'
 import { IResponse } from '../../../server/models/IResponse'
-import { duelNXN } from '../../../server/modules/duel/duelNXN'
+import { ContinuousDuel6x6 } from '../../../server/modules/duel/ContinuousDuel6x6'
 import { handleExperienceGain } from '../../../server/modules/pokemon/handleExperienceGain'
 import {
   CouldNotUpdatePlayerError,
@@ -17,11 +16,11 @@ import {
   TypeMissmatchError,
   UnexpectedError,
 } from '../../errors/AppErrors'
+import { logger } from '../../logger'
 import { TRouteParams } from '../router'
-import { ContinuousDuel6x6 } from '../../../server/modules/duel/ContinuousDuel6x6'
 
 export const duelAcceptX6 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , , sessionIdString] = data.routeParams
+  const [, , , sessionIdString, fast] = data.routeParams
   const sessionId = Number(sessionIdString)
   if (typeof sessionId !== 'number') throw new TypeMissmatchError(sessionIdString, 'number')
 
@@ -239,6 +238,8 @@ export const duelAcceptX6 = async (data: TRouteParams): Promise<IResponse> => {
 
   if (session.invitedId !== player2.id) throw new SendEmptyMessageError()
 
+  const staticImage = !!(fast && fast === 'FAST')
+
   const duel = await ContinuousDuel6x6({
     leftTeam: [
       session.creator.teamPoke1,
@@ -256,6 +257,7 @@ export const duelAcceptX6 = async (data: TRouteParams): Promise<IResponse> => {
       session.invited.teamPoke5,
       session.invited.teamPoke6,
     ],
+    staticImage,
   })
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
@@ -390,25 +392,21 @@ export const duelAcceptX6 = async (data: TRouteParams): Promise<IResponse> => {
   if (!loserPokemon1) throw new PokemonNotFoundError(duel.loserTeam[1].id)
   if (!winnerPokemon1) throw new PokemonNotFoundError(duel.winnerTeam[1].id)
 
-  let levelDiffMessage = ''
-  let handleLoseExp0
-  let handleLoseExp1
-  let handleWinExp0
-  let handleWinExp1
+  const levelDiffMessage = ''
 
-  handleLoseExp0 = await handleExperienceGain({
+  const handleLoseExp0 = await handleExperienceGain({
     pokemon: loserPokemon0,
     targetPokemon: winnerPokemon0,
   })
-  handleLoseExp1 = await handleExperienceGain({
+  const handleLoseExp1 = await handleExperienceGain({
     pokemon: loserPokemon1,
     targetPokemon: winnerPokemon1,
   })
-  handleWinExp0 = await handleExperienceGain({
+  const handleWinExp0 = await handleExperienceGain({
     pokemon: winnerPokemon0,
     targetPokemon: loserPokemon0,
   })
-  handleWinExp1 = await handleExperienceGain({
+  const handleWinExp1 = await handleExperienceGain({
     pokemon: winnerPokemon1,
     targetPokemon: loserPokemon1,
   })
@@ -469,6 +467,6 @@ ${loserLevelUpMessage1}`
     data: null,
     imageUrl: duel.imageUrl,
     afterMessage,
-    isAnimated: true,
+    isAnimated: !staticImage,
   }
 }

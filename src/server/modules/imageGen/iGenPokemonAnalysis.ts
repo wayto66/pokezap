@@ -21,6 +21,7 @@ export const iGenPokemonAnalysis = async (pokemon: TParams) => {
   const canvasWidth = 500
   const canvasHeight = 500
   const backgroundUrl = './src/assets/sprites/UI/hud/pokemon_analysis.png'
+  const tmSpriteUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'
 
   // Load the background image
   const background = await loadOrSaveImageFromCache(backgroundUrl)
@@ -82,6 +83,19 @@ export const iGenPokemonAnalysis = async (pokemon: TParams) => {
       // Draw the typeLabel2 on the canvas
       ctx.globalAlpha = 1
       ctx.drawImage(typeLabel2, typeLabel2X, typeLabel2Y, typeLabel2Width, typeLabel2Height)
+    }
+
+    if (pokemon.TMs > 0) {
+      const tmSprite = await loadOrSaveImageFromCache(tmSpriteUrl)
+      const tmSpriteWidth = 50 // replace with the actual width of the tmSprite
+      const tmSpriteHeight = 50 // replace with the actual height of the tmSprite
+      const tmSpriteX = canvas.width - 50
+      const tmSpriteY = 315
+      ctx.globalAlpha = 1
+      // Draw the tmSprite on the canvas
+      for (let i = 0; i < pokemon.TMs; i++) {
+        ctx.drawImage(tmSprite, tmSpriteX - i * 20, tmSpriteY, tmSpriteWidth, tmSpriteHeight)
+      }
     }
 
     // write pokemon name

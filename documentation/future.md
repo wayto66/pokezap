@@ -1,0 +1,3 @@
+-
+- incenso para boss de invasão
+- correção visual do daycare: pokes estão saindo pra direita da tela

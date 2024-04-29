@@ -128,15 +128,15 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
   }
 
   const getBallRateMultiplier = () => {
-    if (ballName === 'poke-ball') return 0.45
-    if (ballName === 'great-ball') return 0.9
-    if (ballName === 'ultra-ball') return 2
+    if (ballName === 'poke-ball') return 0.65
+    if (ballName === 'great-ball') return 1.1
+    if (ballName === 'ultra-ball') return 2.2
     if (ballName === 'sora-ball') {
       if (
         ['ice', 'flying'].includes(pokemon.baseData.type1Name) ||
         ['ice', 'flying'].includes(pokemon.baseData.type2Name || '')
       )
-        return 8
+        return 10
       return 0.4
     }
     if (ballName === 'magu-ball') {
@@ -144,7 +144,7 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
         ['fire', 'earth'].includes(pokemon.baseData.type1Name) ||
         ['fire', 'earth'].includes(pokemon.baseData.type2Name || '')
       )
-        return 8
+        return 10
       return 0.4
     }
     if (ballName === 'tale-ball') {
@@ -152,7 +152,7 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
         ['fairy', 'dragon'].includes(pokemon.baseData.type1Name) ||
         ['fairy', 'dragon'].includes(pokemon.baseData.type2Name || '')
       )
-        return 8
+        return 10
       return 0.4
     }
     if (ballName === 'janguru-ball') {
@@ -160,7 +160,7 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
         ['grass', 'poison'].includes(pokemon.baseData.type1Name) ||
         ['grass', 'poison'].includes(pokemon.baseData.type2Name || '')
       )
-        return 8
+        return 10
       return 0.4
     }
     if (ballName === 'tinker-ball') {
@@ -168,7 +168,7 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
         ['electric', 'steel'].includes(pokemon.baseData.type1Name) ||
         ['electric', 'steel'].includes(pokemon.baseData.type2Name || '')
       )
-        return 8
+        return 10
       return 0.4
     }
     if (ballName === 'yume-ball') {
@@ -176,7 +176,7 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
         ['psychic', 'normal'].includes(pokemon.baseData.type1Name) ||
         ['psychic', 'normal'].includes(pokemon.baseData.type2Name || '')
       )
-        return 8
+        return 10
       return 0.4
     }
     if (ballName === 'moon-ball') {
@@ -184,7 +184,7 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
         ['dark', 'ghost'].includes(pokemon.baseData.type1Name) ||
         ['dark', 'ghost'].includes(pokemon.baseData.type2Name || '')
       )
-        return 8
+        return 10
       return 0.4
     }
     if (ballName === 'dusk-ball') {
@@ -192,7 +192,7 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
         ['fighting', 'rock'].includes(pokemon.baseData.type1Name) ||
         ['fighting', 'rock'].includes(pokemon.baseData.type2Name || '')
       )
-        return 8
+        return 10
       return 0.4
     }
     if (ballName === 'net-ball') {
@@ -200,17 +200,17 @@ export const catchRoutes = async (data: TRouteParams): Promise<IResponse> => {
         ['bug', 'water'].includes(pokemon.baseData.type1Name) ||
         ['bug', 'water'].includes(pokemon.baseData.type2Name || '')
       )
-        return 8
+        return 10
       return 0.4
     }
-    if (ballName === 'beast-ball') return 8
-    if (ballName === 'master-ball') return 999999
+    if (ballName === 'beast-ball') return 40
+    if (ballName === 'master-ball') return 9999999
 
     return 0.4
   }
 
-  const shinyMultiplier = pokemon.isShiny ? 0.05 : 1
-  const regionalMultiplier = pokemon.baseData.isRegional ? 0.5 : 1
+  const shinyMultiplier = pokemon.isShiny ? 0.02 : 1
+  const regionalMultiplier = pokemon.baseData.isRegional ? 0.7 : 1
 
   const catchRate =
     calculateCatchRate(pokemon.isShiny ? 170 : pokemon.baseData.BaseExperience) *

@@ -20,7 +20,7 @@ import {
 import { TRouteParams } from '../router'
 
 export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
-  const [, , , sessionIdString] = data.routeParams
+  const [, , , sessionIdString, fast] = data.routeParams
   const sessionId = Number(sessionIdString)
   if (typeof sessionId !== 'number') throw new TypeMissmatchError(sessionIdString, 'number')
 
@@ -112,9 +112,12 @@ export const duelAcceptX2 = async (data: TRouteParams): Promise<IResponse> => {
 
   if (session.invitedId !== player2.id) throw new SendEmptyMessageError()
 
+  const staticImage = !!(fast && fast === 'FAST')
+
   const duel = await duelNXN({
     leftTeam: [session.creator.teamPoke1, session.creator.teamPoke2],
     rightTeam: [session.invited.teamPoke1, session.invited.teamPoke2],
+    staticImage,
   })
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
@@ -337,6 +340,6 @@ ${loserLevelUpMessage1}`
     data: null,
     imageUrl: duel.imageUrl,
     afterMessage,
-    isAnimated: true,
+    isAnimated: !staticImage,
   }
 }

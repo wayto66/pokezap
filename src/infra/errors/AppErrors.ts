@@ -201,11 +201,13 @@ export class MissingParametersMarketRouteError extends AppError {
 
 export class MissingParametersHelpRouteError extends AppError {
   constructor() {
-    const message = `Informe a categoria que deseja ajuda:
+    const message = `[d] Informe a categoria que deseja ajuda:
 👍 - Comandos disponíveis
 ❤ - Clans
 😂 - Pokeballs
-😮 - Plates`
+😮 - Plates
+
+Tente tambem utilizar: pz. help (nome do tópico, item, etc.)`
     const statusCode = 404
     const actions = ['pz. help commands', 'pz. help clans', 'pz. help pokeballs', 'pz. help plates']
 
@@ -276,6 +278,14 @@ export class MissingParametersRankRouteError extends AppError {
 export class MissingParametersPokemonInformationError extends AppError {
   constructor() {
     const message = `Forneca o id ou nome do pokemon. `
+
+    super(message)
+  }
+}
+
+export class MissingParametersMarketAnnounceError extends AppError {
+  constructor() {
+    const message = `[dsb] Para anunciar um pokémon no mercado siga o exemplo: \n\n pz. market announce 25077 600  (anunciando o pokemon #25077 por $600) \n\n pz. mercado anunciar charmander 1000 (anunciando charmander por $1000)`
 
     super(message)
   }
@@ -371,7 +381,25 @@ export class MissingParameterLabRouteError extends AppError {
 export class MissingParametersDuelRouteError extends AppError {
   constructor() {
     const message =
-      'Por favor, especifique o tipo de duelo e o ID do player à ser enfrentado. (Ex. poke**p. duel x1 25).'
+      'Por favor, especifique o tipo de duelo e o ID do player à ser enfrentado. [dsb] \n\n Exemplo: pz. duel x1 105 '
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class MissingParametersUseItemRouteError extends AppError {
+  constructor() {
+    const message = 'Por favor, especifique o item que deseja usar.'
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class NoSubRouteForUseItemRouteError extends AppError {
+  constructor(itemName: string) {
+    const message = `Parece que não há como usar ${itemName} desta forma.`
     const statusCode = 300
 
     super(message, statusCode)
@@ -399,6 +427,15 @@ export class InvalidPokeBallName extends AppError {
 export class PokemonAlreadyRanAwayError extends AppError {
   constructor(id: number, playerName: string) {
     const message = `*${playerName}* já enfrentou o Pokemon ${id} e este fugiu.`
+    const statusCode = 300
+
+    super(message, statusCode)
+  }
+}
+
+export class PokemonAlreadyBattledByPlayerError extends AppError {
+  constructor(id: number, playerName: string) {
+    const message = `*${playerName}* já enfrentou o Pokemon ${id}.`
     const statusCode = 300
 
     super(message, statusCode)

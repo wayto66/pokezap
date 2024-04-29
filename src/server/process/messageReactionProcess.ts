@@ -8,6 +8,10 @@ import { router } from '../../infra/routes/router'
 import { reactions } from '../../server/constants/reactions'
 import { verifyTargetChat } from '../../server/helpers/verifyTargetChat'
 import { IResponse } from '../../server/models/IResponse'
+import { UserDemandHandler } from '../constants/UserDemandHandler'
+import { deleteSentMessage } from '../helpers/deleteSentMessage'
+
+const userDemand = new UserDemandHandler()
 
 export const messageReactionProcess = async (msg: Reaction, instanceName: string) => {
   try {
@@ -58,6 +62,15 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
       if (startCheck !== 'START' && startCheck !== 'INICIAR' && startCheck !== 'INICIO') return
     }
 
+    if (player) {
+      const demand = userDemand.get(player.phone) ?? 0
+      if (demand >= 4) {
+        return
+      }
+      userDemand.add(player.phone, 1)
+      setTimeout(() => userDemand.reduce(player.phone, 1), 2000)
+    }
+
     const response: IResponse = await router({
       playerPhone: msg.senderId,
       routeParams: routeParams,
@@ -66,8 +79,11 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
       fromReact: true,
     })
 
+    if (!response) return
+
     if (!response.imageUrl) {
       const result = await zapClient.sendMessage(msg.id.remote, response.message)
+      if (msg.id.remote.includes('@g.us')) deleteSentMessage(result)
       if (response.actions) {
         await prismaClient.message.create({
           data: {
@@ -111,6 +127,8 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
       media: media,
     })
 
+    if (msg.id.remote.includes('@g.us')) deleteSentMessage(result)
+
     if (response.actions) {
       await prismaClient.message.create({
         data: {
@@ -128,6 +146,7 @@ export const messageReactionProcess = async (msg: Reaction, instanceName: string
       const chatId = msg.id.remote
       setTimeout(async () => {
         const result = await zapClient.sendMessage(chatId, msgBody)
+        if (msg.id.remote.includes('@g.us')) deleteSentMessage(result)
         if (afterActions) {
           await prismaClient.message.create({
             data: {

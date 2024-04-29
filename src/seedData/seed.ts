@@ -9,8 +9,6 @@ import { itemsData } from './items'
 import { skillsData } from './moves'
 import { specialPokemons } from './specialPokemons'
 
-thiefTime()
-
 export async function thiefTime() {
   const baseUrl = 'https://pokeapi.co/api/v2'
   const endpoint = '/pokemon/'
@@ -252,7 +250,6 @@ export async function populate() {
           name: skill.name,
           isPhysical: skill.class === 'physical',
           isSpecial: skill.class === 'special',
-          requiredLevel: 0,
           typeName: skill.type,
         },
       })

@@ -6,15 +6,16 @@ import { metaValues } from '../../constants/metaValues'
 import { logger } from '../../infra/logger'
 import { pokeBossInvasion } from '../../server/serverActions/cron/pokeBossInvasion'
 import { wildPokeSpawn } from '../../server/serverActions/cron/wildPokeSpawn'
+import { deleteSentMessage } from '../helpers/deleteSentMessage'
 import { generateGymPokemons } from '../modules/pokemon/generate/generateGymPokemons'
-import { npcMarketOffers } from '../serverActions/cron/npcMarketOffers'
+import { rocketInvasion } from '../serverActions/cron/rocketInvasion'
 
 export const readyProcess = async (zapIstanceName: string) => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
   const zapClient = container.resolve<Client>(zapIstanceName)
 
   cron.schedule(`*/${metaValues.wildPokemonFleeTimeInMinutes} * * * *`, () => {
-    logger.info(`Running a task every ${metaValues.wildPokemonFleeTimeInMinutes} minutes`)
+    logger.info(`Natural wild pokemon spawn`)
 
     wildPokeSpawn({
       prismaClient,
@@ -31,10 +32,11 @@ export const readyProcess = async (zapIstanceName: string) => {
     })
   })
 
-  cron.schedule('0 0 */6 * * *', async () => {
+  cron.schedule('0 0 */4 * * *', async () => {
     logger.info('Running cp cron')
     const gameRooms = await prismaClient.gameRoom.findMany({
       where: {
+        mode: 'route',
         upgrades: {
           some: {
             base: {
@@ -61,6 +63,14 @@ export const readyProcess = async (zapIstanceName: string) => {
           },
         },
       })
+
+      try {
+        const result = await zapClient.sendMessage(
+          gameRoom.phone,
+          `🔋💞 Centro pokemon da rota *#${gameRoom.id}* acaba de fornecer 2 energia extra! 🔋💞`
+        )
+        deleteSentMessage(result)
+      } catch (e: any) {}
     }
   })
 
@@ -71,13 +81,16 @@ export const readyProcess = async (zapIstanceName: string) => {
         energy: 10,
       },
     })
-    await npcMarketOffers()
   })
 
-  cron.schedule(`0 0 */6 * * *`, async () => {
+  cron.schedule(`0 0 */5 * * *`, async () => {
     pokeBossInvasion({
       zapClient,
     })
+  })
+
+  cron.schedule(`0 0 */3 * * *`, async () => {
+    rocketInvasion(zapClient)
   })
 
   const creategympokes = false
@@ -114,7 +127,7 @@ export const readyProcess = async (zapIstanceName: string) => {
       ownerId: 1,
     })
 
-    ////
+    /// /
 
     generateGymPokemons({
       level: 90,

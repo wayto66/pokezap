@@ -12,6 +12,7 @@ import {
   PlayerDoesNotHaveThePokemonInTheTeamError,
   PlayerDoesNotResideOnTheRoute,
   PlayerNotFoundError,
+  PokemonAlreadyBattledByPlayerError,
   PokemonAlreadyHasOwnerError,
   PokemonAlreadyRanAwayError,
   PokemonNotFoundError,
@@ -80,6 +81,11 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
         },
       },
       ranAwayFrom: true,
+      battledBy: {
+        select: {
+          id: true,
+        },
+      },
     },
   })
 
@@ -89,6 +95,9 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
 
   if (wildPokemon.ranAwayFrom.map(player => player.id).includes(player.id))
     throw new PokemonAlreadyRanAwayError(wildPokemon.id, player.name)
+
+  if (wildPokemon.battledBy.map(player => player.id).includes(player.id))
+    throw new PokemonAlreadyBattledByPlayerError(wildPokemon.id, player.name)
 
   if (!player.gameRooms.map(gameRoom => gameRoom.id).includes(wildPokemon.gameRoomId))
     throw new PlayerDoesNotResideOnTheRoute(wildPokemon.gameRoomId, player.name)
@@ -106,6 +115,19 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
 
   const staticImage = !!(fast && fast === 'FAST')
 
+  await prismaClient.pokemon.update({
+    where: {
+      id: wildPokemon.id,
+    },
+    data: {
+      battledBy: {
+        connect: {
+          id: player.id,
+        },
+      },
+    },
+  })
+
   const duel = await duelNXN({
     leftTeam: [playerPokemon],
     rightTeam: [wildPokemon],
@@ -121,7 +143,7 @@ export const battleWildPokemon = async (data: TRouteParams): Promise<IResponse> 
   const displayName = wildPokemon.isShiny ? `shiny ${wildPokemon.baseData.name}` : wildPokemon.baseData.name
 
   const cashGain = Math.round(
-    25 + Math.random() * 15 + (((wildPokemon.baseData.BaseExperience / 340) * wildPokemon.level) / 20) * 220
+    40 + Math.random() * 16 + (((wildPokemon.baseData.BaseExperience / 340) * wildPokemon.level) / 20) * 220
   )
 
   if (duel.loserTeam[0].id === player.teamPoke1.id) {

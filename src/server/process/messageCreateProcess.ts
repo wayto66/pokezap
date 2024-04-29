@@ -6,26 +6,26 @@ import { logger } from '../../infra/logger'
 import { router } from '../../infra/routes/router'
 import { verifyTargetChat } from '../../server/helpers/verifyTargetChat'
 import { IResponse } from '../../server/models/IResponse'
+import { UserDemandHandler } from '../constants/UserDemandHandler'
+import { deleteSentMessage } from '../helpers/deleteSentMessage'
+
+const userDemand = new UserDemandHandler()
 
 export const messageCreateProcess = async (msg: Message, instanceName: string) => {
   try {
-    console.log('msg create')
-
     const prismaClient = container.resolve<PrismaClient>('PrismaClient')
     const zapClient = container.resolve<Client>(instanceName)
 
     const permit = await verifyTargetChat(msg.to)
     if (!permit) return
 
-    if (msg.body.includes('[dsb]') && (msg.from === '5516988675837:23@c.us' || msg.from === '5516988675837@c.us'))
-      return
-
     if (msg.body.toUpperCase().includes('POKEZAP.') || msg.body.toUpperCase().includes('PZ.')) {
       const contact = await msg.getContact()
 
       if (msg.body.includes('[dsb]')) return
+      if (msg.body.includes('[d]')) return
 
-      const playerPhone = () => {
+      const getPlayerPhone = () => {
         if (!msg.author) return msg.from
 
         const match = msg.author.match(/^(\d+):(\d+)@c\.us$/)
@@ -35,9 +35,18 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
 
         return msg.author
       }
+      const playerPhone = getPlayerPhone()
+
+      const demand = userDemand.get(playerPhone)
+      if (demand && demand >= 3) {
+        msg.react('💤')
+        return
+      }
+      userDemand.add(playerPhone, 1)
+      setTimeout(() => userDemand.reduce(playerPhone, 1), 2000)
 
       const response: IResponse = await router({
-        playerPhone: playerPhone(),
+        playerPhone,
         routeParams: msg.body.toUpperCase().split(' '),
         playerName: contact.pushname ? contact.pushname : 'Nome indefinido',
         groupCode: msg.id.remote,
@@ -50,6 +59,7 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
 
       if (!response.imageUrl) {
         const result = await msg.reply(response.message)
+        if (msg.id.remote.includes('@g.us')) deleteSentMessage(result)
         if (response.actions) {
           await prismaClient.message.create({
             data: {
@@ -64,6 +74,7 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
           const msgBody = response.afterMessage
           setTimeout(async () => {
             await zapClient.sendMessage(msg.id.remote, msgBody)
+            if (msg.id.remote.includes('@g.us')) deleteSentMessage(result)
           }, response.afterMessageDelay || 5000)
         }
         return
@@ -73,7 +84,7 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
         ? await new Promise<string>(resolve => {
             if (!response.isAnimated) resolve(response.imageUrl!)
 
-            const outputPath = `./src/server/modules/imageGen/images/video-${Math.random().toFixed(5)}.mp4`
+            const outputPath = `./src/server/modules/imageGen/images/video-${Math.random().toFixed(5)}`
 
             if (!response.imageUrl) return
 
@@ -98,6 +109,7 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
       const result = await zapClient.sendMessage(msg.id.remote, response.message, {
         media: media,
       })
+      if (msg.id.remote.includes('@g.us')) deleteSentMessage(result)
 
       if (response.actions) {
         await prismaClient.message.create({
@@ -114,7 +126,8 @@ export const messageCreateProcess = async (msg: Message, instanceName: string) =
         const msgBody = response.afterMessage
         const chatId = msg.id.remote
         setTimeout(async () => {
-          await zapClient.sendMessage(chatId, msgBody)
+          const msg = await zapClient.sendMessage(chatId, msgBody)
+          if (chatId.includes('@g.us')) deleteSentMessage(msg)
         }, response.afterMessageDelay || 5000)
       }
       return

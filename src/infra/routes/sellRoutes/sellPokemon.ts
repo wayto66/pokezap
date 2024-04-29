@@ -74,7 +74,7 @@ export const sellPokemon = async (data: TRouteParams): Promise<IResponse> => {
   let totalCash = 0
 
   for (const pokemon of pokemons) {
-    if (pokemon.ownerId !== player.id) throw new PlayerDoestNotOwnThePokemonError(pokemonId, player.name)
+    if (pokemon.ownerId !== player.id) throw new PlayerDoestNotOwnThePokemonError(pokemon.id, player.name)
     if (
       pokemon.teamSlot1 ||
       pokemon.teamSlot2 ||

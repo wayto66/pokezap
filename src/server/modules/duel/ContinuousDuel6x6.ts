@@ -7,15 +7,32 @@ import { plateTypeMap } from '../../constants/plateTypeMap'
 import { talentIdMap } from '../../constants/talentIdMap'
 import { findKeyByValue } from '../../helpers/findKeyByValue'
 import { attackPower, enemyName, getBestSkillSet } from '../../helpers/getBestSkillSet'
-import { TDuelRoundData, iGenDuel2X1Rounds } from '../imageGen/iGenDuel2X1Rounds'
-import { iGenDuel3X1Rounds } from '../imageGen/iGenDuel3X1Rounds'
-import { iGenDuel3X2Rounds } from '../imageGen/iGenDuel3X2Rounds'
-import { iGenDuel3X3Rounds } from '../imageGen/iGenDuel3X3Rounds'
-import { iGenDuel3X4Rounds } from '../imageGen/iGenDuel3X4Rounds'
-import { iGenDuelRound } from '../imageGen/iGenDuelRound'
-import { iGenDuelX2Rounds } from '../imageGen/iGenDuelX2Rounds'
-import { DuelPokemonExtra, getTeamBonuses } from './getTeamBonuses'
 import { iGenDuelX6Rounds } from '../imageGen/iGenDuelX6Rounds'
+import { DuelPokemonExtra, getTeamBonuses } from './getTeamBonuses'
+
+export type PokemonBaseDataSkillsHeld = Pokemon & {
+  baseData: BasePokemon & {
+    skills: Skill[]
+  }
+  heldItem:
+    | (HeldItem & {
+        baseItem: BaseItem
+      })
+    | null
+    | undefined
+}
+
+export type RaidPokemonBaseDataSkillsHeld = RaidPokemon & {
+  baseData: BasePokemon & {
+    skills: Skill[]
+  }
+  heldItem?:
+    | (HeldItem & {
+        baseItem: BaseItem
+      })
+    | null
+    | undefined
+}
 
 export type RoundPokemonData = {
   [key: string]: any
@@ -35,6 +52,7 @@ export type RoundPokemonData = {
   spAtk: number
   def: number
   spDef: number
+  isGiant: boolean
   damageResistance: number
   damageAmplifying: number
   speed: number
@@ -95,30 +113,6 @@ export type PokemonBaseDataSkills = Pokemon & {
   baseData: BasePokemon & {
     skills: Skill[]
   }
-}
-
-export type PokemonBaseDataSkillsHeld = Pokemon & {
-  baseData: BasePokemon & {
-    skills: Skill[]
-  }
-  heldItem:
-    | (HeldItem & {
-        baseItem: BaseItem
-      })
-    | null
-    | undefined
-}
-
-export type RaidPokemonBaseDataSkillsHeld = RaidPokemon & {
-  baseData: BasePokemon & {
-    skills: Skill[]
-  }
-  heldItem?:
-    | (HeldItem & {
-        baseItem: BaseItem
-      })
-    | null
-    | undefined
 }
 
 export type RaidPokemonBaseDataSkills = RaidPokemon & {
@@ -333,7 +327,7 @@ export const ContinuousDuel6x6 = async (data: TParams): Promise<TDuelNXNResponse
     if (!poke.ownerId) throw new UnexpectedError(`Owner id not found for #${poke.id} in duelNX1.`)
     const pokeSkill = leftPokesSkillMap.get(poke.id)
     const pokeBonusData = leftPokesBonusesMap.get(poke.id)
-    let roleBonuses = {
+    const roleBonuses = {
       damage: 0,
       defense: 0,
       support: 0,
@@ -354,6 +348,7 @@ export const ContinuousDuel6x6 = async (data: TParams): Promise<TDuelNXNResponse
       type2: poke.baseData.type2Name,
       level: poke.level,
       maxHp: 6 * poke.hp,
+      isGiant: poke.isGiant,
       hp: 6 * poke.hp,
       atk: poke.atk,
       spAtk: poke.spAtk,
@@ -389,7 +384,7 @@ export const ContinuousDuel6x6 = async (data: TParams): Promise<TDuelNXNResponse
   for (const poke of rightTeam) {
     const pokeSkill = rightPokesSkillMap.get(poke.id)
     const pokeBonusData = rightPokesBonusesMap.get(poke.id)
-    let roleBonuses = {
+    const roleBonuses = {
       damage: 0,
       defense: 0,
       support: 0,
@@ -409,6 +404,7 @@ export const ContinuousDuel6x6 = async (data: TParams): Promise<TDuelNXNResponse
       type1: poke.baseData.type1Name,
       type2: poke.baseData.type2Name,
       level: poke.level,
+      isGiant: 'isGiant' in poke && poke.isGiant,
       maxHp: 6 * poke.hp,
       hp: 6 * poke.hp,
       atk: poke.atk,
@@ -546,7 +542,7 @@ export const ContinuousDuel6x6 = async (data: TParams): Promise<TDuelNXNResponse
           }
         }
         if (['all-other-pokemon', 'all-oponents'].includes(skill.target)) {
-          let totalDamage = enemies.reduce((accumulator, pokemon) => {
+          const totalDamage = enemies.reduce((accumulator, pokemon) => {
             return accumulator + (skillMap.get(pokemon.name) ?? 0)
           }, 0)
           skillSelectionMap.set(skill, { pwr: totalDamage, targets: enemies })
@@ -772,7 +768,7 @@ export const ContinuousDuel6x6 = async (data: TParams): Promise<TDuelNXNResponse
       if (skill.target === 'selected-pokemon' && skill.category.includes('damage')) targets = [enemies[0]]
       if (skill.target === 'all-oponents' && skill.category.includes('damage')) targets = enemies
 
-      if ((targets = [])) {
+      if (targets.length === 0) {
         logger.error('no targets for: ' + skill.name)
         return undefined
       }

@@ -28,7 +28,7 @@ export const iGenDuelX2 = async (data: TParams) => {
 
   // Load the font file and register it with the canvas
   registerFont(
-    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/pokezap-new/src/assets/font/Righteous.ttf',
+    'C:/Users/yuri_/OneDrive/Área de Trabalho/dev shit/PROJETOS/pokezap/POKEZAP/src/assets/font/Righteous.ttf',
     { family: 'Pokemon' }
   )
 

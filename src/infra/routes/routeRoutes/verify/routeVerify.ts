@@ -3,6 +3,7 @@ import { container } from 'tsyringe'
 import { MessageMedia } from 'whatsapp-web.js'
 import { IResponse } from '../../../../server/models/IResponse'
 import { iGenPokeBossInvasion } from '../../../../server/modules/imageGen/iGenPokeBossInvasion'
+import { iGenRocketInvasion } from '../../../../server/modules/imageGen/iGenRocketInvasion'
 import { InvasionNotFoundError, RouteNotFoundError, UnexpectedError } from '../../../errors/AppErrors'
 import { TRouteParams } from '../../router'
 
@@ -45,6 +46,25 @@ export const routeVerify = async (data: TRouteParams): Promise<IResponse> => {
     const imageUrl = await iGenPokeBossInvasion({
       invasionSession,
       pokeBoss: invasionSession.enemyPokemons[0],
+    })
+
+    MessageMedia.fromFilePath(imageUrl)
+
+    return {
+      message: `${invasionSession.announcementText}
+  
+      👍 - Juntar-se a equipe de defesa (necessário: ${invasionSession.requiredPlayers} treinadores.)
+  `,
+      status: 200,
+      data: null,
+      imageUrl,
+      actions: [`pz. invasion defend ${invasionSession.id}`],
+    }
+  }
+
+  if (invasionSession.mode === 'rocket-invasion') {
+    const imageUrl = await iGenRocketInvasion({
+      pokemons: invasionSession.enemyPokemons,
     })
 
     MessageMedia.fromFilePath(imageUrl)

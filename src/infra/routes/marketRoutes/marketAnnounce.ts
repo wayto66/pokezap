@@ -1,22 +1,26 @@
+import { PrismaClient } from '@prisma/client'
+import { container } from 'tsyringe'
+import { getPokemonRequestData } from '../../../server/helpers/getPokemonRequestData'
+import { IResponse } from '../../../server/models/IResponse'
 import {
   MissingParametersPokemonInformationError,
   PlayerDoestNotOwnThePokemonError,
   PlayerNotFoundError,
   PokemonMustBeShinyError,
   PokemonNotFoundError,
+  TypeMissmatchError,
   UnexpectedError,
 } from '../../errors/AppErrors'
-import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
-import { container } from 'tsyringe'
-import { PrismaClient } from '@prisma/client'
-import { getPokemonRequestData } from '../../../server/helpers/getPokemonRequestData'
 
 export const marketAnnounce = async (data: TRouteParams): Promise<IResponse> => {
   const prismaClient = container.resolve<PrismaClient>('PrismaClient')
 
-  const [, , , pokemonIdString, remove] = data.routeParams
-  if (!pokemonIdString) throw new MissingParametersPokemonInformationError()
+  const [, , , pokemonIdString, cashDemandInput] = data.routeParams
+  if (!pokemonIdString || !cashDemandInput) throw new MissingParametersPokemonInformationError()
+
+  const cashDemand = Number(cashDemandInput)
+  if (isNaN(cashDemand)) throw new TypeMissmatchError(cashDemandInput, 'NÚMERO')
 
   let searchMode = 'string'
   const pokemonId = Number(pokemonIdString.slice(pokemonIdString.indexOf('#') + 1))
@@ -54,39 +58,6 @@ export const marketAnnounce = async (data: TRouteParams): Promise<IResponse> => 
   if (!pokemon.isShiny) throw new PokemonMustBeShinyError()
   if (pokemon.ownerId !== player.id) throw new PlayerDoestNotOwnThePokemonError(pokemon.id, player.name)
 
-  if (remove && ['REMOVE', 'REMOVER', 'OUT'].includes(remove)) {
-    const announcedPokemon = await prismaClient.pokemon.update({
-      where: {
-        id: pokemon.id,
-      },
-      data: {
-        isAnnouncedInMarket: false,
-      },
-      include: {
-        baseData: true,
-      },
-    })
-
-    await prismaClient.marketOffer.updateMany({
-      where: {
-        pokemonDemand: {
-          some: {
-            id: pokemon.id,
-          },
-        },
-      },
-      data: {
-        active: false,
-      },
-    })
-
-    return {
-      message: `#${announcedPokemon.id} - ${announcedPokemon.baseData.name} foi removido no Market.`,
-      status: 200,
-      actions: [],
-    }
-  }
-
   const announcedPokemon = await prismaClient.pokemon.update({
     where: {
       id: pokemon.id,
@@ -99,8 +70,20 @@ export const marketAnnounce = async (data: TRouteParams): Promise<IResponse> => 
     },
   })
 
+  // const newMarketOffer = await prismaClient.marketOffer.create({
+  //   data: {
+  //     creatorId: player.id,
+  //     pokemonOffer: {
+  //       connect: {
+  //         id: pokemon.id,
+  //       },
+  //     },
+  //     cashDemand
+  //   },
+  // })
+
   return {
-    message: `#${announcedPokemon.id} - ${announcedPokemon.baseData.name} foi anunciado no Market.`,
+    message: `#${announcedPokemon.id} - ${announcedPokemon.baseData.name} foi anunciado no Market por $${cashDemand}.`,
     status: 200,
     actions: [],
   }

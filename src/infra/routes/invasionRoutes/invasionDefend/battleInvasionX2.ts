@@ -87,6 +87,7 @@ export const battleInvasionX2 = async (data: TRouteParams): Promise<IResponse> =
   const duel = await duelNXN({
     leftTeam: [player1.teamPoke1, player2.teamPoke1],
     rightTeam: [invasionSession.enemyPokemons[0], invasionSession.enemyPokemons[1]],
+    wildBattle: true,
   })
 
   if (!duel || !duel.imageUrl) throw new UnexpectedError('duelo')
@@ -180,7 +181,7 @@ const handleInvasionLose = async (data: THandleInvasionLoseData) => {
   const { player1, player2, invasionSession } = data
   const prisma = container.resolve<PrismaClient>('PrismaClient')
 
-  const cashLose = (invasionSession.cashReward || 0) * 1.5
+  const cashLose = Math.round((invasionSession.cashReward || 0) * 1.5)
 
   await prisma.player.updateMany({
     where: {

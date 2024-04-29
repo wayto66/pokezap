@@ -54,22 +54,38 @@ model Player {
   createdSessions      Session[]         @relation(name: "session-creator")
   defeatedWildPokemons Pokemon[]         @relation(name: "defeatedBy")
   ranAwayWildPokemons  Pokemon[]         @relation(name: "ranAwayFrom")
+  battledWildPokemons  Pokemon[]         @relation(name: "battledBy")
   defeatedInvasions    InvasionSession[] @relation(name: "invasion-defeated-players")
   winnedInvasions      InvasionSession[] @relation(name: "invasion-winner-players")
   lobbdyInvasions      InvasionSession[] @relation(name: "invasion-lobby-players")
   quest                Quest?            @relation(fields: [questId], references: [id])
+  activeTournament     Tournament?       @relation(fields: [activeTournamentId], references: [id], name: "active")
+  activeTournamentId   Int?
+  defeatedTournament   Tournament?       @relation(fields: [defeatedTournamentId], references: [id], name: "defeated")
+  defeatedTournamentId Int?
 }
 
 model Badge {
-  id     Int      @id @default(autoincrement())
-  name   String
-  owners Player[]
+  id          Int        @id @default(autoincrement())
+  name        String
+  spriteUrl   String
+  owners      Player[]
+  gymLeader   GymLeader?
+  gymLeaderId Int?
+
+  @@unique([gymLeaderId])
 }
 
 model GymLeader {
-  id       Int          @id @default(autoincrement())
-  name     String
-  pokemons GymPokemon[]
+  id      Int    @id @default(autoincrement())
+  name    String
+  badgeId Int?
+
+  badge       Badge?       @relation(fields: [badgeId], references: [id])
+  pokemons    GymPokemon[]
+  tournaments Tournament[]
+
+  @@unique([badgeId])
 }
 
 model PokeTeam {
@@ -173,6 +189,8 @@ model Pokemon {
   isShiny             Boolean          @default(false)
   isInDaycare         Boolean          @default(false)
   isAnnouncedInMarket Boolean          @default(false)
+  isUnique            Boolean          @default(false)
+  isSellable          Boolean          @default(true)
   talentId1           Int
   talentId2           Int
   talentId3           Int
@@ -190,6 +208,7 @@ model Pokemon {
   childrenId4         Int?
   heldItemId          Int?
   heldItem            HeldItem?
+  TMs                 Int              @default(0)
   statusTrashed       Boolean          @default(false)
   isGiant             Boolean          @default(false)
   createdAt           DateTime         @default(now())
@@ -204,6 +223,7 @@ model Pokemon {
   teamSlot6           Player?          @relation(name: "team-poke-6")
   defeatedBy          Player[]         @relation(name: "defeatedBy")
   ranAwayFrom         Player[]         @relation(name: "ranAwayFrom")
+  battledBy           Player[]         @relation(name: "battledBy")
   skills              Skill[]          @relation(name: "activeSkills")
   talent1             Talent           @relation(name: "talent-1", fields: [talentId1], references: [id])
   talent2             Talent           @relation(name: "talent-2", fields: [talentId2], references: [id])
@@ -413,17 +433,19 @@ model HeldItem {
 }
 
 model Session {
-  id            Int      @id @default(autoincrement())
-  mode          String
-  creatorId     Int
-  invitedId     Int
-  isInProgress  Boolean  @default(false)
-  isFinished    Boolean  @default(false)
-  statusTrashed Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now())
-  creator       Player   @relation(name: "session-creator", fields: [creatorId], references: [id])
-  invited       Player   @relation(name: "session-invited", fields: [invitedId], references: [id])
+  id              Int      @id @default(autoincrement())
+  mode            String
+  creatorId       Int
+  invitedId       Int
+  creatorAccepted Boolean  @default(false)
+  invitedAccepted Boolean  @default(false)
+  isInProgress    Boolean  @default(false)
+  isFinished      Boolean  @default(false)
+  statusTrashed   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+  creator         Player   @relation(name: "session-creator", fields: [creatorId], references: [id])
+  invited         Player   @relation(name: "session-invited", fields: [invitedId], references: [id])
 }
 
 model InvasionSession {
@@ -482,6 +504,8 @@ model GameRoom {
   upgrades          RoomUpgrades[]
   invasor           InvasionSession? @relation(fields: [invasorId], references: [id])
   raid              Raid?            @relation(fields: [raidId], references: [id])
+  tournament        Tournament[]
+  Ranch             Ranch[]
 }
 
 model RoomUpgrades {
@@ -596,4 +620,78 @@ model MarketOffer {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+}
+
+model Tournament {
+  id          Int @id @default(autoincrement())
+  gameroomId  Int
+  gymLeaderId Int
+
+  cashPrize Int
+
+  gameRoom  GameRoom  @relation(fields: [gameroomId], references: [id])
+  gymLeader GymLeader @relation(fields: [gymLeaderId], references: [id])
+
+  activePlayers   Player[] @relation(name: "active")
+  defeatedPlayers Player[] @relation(name: "defeated")
+
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model Ranch {
+  id         Int @id @default(autoincrement())
+  gameroomId Int
+  level      Int @default(1)
+
+  gameRoom   GameRoom    @relation(fields: [gameroomId], references: [id])
+  ranchSlots RanchSlot[]
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model RanchSlot {
+  id      Int @id @default(autoincrement())
+  ranchId Int
+  wetness Int @default(1)
+
+  ranch      Ranch       @relation(fields: [ranchId], references: [id])
+  berryTress BerryTree[]
+
+  lastWetnessUpdate DateTime @default(now())
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+}
+
+enum EBerryNames {
+  COBA
+  KEBIA
+  SHUCA
+  BABIRI
+  PAYAPA
+}
+
+enum EBerryTreePhases {
+  SEED
+  SPROUT
+  TALL
+  BLOOM
+  BERRY
+  DECEASED
+}
+
+model BerryTree {
+  id              Int              @id @default(autoincrement())
+  ranchSlotId     Int
+  berry           EBerryNames
+  phase           EBerryTreePhases
+  lastPhaseUpdate DateTime         @default(now())
+  nextPhaseUpdate DateTime
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+
+  ranchSlot RanchSlot @relation(fields: [ranchSlotId], references: [id])
 }

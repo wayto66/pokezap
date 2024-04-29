@@ -601,7 +601,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'audino-mega',
     {
-      enemies: ['wiggyltuff', 'clefable', 'sylveon', 'miltank'],
+      enemies: ['wigglytuff', 'clefable', 'sylveon', 'miltank'],
       rooms: 4,
       difficult: 'hard',
       loot: [
@@ -617,7 +617,7 @@ export const raidsDataMap = new Map<string, RaidMapData>([
   [
     'diancie-mega',
     {
-      enemies: ['wiggyltuff', 'clefable', 'sylveon', 'carbink'],
+      enemies: ['wigglytuff', 'clefable', 'sylveon', 'carbink'],
       rooms: 4,
       difficult: 'hard',
       loot: [

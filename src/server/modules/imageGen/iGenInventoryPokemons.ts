@@ -19,6 +19,7 @@ export const iGenInventoryPokemons = async (data: TParams) => {
   const canvasWidth = 500
   const canvasHeight = 500
   const backgroundUrl = './src/assets/sprites/UI/hud/pokemon_inventory.png'
+  const tmSpriteUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'
 
   // Load the background image
   const background = await loadOrSaveImageFromCache(backgroundUrl)
@@ -81,6 +82,15 @@ export const iGenInventoryPokemons = async (data: TParams) => {
       const spUrl = pokemons[i].heldItem!.baseItem.spriteUrl
       const heldItemSprite = await loadOrSaveImageFromCache(spUrl)
       ctx.drawImage(heldItemSprite, x + 41, y + 41, 15, 15)
+    }
+
+    if (pokemons[i].TMs > 0) {
+      const tmSprite = await loadOrSaveImageFromCache(tmSpriteUrl)
+      ctx.globalAlpha = 1
+      // Draw the tmSprite on the canvas
+      for (let k = 0; k < pokemons[k].TMs; k++) {
+        ctx.drawImage(tmSprite, x + 41 - k * 9, y + 5, 15, 15)
+      }
     }
 
     if (pokemons[i].isAdult) {

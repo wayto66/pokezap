@@ -5,6 +5,8 @@ import { logger } from '../../../infra/logger'
 import { defEffectivenessMap } from '../../constants/defEffectivenessMap'
 import { plateTypeMap } from '../../constants/plateTypeMap'
 import { talentIdMap } from '../../constants/talentIdMap'
+import { talentPowerBonusMap } from '../../constants/talentPowerBonusMap'
+import { typeHeldItemMap } from '../../constants/typeHeldItemMap'
 import { findKeyByValue } from '../../helpers/findKeyByValue'
 import { attackPower, enemyName, getBestSkillSet } from '../../helpers/getBestSkillSet'
 import { TDuelRoundData, iGenDuel2X1Rounds } from '../imageGen/iGenDuel2X1Rounds'
@@ -134,6 +136,7 @@ type TParams = {
   staticImage?: boolean
   returnOnlyPlayerPokemonDefeatedIds?: boolean
   backgroundTypeName?: string
+  forceWin?: boolean
 }
 
 export type TDuelNXNResponse = {
@@ -354,8 +357,8 @@ export const duelNXN = async (data: TParams): Promise<TDuelNXNResponse | void> =
       type1: poke.baseData.type1Name,
       type2: poke.baseData.type2Name,
       level: poke.level,
-      maxHp: 12 * poke.hp * (poke.isGiant ? 1.5 : 1),
-      hp: 12 * poke.hp * (poke.isGiant ? 1.5 : 1),
+      maxHp: 12 * poke.hp * (poke.isGiant ? 1.2 : 1),
+      hp: 12 * poke.hp * (poke.isGiant ? 1.2 : 1),
       atk: poke.atk,
       spAtk: poke.spAtk,
       def: poke.def,
@@ -411,10 +414,10 @@ export const duelNXN = async (data: TParams): Promise<TDuelNXNResponse | void> =
       type1: poke.baseData.type1Name,
       type2: poke.baseData.type2Name,
       level: poke.level,
-      maxHp: 12 * poke.hp * ('isGiant' in poke && poke.isGiant ? 1.5 : 1),
-      hp: 12 * poke.hp * ('isGiant' in poke && poke.isGiant ? 1.5 : 1),
-      atk: poke.atk,
-      spAtk: poke.spAtk,
+      maxHp: 12 * poke.hp * ('isGiant' in poke && poke.isGiant ? 1.2 : 1),
+      hp: 12 * poke.hp * ('isGiant' in poke && poke.isGiant ? 1.2 : 1),
+      atk: poke.atk * (data.forceWin ? 0 : 1),
+      spAtk: poke.spAtk * (data.forceWin ? 0 : 1),
       def: poke.def,
       spDef: poke.spDef,
       damageResistance: (poke.heldItem?.baseItem.name === 'x-defense' ? 0.15 : 0) + roleBonuses.defense,
@@ -544,6 +547,7 @@ export const duelNXN = async (data: TParams): Promise<TDuelNXNResponse | void> =
       }
       const currentSkillData = getCurrentSkillForDamageRole(attacker, enemies)
       if (!currentSkillData || !currentSkillData.skill) {
+        console.log('no skill for ', attacker.name)
         return
       }
       if (attacker.crescentBonuses?.damage)
@@ -928,8 +932,16 @@ export const duelNXN = async (data: TParams): Promise<TDuelNXNResponse | void> =
       rightTeamRoundData[1]?.hp
     )
 
-    if (roundCount > 120) {
-      throw new UnexpectedError('duel exceeded 120 rounds.')
+    if (roundCount > 145) {
+      if (data.forceWin) {
+        console.log('left team force wins')
+        winnerTeam = leftTeamData
+        loserTeam = rightTeamData
+        winnerSide = 'left'
+        duelFinished = true
+      } else {
+        throw new UnexpectedError('duel exceeded 145 rounds.')
+      }
     }
   }
 
@@ -1115,12 +1127,12 @@ const getBestSkills = async ({ attacker, defenders }: TGetBestSkillsParams) => {
       continue
     }
     const stab = () => {
-      if (attacker.baseData.type1Name === skill.typeName) return 1.025
-      if (attacker.baseData.type2Name === skill.typeName) return 1.025
+      if (attacker.baseData.type1Name === skill.typeName) return 1.04
+      if (attacker.baseData.type2Name === skill.typeName) return 1.04
       return 1
     }
 
-    const talentBonus = 0.06 * talentCheck.count
+    const talentBonus = talentPowerBonusMap.get(talentCheck.count) ?? 0
 
     const getEffectivenessMultiplier = () => {
       if (efData.best.includes(skill.typeName)) return 2.25
@@ -1143,7 +1155,10 @@ const getBestSkills = async ({ attacker, defenders }: TGetBestSkillsParams) => {
   return getBestSkillSet(finalSkillMap, attacker, defenders)
 }
 
-export const verifyTalentPermission = async (poke: PokemonBaseData | RaidPokemonBaseData, skill: Skill) => {
+export const verifyTalentPermission = (
+  poke: PokemonBaseData | RaidPokemonBaseData,
+  skill: Skill
+): { permit: boolean; count: number } => {
   const talents = [
     poke.talentId1,
     poke.talentId2,
@@ -1184,10 +1199,12 @@ const getHeldItemMultiplier = (
   skill: Skill,
   xItemName: string
 ) => {
-  if (pokemon.heldItem?.baseItem.name && plateTypeMap.get(pokemon.heldItem?.baseItem.name) === skill.typeName)
-    return 1.07
-  if (pokemon.heldItem?.baseItem.name && pokemon.heldItem?.baseItem.name === skill.typeName + '-gem') return 1.15
-  if (pokemon.heldItem?.baseItem.name && pokemon.heldItem?.baseItem.name === xItemName) return 1.11
+  const heldName = pokemon.heldItem?.baseItem.name
+  if (!heldName) return 1
+  if (heldName && plateTypeMap.get(heldName) === skill.typeName) return 1.07
+  if (heldName && heldName === skill.typeName + '-gem') return 1.14
+  if (heldName && typeHeldItemMap.get(skill.typeName) === heldName) return 1.2
+  if (heldName && heldName === xItemName) return 1.11
   return 1
 }
 

@@ -2,7 +2,6 @@ import { PrismaClient } from '@prisma/client'
 import { container } from 'tsyringe'
 import {
   MissingParametersDuelRouteError,
-  RouteForbiddenForDuelRaidError,
   RouteNotFoundError,
   SubRouteNotFoundError,
 } from '../../../infra/errors/AppErrors'
@@ -10,11 +9,12 @@ import { IResponse } from '../../../server/models/IResponse'
 import { TRouteParams } from '../router'
 import { duelAccept } from './duelAccept'
 import { duelAcceptX2 } from './duelAcceptX2'
+import { duelAcceptX6 } from './duelAcceptX6'
+import { duelRandom } from './duelRandom'
 import { duelX1Route } from './duelX1Route'
 import { duelX2Route } from './duelX2Route'
 import { duelX6Route } from './duelX6Route'
-import { duelAcceptX6 } from './duelAcceptX6'
-import { duelRandom } from './duelRandom'
+import { generatedDuelAccept } from './generatedDuelAccept'
 
 const subRouteMap = new Map<string, any>([
   // DUEL X1 ROUTES
@@ -29,6 +29,7 @@ const subRouteMap = new Map<string, any>([
   ['ACCEPTX1', duelAccept],
   ['ACCEPTX2', duelAcceptX2],
   ['ACCEPTX6', duelAcceptX6],
+  ['GENERATED-ACCEPT', generatedDuelAccept],
 
   // DUEL RANDOM
   ['RANDOM', duelRandom],
@@ -42,7 +43,7 @@ export const duelRoutes = async (data: TRouteParams): Promise<IResponse> => {
     },
   })
   if (!gameRoom) throw new RouteNotFoundError('', '')
-  if (gameRoom.mode !== 'duel-raid') throw new RouteForbiddenForDuelRaidError()
+  // if (gameRoom.mode !== 'duel-raid') throw new RouteForbiddenForDuelRaidError()
 
   const [, , subRoute] = data.routeParams
   if (!subRoute) throw new MissingParametersDuelRouteError()

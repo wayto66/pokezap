@@ -2,6 +2,7 @@ import { Image, createCanvas, registerFont } from 'canvas'
 import fs from 'fs'
 import GIFEncoder from 'gifencoder'
 import path from 'path'
+import { logger } from '../../../infra/logger'
 import { removeFileFromDisk } from '../../../server/helpers/fileHelper'
 import { loadOrSaveImageFromCache } from '../../helpers/loadOrSaveImageFromCache'
 import { TDuelRoundData } from './iGenDuel2X1Rounds'
@@ -113,10 +114,12 @@ export const iGenDuelX2Rounds = async (data: TDuelRoundData): Promise<string> =>
       encoder.setQuality(60) // Image quality (lower is better)
 
       const framesPerRound = 2
-      let round = 1
+      let round = data.staticImage ? data.roundCount : 1
       let roundInfo = data.duelMap.get(round)
 
-      for (let i = 0; i < data.roundCount * framesPerRound + 6; i++) {
+      const totalBattleFrames = data.staticImage ? 1 : data.roundCount * framesPerRound + 20
+
+      for (let i = 0; i < totalBattleFrames; i++) {
         if (i > round * framesPerRound && round < data.roundCount) {
           round++
           roundInfo = data.duelMap.get(round)
@@ -225,6 +228,24 @@ export const iGenDuelX2Rounds = async (data: TDuelRoundData): Promise<string> =>
           ctx.textAlign = 'center'
           ctx.fillText(`VENCEDOR!`, data.winnerSide === 'right' ? 365 : 105, 180)
           ctx.strokeText(`VENCEDOR!`, data.winnerSide === 'right' ? 365 : 105, 180)
+        }
+
+        if (data.staticImage) {
+          const filepath: string = await new Promise(resolve => {
+            // Save the canvas to disk
+            const filename = `images/image-${Math.random()}.png`
+            const filepath = path.join(__dirname, filename)
+            const out = fs.createWriteStream(filepath)
+            const stream = canvas.createPNGStream()
+            stream.pipe(out)
+            out.on('finish', () => {
+              logger.info('The PNG file was created.')
+              resolve(filepath)
+            })
+          })
+
+          removeFileFromDisk(filepath)
+          return filepath
         }
 
         encoder.addFrame(ctx as any)
