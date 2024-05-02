@@ -1,0 +1,13 @@
+2024/04/30-05:43:49.464 435c Reusing MANIFEST C:\Users\yuri_\OneDrive\Área de Trabalho\dev shit\PROJETOS\pokezap\POKEZAP\pasta\packages\whatsapp-provider\.wwebjs_auth\session-clientz\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2024/04/30-05:43:49.465 435c Recovering log #147
+2024/04/30-05:43:49.467 435c Reusing old log C:\Users\yuri_\OneDrive\Área de Trabalho\dev shit\PROJETOS\pokezap\POKEZAP\pasta\packages\whatsapp-provider\.wwebjs_auth\session-clientz\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000147.log 
+2024/04/30-05:43:49.474 5a60 Level-0 table #152: started
+2024/04/30-05:43:49.483 5a60 Level-0 table #152: 25533 bytes OK
+2024/04/30-05:43:49.484 5a60 Delete type=0 #147
+2024/04/30-05:43:49.484 435c Manual compaction at level-0 from '\x007\x00\x00\x00' @ 72057594037927935 : 1 .. '\x008\x00\x00\x00' @ 0 : 0; will stop at '\x007\x01 \x03\x00\x00\x00\x00\x00\x003@\x00\x03\x00\x00\x00\x00\x00\x003@' @ 16646 : 1
+2024/04/30-05:43:49.485 435c Compacting 1@0 + 1@1 files
+2024/04/30-05:43:49.488 435c Generated table #153@0: 1258 keys, 11098 bytes
+2024/04/30-05:43:49.488 435c Compacted 1@0 + 1@1 files => 11098 bytes
+2024/04/30-05:43:49.489 435c compacted to: files[ 0 1 1 0 0 0 0 ]
+2024/04/30-05:43:49.490 435c Delete type=2 #152
+2024/04/30-05:43:49.490 435c Manual compaction at level-0 from '\x007\x01 \x03\x00\x00\x00\x00\x00\x003@\x00\x03\x00\x00\x00\x00\x00\x003@' @ 16646 : 1 .. '\x008\x00\x00\x00' @ 0 : 0; will stop at (end)

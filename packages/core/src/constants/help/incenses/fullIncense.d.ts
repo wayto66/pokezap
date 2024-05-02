@@ -1,0 +1,1 @@
+export declare const fullIncense = "\n\uD83D\uDCD6 PokeZap Wiki - *FULL-INCENSE* - [dsb]\n\nO full-incense \u00E9 o incenso padr\u00E3o. Ele vem com 10 cargas e atrai um pokemon a cada 4 minutos.\nExemplo de uso:\npz. rota incenso \n";

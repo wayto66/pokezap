@@ -1,0 +1,5 @@
+2024/04/30-03:20:26.992 4b8c Reusing MANIFEST C:\Users\yuri_\OneDrive\Área de Trabalho\dev shit\PROJETOS\pokezap\POKEZAP\pasta\packages\whatsapp-provider\.wwebjs_auth\session-clientz\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2024/04/30-03:20:26.993 4b8c Recovering log #147
+2024/04/30-03:20:26.994 4b8c Reusing old log C:\Users\yuri_\OneDrive\Área de Trabalho\dev shit\PROJETOS\pokezap\POKEZAP\pasta\packages\whatsapp-provider\.wwebjs_auth\session-clientz\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000147.log 
+2024/04/30-03:20:26.994 4b8c Delete type=2 #145
+2024/04/30-03:20:27.018 4454 Manual compaction at level-0 from '\x006\x00\x00\x00' @ 72057594037927935 : 1 .. '\x007\x00\x00\x00' @ 0 : 0; will stop at (end)

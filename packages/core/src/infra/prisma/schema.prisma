@@ -1,0 +1,697 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id                   Int               @id @default(autoincrement())
+  phone                String            @unique
+  name                 String
+  nickname             String?
+  clan                 String?
+  spriteUrl            String            @default("")
+  elo                  Int               @default(1200)
+  cash                 Int               @default(500)
+  pokeShards           Int               @default(0)
+  energy               Int               @default(20)
+  teamPokeId1          Int?              @unique
+  teamPokeId2          Int?              @unique
+  teamPokeId3          Int?              @unique
+  teamPokeId4          Int?              @unique
+  teamPokeId5          Int?              @unique
+  teamPokeId6          Int?              @unique
+  raidTeamIds          Int[]
+  statusTrashed        Boolean           @default(false)
+  statusLocked         Boolean           @default(false)
+  isInRaid             Boolean           @default(false)
+  dailyQuestDone       Boolean           @default(false)
+  questId              Int?              @unique
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @default(now())
+  lastGymTry           DateTime?
+  lastEliteFourTry     DateTime?
+  caughtDbIds          Int[]
+  caughtDexIds         Int[]
+  ownedPokemons        Pokemon[]
+  ownedItems           Item[]
+  ownedBadges          Badge[]
+  gameRooms            GameRoom[]
+  pokeTeams            PokeTeam[]
+  teamPoke1            Pokemon?          @relation(name: "team-poke-1", fields: [teamPokeId1], references: [id])
+  teamPoke2            Pokemon?          @relation(name: "team-poke-2", fields: [teamPokeId2], references: [id])
+  teamPoke3            Pokemon?          @relation(name: "team-poke-3", fields: [teamPokeId3], references: [id])
+  teamPoke4            Pokemon?          @relation(name: "team-poke-4", fields: [teamPokeId4], references: [id])
+  teamPoke5            Pokemon?          @relation(name: "team-poke-5", fields: [teamPokeId5], references: [id])
+  teamPoke6            Pokemon?          @relation(name: "team-poke-6", fields: [teamPokeId6], references: [id])
+  invitedSessions      Session[]         @relation(name: "session-invited")
+  createdSessions      Session[]         @relation(name: "session-creator")
+  defeatedWildPokemons Pokemon[]         @relation(name: "defeatedBy")
+  ranAwayWildPokemons  Pokemon[]         @relation(name: "ranAwayFrom")
+  battledWildPokemons  Pokemon[]         @relation(name: "battledBy")
+  defeatedInvasions    InvasionSession[] @relation(name: "invasion-defeated-players")
+  winnedInvasions      InvasionSession[] @relation(name: "invasion-winner-players")
+  lobbdyInvasions      InvasionSession[] @relation(name: "invasion-lobby-players")
+  quest                Quest?            @relation(fields: [questId], references: [id])
+  activeTournament     Tournament?       @relation(fields: [activeTournamentId], references: [id], name: "active")
+  activeTournamentId   Int?
+  defeatedTournament   Tournament?       @relation(fields: [defeatedTournamentId], references: [id], name: "defeated")
+  defeatedTournamentId Int?
+}
+
+model Badge {
+  id          Int        @id @default(autoincrement())
+  name        String
+  spriteUrl   String
+  owners      Player[]
+  gymLeader   GymLeader?
+  gymLeaderId Int?
+
+  @@unique([gymLeaderId])
+}
+
+model GymLeader {
+  id      Int    @id @default(autoincrement())
+  name    String
+  badgeId Int?
+
+  badge       Badge?       @relation(fields: [badgeId], references: [id])
+  pokemons    GymPokemon[]
+  tournaments Tournament[]
+
+  @@unique([badgeId])
+}
+
+model PokeTeam {
+  id      Int    @id @default(autoincrement())
+  name    String
+  ownerId Int
+  slot1Id Int
+  slot2Id Int?
+  slot3Id Int?
+  slot4Id Int?
+  slot5Id Int?
+  slot6Id Int?
+  pokeIds Int[]
+
+  owner Player @relation(fields: [ownerId], references: [id])
+
+  @@unique([name, ownerId])
+}
+
+model Quest {
+  id           Int      @id @default(autoincrement())
+  category     String
+  playerId     Int?     @unique
+  player       Player?
+  defeatAmount Int?
+  defeatType   String?
+  defeatType2  String?
+  done         Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+}
+
+model Type {
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  basePokemons1 BasePokemon[] @relation(name: "type 1")
+  basePokemons2 BasePokemon[] @relation(name: "type 2")
+  talents       Talent[]
+  skills        Skill[]
+}
+
+model BasePokemon {
+  id                    Int           @id @default(autoincrement())
+  pokedexId             Int
+  name                  String        @unique
+  defaultSpriteUrl      String
+  shinySpriteUrl        String
+  height                Int
+  isFirstEvolution      Boolean
+  isRegional            Boolean       @default(false)
+  isMega                Boolean       @default(false)
+  hasMegaEvolution      Boolean       @default(false)
+  megaEvolutionId       Int?
+  megaEvolutionItemName String?       @unique
+  evolutionData         Json
+  type1Name             String
+  type2Name             String?
+  BaseHp                Int
+  BaseAtk               Int
+  BaseDef               Int
+  BaseSpAtk             Int
+  BaseSpDef             Int
+  BaseSpeed             Int
+  BaseAllStats          Int
+  BaseExperience        Int
+  statusTrashed         Boolean       @default(false)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @default(now())
+  skills                Skill[]
+  skillTable            String[]
+  pokemons              Pokemon[]
+  raidPokemons          RaidPokemon[]
+  gymPokemons           GymPokemon[]
+  megaEvolutionItem     BaseItem?     @relation(fields: [megaEvolutionItemName], references: [name])
+  type1                 Type          @relation(name: "type 1", fields: [type1Name], references: [name])
+  type2                 Type?         @relation(name: "type 2", fields: [type2Name], references: [name])
+}
+
+model Pokemon {
+  id                  Int              @id @default(autoincrement())
+  ownerId             Int?
+  basePokemonId       Int
+  gameRoomId          Int?
+  invasionSessionId   Int?
+  raidRoomId          Int?
+  nickName            String?
+  savage              Boolean
+  catchable           Boolean          @default(true)
+  level               Int
+  experience          Int              @default(0)
+  spriteUrl           String           @default("")
+  role                String           @default("DAMAGE")
+  hp                  Int
+  atk                 Int
+  def                 Int
+  spAtk               Int
+  spDef               Int
+  speed               Int
+  isAdult             Boolean
+  isMale              Boolean
+  isShiny             Boolean          @default(false)
+  isInDaycare         Boolean          @default(false)
+  isAnnouncedInMarket Boolean          @default(false)
+  isUnique            Boolean          @default(false)
+  isSellable          Boolean          @default(true)
+  talentId1           Int
+  talentId2           Int
+  talentId3           Int
+  talentId4           Int
+  talentId5           Int
+  talentId6           Int
+  talentId7           Int
+  talentId8           Int
+  talentId9           Int
+  parentId1           Int?
+  parentId2           Int?
+  childrenId1         Int?
+  childrenId2         Int?
+  childrenId3         Int?
+  childrenId4         Int?
+  heldItemId          Int?
+  heldItem            HeldItem?
+  TMs                 Int              @default(0)
+  statusTrashed       Boolean          @default(false)
+  isGiant             Boolean          @default(false)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @default(now())
+  daycareEntry        DateTime?
+  lastGymTry          DateTime?
+  teamSlot1           Player?          @relation(name: "team-poke-1")
+  teamSlot2           Player?          @relation(name: "team-poke-2")
+  teamSlot3           Player?          @relation(name: "team-poke-3")
+  teamSlot4           Player?          @relation(name: "team-poke-4")
+  teamSlot5           Player?          @relation(name: "team-poke-5")
+  teamSlot6           Player?          @relation(name: "team-poke-6")
+  defeatedBy          Player[]         @relation(name: "defeatedBy")
+  ranAwayFrom         Player[]         @relation(name: "ranAwayFrom")
+  battledBy           Player[]         @relation(name: "battledBy")
+  skills              Skill[]          @relation(name: "activeSkills")
+  talent1             Talent           @relation(name: "talent-1", fields: [talentId1], references: [id])
+  talent2             Talent           @relation(name: "talent-2", fields: [talentId2], references: [id])
+  talent3             Talent           @relation(name: "talent-3", fields: [talentId3], references: [id])
+  talent4             Talent           @relation(name: "talent-4", fields: [talentId4], references: [id])
+  talent5             Talent           @relation(name: "talent-5", fields: [talentId5], references: [id])
+  talent6             Talent           @relation(name: "talent-6", fields: [talentId6], references: [id])
+  talent7             Talent           @relation(name: "talent-7", fields: [talentId7], references: [id])
+  talent8             Talent           @relation(name: "talent-8", fields: [talentId8], references: [id])
+  talent9             Talent           @relation(name: "talent-9", fields: [talentId9], references: [id])
+  owner               Player?          @relation(fields: [ownerId], references: [id])
+  gameRoom            GameRoom?        @relation(fields: [gameRoomId], references: [id])
+  invasionSession     InvasionSession? @relation(fields: [invasionSessionId], references: [id])
+  defeatedRaidRooms   RaidRoom[]       @relation(name: "raid-room-defeated-pokemons")
+  winnedRaidRooms     RaidRoom[]       @relation(name: "raid-room-winner-pokemons")
+  lobbdyRaidRooms     RaidRoom[]       @relation(name: "raid-room-lobby-pokemons")
+  defeatedRaids       Raid[]           @relation(name: "raid-defeated-pokemons")
+  winnedRaids         Raid[]           @relation(name: "raid-winner-pokemons")
+  lobbdyRaids         Raid[]           @relation(name: "raid-lobby-pokemons")
+  marketOffers        MarketOffer[]
+  maretDemans         MarketOffer[]    @relation(name: "demand")
+  baseData            BasePokemon      @relation(fields: [basePokemonId], references: [id])
+}
+
+model GymPokemon {
+  id              Int         @id @default(autoincrement())
+  ownerId         Int
+  basePokemonName String
+  gameRoomId      Int?
+  level           Int
+  spriteUrl       String      @default("")
+  hp              Int
+  atk             Int
+  def             Int
+  spAtk           Int
+  spDef           Int
+  speed           Int
+  isShiny         Boolean     @default(false)
+  talentId1       Int
+  talentId2       Int
+  talentId3       Int
+  talentId4       Int
+  talentId5       Int
+  talentId6       Int
+  talentId7       Int
+  talentId8       Int
+  talentId9       Int
+  statusTrashed   Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @default(now())
+  talent1         Talent      @relation(name: "gym-pokemon-talent-1", fields: [talentId1], references: [id])
+  talent2         Talent      @relation(name: "gym-pokemon-talent-2", fields: [talentId2], references: [id])
+  talent3         Talent      @relation(name: "gym-pokemon-talent-3", fields: [talentId3], references: [id])
+  talent4         Talent      @relation(name: "gym-pokemon-talent-4", fields: [talentId4], references: [id])
+  talent5         Talent      @relation(name: "gym-pokemon-talent-5", fields: [talentId5], references: [id])
+  talent6         Talent      @relation(name: "gym-pokemon-talent-6", fields: [talentId6], references: [id])
+  talent7         Talent      @relation(name: "gym-pokemon-talent-7", fields: [talentId7], references: [id])
+  talent8         Talent      @relation(name: "gym-pokemon-talent-8", fields: [talentId8], references: [id])
+  talent9         Talent      @relation(name: "gym-pokemon-talent-9", fields: [talentId9], references: [id])
+  baseData        BasePokemon @relation(fields: [basePokemonName], references: [name])
+  owner           GymLeader   @relation(fields: [ownerId], references: [id])
+}
+
+model RaidPokemon {
+  id            Int         @id @default(autoincrement())
+  basePokemonId Int
+  level         Int
+  spriteUrl     String      @default("")
+  hp            Int
+  atk           Int
+  def           Int
+  spAtk         Int
+  spDef         Int
+  speed         Int
+  isShiny       Boolean     @default(false)
+  talentId1     Int
+  talentId2     Int
+  talentId3     Int
+  talentId4     Int
+  talentId5     Int
+  talentId6     Int
+  talentId7     Int
+  talentId8     Int
+  talentId9     Int
+  statusTrashed Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @default(now())
+  skills        Skill[]     @relation(name: "raid-pokemon-activeSkills")
+  talent1       Talent      @relation(name: "raid-pokemon-talent-1", fields: [talentId1], references: [id])
+  talent2       Talent      @relation(name: "raid-pokemon-talent-2", fields: [talentId2], references: [id])
+  talent3       Talent      @relation(name: "raid-pokemon-talent-3", fields: [talentId3], references: [id])
+  talent4       Talent      @relation(name: "raid-pokemon-talent-4", fields: [talentId4], references: [id])
+  talent5       Talent      @relation(name: "raid-pokemon-talent-5", fields: [talentId5], references: [id])
+  talent6       Talent      @relation(name: "raid-pokemon-talent-6", fields: [talentId6], references: [id])
+  talent7       Talent      @relation(name: "raid-pokemon-talent-7", fields: [talentId7], references: [id])
+  talent8       Talent      @relation(name: "raid-pokemon-talent-8", fields: [talentId8], references: [id])
+  talent9       Talent      @relation(name: "raid-pokemon-talent-9", fields: [talentId9], references: [id])
+  raidRoom      RaidRoom[]
+  baseData      BasePokemon @relation(fields: [basePokemonId], references: [id])
+}
+
+model Skill {
+  id                Int           @id @default(autoincrement())
+  name              String        @unique
+  typeName          String
+  description       String        @default("")
+  class             String        @default("")
+  attackPower       Int
+  pp                Int           @default(10)
+  accuracy          Int           @default(100)
+  target            String        @default("selected-pokemon")
+  ailment           String        @default("none")
+  ailmentChance     Int           @default(0)
+  drain             Int           @default(0)
+  healing           Int           @default(0)
+  statChangeName    String        @default("")
+  statChangeAmount  Int           @default(0)
+  category          String        @default("damage")
+  isPhysical        Boolean
+  isSpecial         Boolean
+  statusTrashed     Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @default(now())
+  pokemonsLearn     BasePokemon[]
+  pokemonsActive    Pokemon[]     @relation(name: "activeSkills")
+  raidPkemonsActive RaidPokemon[] @relation(name: "raid-pokemon-activeSkills")
+  type              Type          @relation(fields: [typeName], references: [name])
+}
+
+model Talent {
+  id            Int           @id @default(autoincrement())
+  typeName      String
+  statusTrashed Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @default(now())
+  pokemons1     Pokemon[]     @relation(name: "talent-1")
+  pokemons2     Pokemon[]     @relation(name: "talent-2")
+  pokemons3     Pokemon[]     @relation(name: "talent-3")
+  pokemons4     Pokemon[]     @relation(name: "talent-4")
+  pokemons5     Pokemon[]     @relation(name: "talent-5")
+  pokemons6     Pokemon[]     @relation(name: "talent-6")
+  pokemons7     Pokemon[]     @relation(name: "talent-7")
+  pokemons8     Pokemon[]     @relation(name: "talent-8")
+  pokemons9     Pokemon[]     @relation(name: "talent-9")
+  raidPokemons1 RaidPokemon[] @relation(name: "raid-pokemon-talent-1")
+  raidPokemons2 RaidPokemon[] @relation(name: "raid-pokemon-talent-2")
+  raidPokemons3 RaidPokemon[] @relation(name: "raid-pokemon-talent-3")
+  raidPokemons4 RaidPokemon[] @relation(name: "raid-pokemon-talent-4")
+  raidPokemons5 RaidPokemon[] @relation(name: "raid-pokemon-talent-5")
+  raidPokemons6 RaidPokemon[] @relation(name: "raid-pokemon-talent-6")
+  raidPokemons7 RaidPokemon[] @relation(name: "raid-pokemon-talent-7")
+  raidPokemons8 RaidPokemon[] @relation(name: "raid-pokemon-talent-8")
+  raidPokemons9 RaidPokemon[] @relation(name: "raid-pokemon-talent-9")
+  gymPokemons1  GymPokemon[]  @relation(name: "gym-pokemon-talent-1")
+  gymPokemons2  GymPokemon[]  @relation(name: "gym-pokemon-talent-2")
+  gymPokemons3  GymPokemon[]  @relation(name: "gym-pokemon-talent-3")
+  gymPokemons4  GymPokemon[]  @relation(name: "gym-pokemon-talent-4")
+  gymPokemons5  GymPokemon[]  @relation(name: "gym-pokemon-talent-5")
+  gymPokemons6  GymPokemon[]  @relation(name: "gym-pokemon-talent-6")
+  gymPokemons7  GymPokemon[]  @relation(name: "gym-pokemon-talent-7")
+  gymPokemons8  GymPokemon[]  @relation(name: "gym-pokemon-talent-8")
+  gymPokemons9  GymPokemon[]  @relation(name: "gym-pokemon-talent-9")
+  type          Type          @relation(fields: [typeName], references: [name])
+}
+
+model BaseItem {
+  id              Int          @id @default(autoincrement())
+  type            String
+  name            String       @unique
+  megaEvolutionId Int?
+  spriteUrl       String
+  npcPrice        Int          @default(0)
+  sellable        Boolean      @default(false)
+  heldable        Boolean      @default(false)
+  rarity          Int          @default(0)
+  rarityName      String       @default("common")
+  statusTrashed   Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now())
+  items           Item[]
+  heldItems       HeldItem[]
+  megaEvolves     BasePokemon?
+}
+
+model Item {
+  id           Int           @id @default(autoincrement())
+  ownerId      Int
+  name         String
+  amount       Int
+  owner        Player        @relation(fields: [ownerId], references: [id])
+  marketOffer  MarketOffer[]
+  marketDemand MarketOffer[] @relation(name: "demand")
+  baseItem     BaseItem      @relation(fields: [name], references: [name])
+
+  @@unique([ownerId, name])
+}
+
+model HeldItem {
+  id       Int      @id @default(autoincrement())
+  holderId Int?     @unique
+  name     String
+  holder   Pokemon? @relation(fields: [holderId], references: [id])
+  baseItem BaseItem @relation(fields: [name], references: [name])
+  active   Boolean  @default(true)
+
+  @@unique([holderId, name])
+}
+
+model Session {
+  id              Int      @id @default(autoincrement())
+  mode            String
+  creatorId       Int
+  invitedId       Int
+  creatorAccepted Boolean  @default(false)
+  invitedAccepted Boolean  @default(false)
+  isInProgress    Boolean  @default(false)
+  isFinished      Boolean  @default(false)
+  statusTrashed   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+  creator         Player   @relation(name: "session-creator", fields: [creatorId], references: [id])
+  invited         Player   @relation(name: "session-invited", fields: [invitedId], references: [id])
+}
+
+model InvasionSession {
+  id                 Int    @id @default(autoincrement())
+  mode               String
+  name               String
+  gameRoomId         Int
+  creatorId          Int
+  invitedId          Int[]
+  enemiesIds         Int[]
+  defeatedPlayersIds Int[]
+  winnerPlayersIds   Int[]
+  lootItemsDropRate  Json[]
+  requiredPlayers    Int
+
+  forfeitCost      Int?
+  cashReward       Int?
+  imageUrl         String?
+  announcementText String
+
+  enemyPokemons   Pokemon[]
+  lobbyPlayers    Player[]  @relation(name: "invasion-lobby-players")
+  defeatedPlayers Player[]  @relation(name: "invasion-defeated-players")
+  winnerPlayers   Player[]  @relation(name: "invasion-winner-players")
+  gameRoom        GameRoom?
+
+  inInLobby     Boolean  @default(true)
+  isInProgress  Boolean  @default(false)
+  isFinished    Boolean  @default(false)
+  statusTrashed Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
+}
+
+model GameRoom {
+  id                Int              @id @default(autoincrement())
+  mode              String
+  phone             String           @unique
+  level             Int
+  levelLock         Int?
+  invasorId         Int?             @unique
+  raidId            Int?             @unique
+  region            String?
+  experience        Int
+  activeIncense     String?
+  incenseCharges    Int?
+  incenseElements   String[]
+  isInProgress      Boolean          @default(false)
+  isFinished        Boolean          @default(false)
+  statusTrashed     Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @default(now())
+  players           Player[]
+  activeWildPokemon Pokemon[]
+  messages          Message[]
+  upgrades          RoomUpgrades[]
+  invasor           InvasionSession? @relation(fields: [invasorId], references: [id])
+  raid              Raid?            @relation(fields: [raidId], references: [id])
+  tournament        Tournament[]
+  Ranch             Ranch[]
+}
+
+model RoomUpgrades {
+  id            Int              @id @default(autoincrement())
+  level         Int              @default(1)
+  lastUse       DateTime?
+  lastUsedByIds Int[]
+  baseId        Int
+  roomId        Int
+  base          BaseRoomUpgrades @relation(fields: [baseId], references: [id])
+  room          GameRoom         @relation(fields: [roomId], references: [id])
+}
+
+model BaseRoomUpgrades {
+  id         Int            @id @default(autoincrement())
+  name       String
+  bonusType  String
+  imageUrl   String
+  imageLayer Int
+  price      Int
+  children   RoomUpgrades[]
+}
+
+model Message {
+  id         Int       @id @default(autoincrement())
+  msgId      String    @unique
+  gameRoomId Int?
+  type       String
+  body       String?
+  actions    String[]
+  createdAt  DateTime  @default(now())
+  gameRoom   GameRoom? @relation(fields: [gameRoomId], references: [id])
+}
+
+model Raid {
+  id                 Int     @id @default(autoincrement())
+  mode               String
+  name               String
+  gameRoomId         Int
+  difficulty         String
+  creatorId          Int
+  invitedId          Int[]
+  raidRoomsIds       Int[]
+  currentRoomIndex   Int     @default(0)
+  defeatedPlayersIds Int[]
+  winnerPlayersIds   Int[]
+  lootItemsDropRate  Json[]
+  requiredPlayers    Int
+  forfeitCost        Int
+  cashReward         Int
+  imageUrl           String?
+  announcementText   String
+
+  raidRooms        RaidRoom[]
+  lobbyPokemons    Pokemon[]  @relation(name: "raid-lobby-pokemons")
+  defeatedPokemons Pokemon[]  @relation(name: "raid-defeated-pokemons")
+  winnerPokemons   Pokemon[]  @relation(name: "raid-winner-pokemons")
+  gameRoom         GameRoom?
+  inInLobby        Boolean    @default(true)
+  isInProgress     Boolean    @default(false)
+  isFinished       Boolean    @default(false)
+  statusTrashed    Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @default(now())
+}
+
+model RaidRoom {
+  id                 Int           @id @default(autoincrement())
+  mode               String
+  name               String
+  gameRoomId         Int
+  creatorId          Int
+  invitedId          Int[]
+  raidId             Int
+  enemiesIds         Int[]
+  isFinalRoom        Boolean
+  defeatedPlayersIds Int[]
+  winnerPlayersIds   Int[]
+  lootItemsDropRate  Json[]
+  requiredPlayers    Int
+  forfeitCost        Int?
+  cashReward         Int?
+  imageUrl           String?
+  announcementText   String
+  enemyPokemons      RaidPokemon[]
+  lobbyPokemons      Pokemon[]     @relation(name: "raid-room-lobby-pokemons")
+  defeatedPokemons   Pokemon[]     @relation(name: "raid-room-defeated-pokemons")
+  winnerPokemons     Pokemon[]     @relation(name: "raid-room-winner-pokemons")
+  raid               Raid          @relation(fields: [raidId], references: [id])
+  inInLobby          Boolean       @default(true)
+  isInProgress       Boolean       @default(false)
+  isFinished         Boolean       @default(false)
+  statusTrashed      Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @default(now())
+}
+
+model MarketOffer {
+  id             Int @id @default(autoincrement())
+  creatorId      Int
+  demandPlayerId Int
+
+  cashOffer    Int       @default(0)
+  pokemonOffer Pokemon[]
+  itemOffer    Item[]
+
+  cashDemand    Int       @default(0)
+  itemDemand    Item[]    @relation(name: "demand")
+  pokemonDemand Pokemon[] @relation(name: "demand")
+
+  accepted  Boolean  @default(false)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Tournament {
+  id          Int @id @default(autoincrement())
+  gameroomId  Int
+  gymLeaderId Int
+
+  cashPrize Int
+
+  gameRoom  GameRoom  @relation(fields: [gameroomId], references: [id])
+  gymLeader GymLeader @relation(fields: [gymLeaderId], references: [id])
+
+  activePlayers   Player[] @relation(name: "active")
+  defeatedPlayers Player[] @relation(name: "defeated")
+
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model Ranch {
+  id         Int @id @default(autoincrement())
+  gameroomId Int
+  level      Int @default(1)
+
+  gameRoom   GameRoom    @relation(fields: [gameroomId], references: [id])
+  ranchSlots RanchSlot[]
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model RanchSlot {
+  id      Int @id @default(autoincrement())
+  ranchId Int
+  wetness Int @default(1)
+
+  ranch      Ranch       @relation(fields: [ranchId], references: [id])
+  berryTress BerryTree[]
+
+  lastWetnessUpdate DateTime @default(now())
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+}
+
+enum EBerryNames {
+  COBA
+  KEBIA
+  SHUCA
+  BABIRI
+  PAYAPA
+}
+
+enum EBerryTreePhases {
+  SEED
+  SPROUT
+  TALL
+  BLOOM
+  BERRY
+  DECEASED
+}
+
+model BerryTree {
+  id              Int              @id @default(autoincrement())
+  ranchSlotId     Int
+  berry           EBerryNames
+  phase           EBerryTreePhases
+  lastPhaseUpdate DateTime         @default(now())
+  nextPhaseUpdate DateTime
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+
+  ranchSlot RanchSlot @relation(fields: [ranchSlotId], references: [id])
+}

@@ -1,0 +1,17 @@
+export const typeHeldItemMap = new Map<string, string>([
+  ['ground', 'soft-sand'],
+  ['water', 'mystic-water'],
+  ['electric', 'magnet'],
+  ['grass', 'miracle-seed'],
+  ['fire', 'charcoal'],
+  ['flying', 'sharp-beak'],
+  ['fighting', 'black-belt'],
+  ['normal', 'silk-scarf'],
+  ['bug', 'silver-powder'],
+  ['ghost', 'spell-tag'],
+  ['rock', 'hard-stone'],
+  ['ice', 'never-melt-ice'],
+  ['fairy', 'heart-scale'],
+  ['steel', 'machine-part'],
+  ['dark', 'dragon-skull'],
+])

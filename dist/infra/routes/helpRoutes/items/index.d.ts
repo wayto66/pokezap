@@ -1,0 +1,5 @@
+export declare const rareCandy = "\uD83D\uDCD6 PokeZap Wiki - *RARE-CANDY* - [d] \nAvan\u00E7a o Pokemon para o pr\u00F3ximo n\u00EDvel\n\nPara usar: pz. useitem rare-candy id-do-pokemon";
+export declare const tmCase = "\uD83D\uDCD6 PokeZap Wiki - *TM-CASE* - [d] \nPode conter at\u00E9 3 TMs.\n\nPara abrir: pz. useitem tm-case";
+export declare const propCase = "\uD83D\uDCD6 PokeZap Wiki - *PROP-CASE* - [d] \nCont\u00E9m um held-item aleat\u00F3rio de n\u00EDvel 1 ou 2.\n\nPara abrir: pz. useitem prop-case";
+export declare const tm = "\uD83D\uDCD6 PokeZap Wiki - *TM* - [d] \nUse em seu pokemon. Ao ativar 3 TMs no pokemon, ele ter\u00E1 a possibilidade de usar os golpes de TM, caso tenha os talentos necess\u00E1rios.\n\nPara usar: pz. useitem tm id-do-pokemon\nPara entender sobre talentos: pz. help talentos";
+export declare const pokeBallBox = "\uD83D\uDCD6 PokeZap Wiki - *POKEBALL-BOX* - [d] \nCont\u00E9m uma pokebola especial aleat\u00F3ria.\n\nPara usar: pz. useitem pokeball-box\nPara entender sobre pokebolas: pz. help pokeball";

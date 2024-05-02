@@ -1,0 +1,37 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.122.0",
+  "pnpmVersion": "7.33.5",
+  "nodeSupportedVersionRange": ">=19.0.0",
+  "repository": {
+    "url": "https://github.com/wayto66/pokezap",
+    "defaultBranch": "main"
+  },
+  "projects": [
+    {
+      "packageName": "core",
+      "projectFolder": "packages/core",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "whatsapp-provider",
+      "projectFolder": "packages/whatsapp-provider",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "image-generator",
+      "projectFolder": "packages/image-generator",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "prisma-provider",
+      "projectFolder": "packages/prisma-provider",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "image-provider",
+      "projectFolder": "packages/image-provider",
+      "shouldPublish": true
+    }
+  ]
+}

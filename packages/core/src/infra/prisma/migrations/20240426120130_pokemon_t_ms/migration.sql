@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Pokemon" ADD COLUMN     "TMs" INTEGER NOT NULL DEFAULT 0;

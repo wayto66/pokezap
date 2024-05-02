@@ -1,0 +1,25 @@
+{
+  "name": "image-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "~2.11.2",
+    "memory-cache": "~0.2.0",
+    "@types/memory-cache": "~0.2.5",
+    "tslog": "~4.9.2",
+    "gifencoder": "~2.0.1",
+    "@types/gifencoder": "~2.0.3",
+    "fs": "~0.0.1-security",
+    "path": "~0.12.7",
+    "@types/node": "~20.12.7"
+  },
+  "devDependencies": {
+    "@types/node": "~20.12.7"
+  }
+}

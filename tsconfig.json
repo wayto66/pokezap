@@ -7,7 +7,6 @@
     "emitDecoratorMetadata": true,
     "sourceMap": true,
     "outDir": "dist",
-    "rootDir": "./src",
     "removeComments": false,
     "strict": true,
     "esModuleInterop": true,
@@ -16,6 +15,6 @@
     "resolveJsonModule": true,
     "moduleResolution": "node"
   },
-  "include": ["src", "seed.js", "seed copy.ts"],
+
   "exclude": ["node_modules"]
 }

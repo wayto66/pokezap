@@ -1,0 +1,1 @@
+{"version":3,"file":"registerFonts.js","sourceRoot":"","sources":["../../../src/server/helpers/registerFonts.ts"],"names":[],"mappings":";;;AAAA,mCAAqC;AAE9B,MAAM,aAAa,GAAG,GAAG,EAAE;IAChC,IAAA,qBAAY,EAAC,wCAAwC,EAAE,EAAE,MAAM,EAAE,SAAS,EAAE,CAAC,CAAA;IAC7E,IAAA,qBAAY,EAAC,iCAAiC,EAAE,EAAE,MAAM,EAAE,WAAW,EAAE,CAAC,CAAA;AAC1E,CAAC,CAAA;AAHY,QAAA,aAAa,iBAGzB"}

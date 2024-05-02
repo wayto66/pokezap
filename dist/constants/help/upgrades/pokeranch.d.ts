@@ -1,0 +1,1 @@
+export declare const pokeranchHelpText = "\n\uD83D\uDCD6 PokeZap Wiki - *POKERANCH* - [dsb]\n\nO poke-ranch permite aos jogadores resgatarem pokemons que apareceram \u00E0 at\u00E9 12h atr\u00E1s na rota. \u00C9 util para quando um pokemon apareceu mas voc\u00EA n\u00E3o estava no jogo.\nExemplo de uso:\npz. rota pokeranch 12445 | (puxa de volta o pokemon #12445)\n";
