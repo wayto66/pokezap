@@ -73,3 +73,9 @@ common/autoinstallers/*/.npmrc
 # Heft temporary files
 .cache
 .heft
+
+packages/image-generator/src/images/*.png
+packages/image-generator/src/images/*.jpg 
+packages/image-generator/src/images/*.jpeg
+
+dist
